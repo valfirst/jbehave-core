@@ -21,7 +21,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.jbehave.core.configuration.Configuration;
+import org.jbehave.core.i18n.LocalizedKeywords;
+import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.model.ExamplesTable;
+import org.jbehave.core.model.ExamplesTableFactory;
 import org.jbehave.core.steps.ParameterConverters.BooleanConverter;
 import org.jbehave.core.steps.ParameterConverters.BooleanListConverter;
 import org.jbehave.core.steps.ParameterConverters.DateConverter;
@@ -55,7 +59,8 @@ public class ParameterConvertersBehaviour {
     @Test
     public void shouldDefineDefaultConverters() {
         ParameterConverters converters = new ParameterConverters();
-        ParameterConverter[] defaultConverters = converters.defaultConverters(Locale.ENGLISH, ",");
+        ParameterConverter[] defaultConverters = converters.defaultConverters(new Configuration(){},
+                Locale.ENGLISH, ",");
         assertThatDefaultConvertersInclude(defaultConverters, BooleanConverter.class, NumberConverter.class,
                 NumberListConverter.class, StringListConverter.class, DateConverter.class, EnumConverter.class,
                 EnumListConverter.class, ExamplesTableConverter.class, ExamplesTableParametersConverter.class);
@@ -80,7 +85,7 @@ public class ParameterConvertersBehaviour {
     public void shouldConvertValuesToNumbersWithDefaultNumberFormat() {
         NumberConverter converter = new NumberConverter();
         assertThatAllNumberTypesAreAccepted(converter);
-        assertThatAllNumbersAreConverted(converter, ParameterConverters.DEFAULT_NUMBER_FORMAT_LOCAL);
+        assertThatAllNumbersAreConverted(converter, ParameterConverters.DEFAULT_NUMBER_FORMAT_LOCALE);
     }
 
     @Test
@@ -251,7 +256,7 @@ public class ParameterConvertersBehaviour {
         assertThat(converter.accept(listOfNumbers), is(true));
         assertThat(converter.accept(setOfNumbers), is(false));
         List<Number> list = (List<Number>) converter.convertValue("3, 0.5, 6.1f, 8.00", listOfNumbers);
-        NumberFormat numberFormat = NumberFormat.getInstance(ParameterConverters.DEFAULT_NUMBER_FORMAT_LOCAL);
+        NumberFormat numberFormat = NumberFormat.getInstance(ParameterConverters.DEFAULT_NUMBER_FORMAT_LOCALE);
         assertThat(list.get(0), equalTo(numberFormat.parse("3")));
         assertThat(list.get(1), equalTo(numberFormat.parse("0.5")));
         assertThat(list.get(2), equalTo(numberFormat.parse("6.1f")));
@@ -368,7 +373,7 @@ public class ParameterConvertersBehaviour {
 
     @Test
     public void shouldConvertMultilineTable() throws ParseException, IntrospectionException {
-        ParameterConverter converter = new ExamplesTableConverter();
+        ParameterConverter converter = new ExamplesTableConverter(newExamplesTableFactory());
         assertThat(converter.accept(ExamplesTable.class), is(true));
         assertThat(converter.accept(WrongType.class), is(false));
         assertThat(converter.accept(mock(Type.class)), is(false));
@@ -386,7 +391,7 @@ public class ParameterConvertersBehaviour {
 
     @Test
     public void shouldConvertMultilineTableToParameters() throws ParseException, IntrospectionException {
-        ParameterConverter converter = new ExamplesTableParametersConverter();
+        ParameterConverter converter = new ExamplesTableParametersConverter(newExamplesTableFactory());
         Type type = SomeSteps.methodFor("aMethodWithExamplesTableParameters").getGenericParameterTypes()[0];
         assertThat(converter.accept(type), is(true));
         assertThat(converter.accept(WrongType.class), is(false));
@@ -405,7 +410,7 @@ public class ParameterConvertersBehaviour {
 
     @Test
     public void shouldConvertSinglelineTableToParameters() throws ParseException, IntrospectionException {
-        ParameterConverter converter = new ExamplesTableParametersConverter();
+        ParameterConverter converter = new ExamplesTableParametersConverter(newExamplesTableFactory());
         Type type = SomeSteps.methodFor("aMethodWithExamplesTableParameter").getGenericParameterTypes()[0];
         assertThat(converter.accept(type), is(true));
         assertThat(converter.accept(WrongType.class), is(false));
@@ -414,6 +419,11 @@ public class ParameterConvertersBehaviour {
         MyParameters parameters = (MyParameters) converter.convertValue(value, type);
         assertThat(parameters.col1, equalTo("row11"));
         assertThat(parameters.col2, equalTo("row12"));
+    }
+
+    private ExamplesTableFactory newExamplesTableFactory()
+    {
+        return new ExamplesTableFactory(new LocalizedKeywords(), new LoadFromClasspath(), new ParameterConverters());
     }
 
     @Test

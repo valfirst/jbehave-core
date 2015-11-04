@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.jbehave.core.annotations.AsParameters;
+import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
 import org.jbehave.core.model.ExamplesTable;
 import org.jbehave.core.model.ExamplesTableFactory;
@@ -51,36 +52,35 @@ import static java.util.Arrays.asList;
  */
 public class ParameterConverters {
 
-    public static final StepMonitor DEFAULT_STEP_MONITOR = new SilentStepMonitor();
-    public static final Locale DEFAULT_NUMBER_FORMAT_LOCAL = Locale.ENGLISH;
+    public static final Locale DEFAULT_NUMBER_FORMAT_LOCALE = Locale.ENGLISH;
     public static final String DEFAULT_LIST_SEPARATOR = ",";
     public static final boolean DEFAULT_THREAD_SAFETY = true;
 
     private static final String NEWLINES_PATTERN = "(\n)|(\r\n)";
     private static final String SYSTEM_NEWLINE = System.getProperty("line.separator");
-    private static final String DEFAULT_TRUE_VALUE = "true";
-    private static final String DEFAULT_FALSE_VALUE = "false";
+    private static final String DEFAULT_TRUE_VALUE = Boolean.TRUE.toString();
+    private static final String DEFAULT_FALSE_VALUE = Boolean.FALSE.toString();
 
     private final StepMonitor monitor;
     private final List<ParameterConverter> converters;
     private final boolean threadSafe;
 
     /**
-     * Creates a non-thread-safe instance of ParameterConverters using default
-     * dependencies, a SilentStepMonitor, English as Locale and "," as list
+     * Creates a thread-safe instance of ParameterConverters using default
+     * dependencies, a default Configuration, English as Locale and "," as list
      * separator.
      */
     public ParameterConverters() {
-        this(DEFAULT_STEP_MONITOR);
+        this(DEFAULT_THREAD_SAFETY);
     }
 
     /**
      * Creates a ParameterConverters using given StepMonitor
      * 
-     * @param monitor the StepMonitor to use
+     * @param configuration the configuration with step monitor reporting the conversions
      */
-    public ParameterConverters(StepMonitor monitor) {
-        this(monitor, DEFAULT_NUMBER_FORMAT_LOCAL, DEFAULT_LIST_SEPARATOR, DEFAULT_THREAD_SAFETY);
+    public ParameterConverters(Configuration configuration) {
+        this(configuration, DEFAULT_NUMBER_FORMAT_LOCALE, DEFAULT_LIST_SEPARATOR, DEFAULT_THREAD_SAFETY);
     }
 
     /**
@@ -90,7 +90,7 @@ public class ParameterConverters {
      *            {@link ParameterConverter} should be thread-safe
      */
     public ParameterConverters(boolean threadSafe) {
-        this(DEFAULT_STEP_MONITOR, DEFAULT_NUMBER_FORMAT_LOCAL, DEFAULT_LIST_SEPARATOR, threadSafe);
+        this(new Configuration(){}, DEFAULT_NUMBER_FORMAT_LOCALE, DEFAULT_LIST_SEPARATOR, threadSafe);
     }
 
     /**
@@ -99,27 +99,28 @@ public class ParameterConverters {
      * sure that this character doesn't have a special meaning in your Locale
      * (for instance "," is used as decimal separator in some Locale)
      * 
-     * @param monitor the StepMonitor reporting the conversions
+     * @param configuration the configuration with step monitor reporting the conversions
      * @param locale the Locale to use when reading numbers
      * @param listSeparator the String to use as list separator
      * @param threadSafe the boolean flag to determine if modification of
      *            {@link ParameterConverter} should be thread-safe
      */
-    public ParameterConverters(StepMonitor monitor, Locale locale, String listSeparator, boolean threadSafe) {
-        this(monitor, new ArrayList<ParameterConverter>(), threadSafe);
-        this.addConverters(defaultConverters(locale, listSeparator));
+    public ParameterConverters(Configuration configuration, Locale locale, String listSeparator, boolean threadSafe) {
+        this(configuration.stepMonitor(), new ArrayList<ParameterConverter>(), threadSafe);
+        this.addConverters(defaultConverters(configuration, locale, listSeparator));
     }
 
     private ParameterConverters(StepMonitor monitor, List<ParameterConverter> converters, boolean threadSafe) {
         this.monitor = monitor;
         this.threadSafe = threadSafe;
-        this.converters = (threadSafe ? new CopyOnWriteArrayList<ParameterConverter>(converters)
-                : new ArrayList<ParameterConverter>(converters));
+        this.converters = threadSafe ? new CopyOnWriteArrayList<ParameterConverter>(converters)
+                : new ArrayList<ParameterConverter>(converters);
     }
 
-    protected ParameterConverter[] defaultConverters(Locale locale, String listSeparator) {
+    protected ParameterConverter[] defaultConverters(Configuration configuration, Locale locale, String listSeparator) {
         String escapedListSeparator = escapeRegexPunctuation(listSeparator);
-        ExamplesTableFactory tableFactory = new ExamplesTableFactory(this);
+        ExamplesTableFactory tableFactory = new ExamplesTableFactory(configuration.keywords(),
+                configuration.storyLoader(), this);
         ParameterConverter[] defaultConverters = { new BooleanConverter(),
                 new NumberConverter(NumberFormat.getInstance(locale)),
                 new NumberListConverter(NumberFormat.getInstance(locale), escapedListSeparator),
@@ -222,7 +223,7 @@ public class ParameterConverters {
         private ThreadLocal<NumberFormat> threadLocalNumberFormat = new ThreadLocal<NumberFormat>();
 
         public NumberConverter() {
-            this(NumberFormat.getInstance(DEFAULT_NUMBER_FORMAT_LOCAL));
+            this(NumberFormat.getInstance(DEFAULT_NUMBER_FORMAT_LOCALE));
         }
 
         public NumberConverter(NumberFormat numberFormat) {
@@ -350,7 +351,7 @@ public class ParameterConverters {
         private final String valueSeparator;
 
         public NumberListConverter() {
-            this(NumberFormat.getInstance(DEFAULT_NUMBER_FORMAT_LOCAL), DEFAULT_LIST_SEPARATOR);
+            this(NumberFormat.getInstance(DEFAULT_NUMBER_FORMAT_LOCALE), DEFAULT_LIST_SEPARATOR);
         }
 
         /**
@@ -663,10 +664,6 @@ public class ParameterConverters {
 
         private final ExamplesTableFactory factory;
 
-        public ExamplesTableConverter() {
-            this(new ExamplesTableFactory());
-        }
-
         public ExamplesTableConverter(ExamplesTableFactory factory) {
             this.factory = factory;
         }
@@ -681,7 +678,6 @@ public class ParameterConverters {
         public Object convertValue(String value, Type type) {
             return factory.createExamplesTable(value);
         }
-
     }
 
     /**
@@ -691,10 +687,6 @@ public class ParameterConverters {
     public static class ExamplesTableParametersConverter implements ParameterConverter {
 
         private final ExamplesTableFactory factory;
-
-        public ExamplesTableParametersConverter() {
-            this(new ExamplesTableFactory());
-        }
 
         public ExamplesTableParametersConverter(ExamplesTableFactory factory) {
             this.factory = factory;
@@ -721,9 +713,8 @@ public class ParameterConverters {
         private Class<?> argumentClass(Type type) {
             if (type instanceof ParameterizedType) {
                 return (Class<?>) ((ParameterizedType) type).getActualTypeArguments()[0];
-            } else {
-                return (Class<?>) type;
             }
+            return (Class<?>) type;
         }
 
         public Object convertValue(String value, Type type) {
@@ -733,7 +724,6 @@ public class ParameterConverters {
             }
             return rows.iterator().next();
         }
-
     }
 
     /**
@@ -776,6 +766,5 @@ public class ParameterConverters {
         private Object instance() {
             return stepsFactory.createInstanceOfType(stepsType);
         }
-
     }
 }
