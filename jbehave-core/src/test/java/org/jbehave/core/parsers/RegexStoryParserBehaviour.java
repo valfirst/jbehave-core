@@ -17,10 +17,13 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.jbehave.core.annotations.AfterScenario.Outcome;
+import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.Keywords;
 import org.jbehave.core.i18n.LocalizedKeywords;
+import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.model.Description;
 import org.jbehave.core.model.ExamplesTable;
+import org.jbehave.core.model.ExamplesTableFactory;
 import org.jbehave.core.model.GivenStories;
 import org.jbehave.core.model.GivenStory;
 import org.jbehave.core.model.Lifecycle;
@@ -28,14 +31,22 @@ import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Narrative;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
+import org.jbehave.core.steps.ParameterConverters;
 import org.junit.Test;
 
 
 public class RegexStoryParserBehaviour {
 
     private static final String NL = "\n";
-    private StoryParser parser = new RegexStoryParser(new LocalizedKeywords());
+    private StoryParser parser = newRegexStoryParser(new LocalizedKeywords());
     private String storyPath = "path/to/my.story";
+
+    private RegexStoryParser newRegexStoryParser(LocalizedKeywords localizedKeywords)
+    {
+        Configuration configuration = new Configuration(){};
+        configuration.useKeywords(localizedKeywords);
+        return new RegexStoryParser(configuration);
+    }
 
     @Test
     public void shouldParseStoryAndProvideNameFromPath() {
@@ -222,7 +233,8 @@ public class RegexStoryParserBehaviour {
 
     @Test
     public void shouldParseStoryWithSynonymsOfStartingWords() {
-        StoryParser parser = new RegexStoryParser(new LocalizedKeywords(new Locale("sy")));
+        LocalizedKeywords localizedKeywords = new LocalizedKeywords(new Locale("sy"));
+        StoryParser parser = newRegexStoryParser(localizedKeywords);
 
         String wholeStory = "Given a scenario" + NL +
                 "When I parse it" + NL +
@@ -443,7 +455,7 @@ public class RegexStoryParserBehaviour {
                 "Gegeben im Lager sind 400 T-Shirts" + NL + 
                 "Szenario:"+ NL +        
                 "Wenn ein Kunde 20 T-Shirts bestellt";
-    	parser = new RegexStoryParser(new LocalizedKeywords(Locale.GERMAN));
+        parser = newRegexStoryParser(new LocalizedKeywords(Locale.GERMAN));
         Story story = parser.parseStory(wholeStory, storyPath);
         List<String> beforeSteps = story.getLifecycle().getBeforeSteps();
         assertThat(beforeSteps.isEmpty(), equalTo(true));
