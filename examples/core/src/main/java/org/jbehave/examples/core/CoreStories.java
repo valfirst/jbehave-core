@@ -89,16 +89,16 @@ public class CoreStories extends JUnitStories {
         viewResources.put("reports", "ftl/jbehave-reports.ftl");
         // Start from default ParameterConverters instance
         ParameterConverters parameterConverters = new ParameterConverters();
+        LoadFromClasspath resourceLoader = new LoadFromClasspath(embeddableClass);
         // factory to allow parameter conversion and loading from external
         // resources (used by StoryParser too)
         ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(),
-                new LoadFromClasspath(embeddableClass), parameterConverters, new TableTransformers());
+                resourceLoader, parameterConverters);
         // add custom converters
         parameterConverters.addConverters(new DateConverter(new SimpleDateFormat("yyyy-MM-dd")),
                 new ExamplesTableConverter(examplesTableFactory));
-		return new MostUsefulConfiguration()        		
-                .useStoryLoader(new LoadFromClasspath(embeddableClass))
-                .useStoryParser(new RegexStoryParser(examplesTableFactory))
+		Configuration configuration = new MostUsefulConfiguration()
+                .useStoryLoader(resourceLoader)
                 .useStoryReporterBuilder(
                         new StoryReporterBuilder()
                                 .withCodeLocation(CodeLocations.codeLocationFromClass(embeddableClass))
@@ -109,6 +109,7 @@ public class CoreStories extends JUnitStories {
                 // use '%' instead of '$' to identify parameters
                 .useStepPatternParser(new RegexPrefixCapturingPatternParser("%"))
                 .useStepMonitor(contextStepMonitor);
+		return configuration.useStoryParser(new RegexStoryParser(configuration));
 	}
 
     @Override

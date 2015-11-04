@@ -50,10 +50,7 @@ import org.jbehave.examples.core.steps.SearchSteps;
 import org.jbehave.examples.core.steps.StepsContextSteps;
 import org.jbehave.examples.core.steps.TraderSteps;
 
-import static org.jbehave.core.reporters.Format.CONSOLE;
 import static org.jbehave.core.reporters.Format.HTML_TEMPLATE;
-import static org.jbehave.core.reporters.Format.TXT;
-import static org.jbehave.core.reporters.Format.XML;
 
 /**
  * <p>
@@ -85,19 +82,19 @@ public abstract class CoreStory extends JUnitStory {
         viewResources.put("decorateNonHtml", "true");
         // Start from default ParameterConverters instance
         ParameterConverters parameterConverters = new ParameterConverters();
+        LoadFromClasspath resourceLoader = new LoadFromClasspath(embeddableClass);
         // factory to allow parameter conversion and loading from external
         // resources (used by StoryParser too)
         ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(),
-                new LoadFromClasspath(embeddableClass), parameterConverters, new TableTransformers());
+                resourceLoader, parameterConverters);
         // add custom converters
         parameterConverters.addConverters(new DateConverter(new SimpleDateFormat("yyyy-MM-dd")),
                 new ExamplesTableConverter(examplesTableFactory));
 
-        return new MostUsefulConfiguration()
+        Configuration configuration = new MostUsefulConfiguration()
                 .useStoryControls(new StoryControls().doDryRun(false).doSkipScenariosAfterFailure(false))
                 //.usePendingStepStrategy(new FailingUponPendingStep())
-                .useStoryLoader(new LoadFromClasspath(embeddableClass))
-                .useStoryParser(new RegexStoryParser(examplesTableFactory))
+                .useStoryLoader(resourceLoader)
                 .useStoryPathResolver(new UnderscoredCamelCaseResolver())
                 .useStoryReporterBuilder(
                         new StoryReporterBuilder()
@@ -109,6 +106,7 @@ public abstract class CoreStory extends JUnitStory {
                 .useParameterConverters(parameterConverters)
                 // use '%' instead of '$' to identify parameters
                 .useStepPatternParser(new RegexPrefixCapturingPatternParser("%"));
+        return configuration.useStoryParser(new RegexStoryParser(configuration));
     }
 
     @Override
