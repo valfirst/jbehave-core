@@ -2,8 +2,6 @@ package org.jbehave.core.model;
 
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.Keywords;
-import org.jbehave.core.i18n.LocalizedKeywords;
-import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.ResourceLoader;
 import org.jbehave.core.steps.ParameterConverters;
 
@@ -16,7 +14,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * <li>table text input, i.e. any input that contains a
  * {@link Keywords#examplesTableHeaderSeparator()}</li>
  * <li>resource path input, the table as text is loaded via the
- * {@link ResourceLoader} (defaulting to {@link LoadFromClasspath}).</li>
+ * {@link ResourceLoader}.</li>
  * </ul>
  * Factory also supports optional specification of {@link ParameterConverters}
  * to allow the ExamplesTable to convert row values.
@@ -35,44 +33,17 @@ public class ExamplesTableFactory {
     private final ParameterConverters parameterConverters;
     private final TableTransformers tableTransformers;
 
-    public ExamplesTableFactory() {
-        this(new LocalizedKeywords());
-    }
-
-    public ExamplesTableFactory(Keywords keywords) {
-        this(keywords, new LoadFromClasspath(), new ParameterConverters(), new TableTransformers());
-    }
-
-    public ExamplesTableFactory(ResourceLoader resourceLoader) {
-        this(new LocalizedKeywords(), resourceLoader, new ParameterConverters(), new TableTransformers());
-    }
-
-    public ExamplesTableFactory(ParameterConverters parameterConverters) {
-        this(new LocalizedKeywords(), new LoadFromClasspath(), parameterConverters, new TableTransformers());
-    }
-
-    public ExamplesTableFactory(TableTransformers tableTransformers) {
-        this(new LocalizedKeywords(), new LoadFromClasspath(), new ParameterConverters(), tableTransformers);
-    }
-
     public ExamplesTableFactory(Keywords keywords, ResourceLoader resourceLoader,
             ParameterConverters parameterConverters) {
         this(keywords, resourceLoader, parameterConverters, new TableTransformers());
     }
 
     public ExamplesTableFactory(Keywords keywords, ResourceLoader resourceLoader,
-            ParameterConverters parameterConverters, TableTransformers tableTranformers) {
+            ParameterConverters parameterConverters, TableTransformers tableTransformers) {
         this.keywords = keywords;
         this.resourceLoader = resourceLoader;
         this.parameterConverters = parameterConverters;
-        this.tableTransformers = tableTranformers;
-    }
-    
-    public ExamplesTableFactory(Configuration configuration) {
-    	this.keywords = configuration.keywords();
-    	this.resourceLoader = configuration.storyLoader();
-    	this.parameterConverters = configuration.parameterConverters();
-    	this.tableTransformers = new TableTransformers();
+        this.tableTransformers = tableTransformers;
     }
 
     public ExamplesTable createExamplesTable(String input) {
@@ -90,12 +61,4 @@ public class ExamplesTableFactory {
     protected boolean isTable(String input) {
         return input.contains(keywords.examplesTableHeaderSeparator());
     }
-
-    public void useKeywords(Keywords keywords){
-    	this.keywords = keywords;
-    }
-
-	public Keywords keywords() {
-		return this.keywords;
-	}
 }
