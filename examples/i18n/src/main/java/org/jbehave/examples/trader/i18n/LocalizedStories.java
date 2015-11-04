@@ -53,12 +53,15 @@ public abstract class LocalizedStories extends JUnitStories {
         Properties properties = new Properties();
         properties.setProperty("reports", "ftl/jbehave-reports.ftl");
         properties.setProperty("encoding", "UTF-8");
+        ParameterConverters parameterConverters = new ParameterConverters();
+        LoadFromClasspath resourceLoader = new LoadFromClasspath(classLoader);
+        ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(),
+                resourceLoader, parameterConverters);
         Configuration configuration = new MostUsefulConfiguration()
                 .useKeywords(keywords)
                 .useStepCollector(new MarkUnmatchedStepsAsPending(keywords))
-                .useStoryParser(new RegexStoryParser(keywords))
                 .useStoryLoader(
-                        new LoadFromClasspath(classLoader))
+                        resourceLoader)
                 .useStoryReporterBuilder(new StoryReporterBuilder()
                     .withCodeLocation(codeLocation)
                     .withPathResolver(new ResolveToSimpleName())
@@ -67,15 +70,14 @@ public abstract class LocalizedStories extends JUnitStories {
                     .withFailureTrace(false)
                     .withViewResources(properties)
                     .withKeywords(keywords))
-                .useParameterConverters(
-                        new ParameterConverters().addConverters(customConverters(keywords)));
-        return configuration;
+                .useParameterConverters(parameterConverters.addConverters(customConverters(examplesTableFactory)));
+        return configuration.useStoryParser(new RegexStoryParser(configuration));
     }
     
-    private ParameterConverter[] customConverters(Keywords keywords) {
+    private ParameterConverter[] customConverters(ExamplesTableFactory examplesTableFactory) {
         List<ParameterConverter> converters = new ArrayList<ParameterConverter>();
         converters.add(new NumberConverter(NumberFormat.getInstance(locale())));
-        converters.add(new ExamplesTableConverter(new ExamplesTableFactory(keywords)));
+        converters.add(new ExamplesTableConverter(examplesTableFactory));
         return converters.toArray(new ParameterConverter[converters.size()]);
     }
 

@@ -1,6 +1,9 @@
 package org.jbehave.core.model;
 
+import org.jbehave.core.i18n.LocalizedKeywords;
+import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.ResourceLoader;
+import org.jbehave.core.steps.ParameterConverters;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -17,7 +20,7 @@ public class ExamplesTableFactoryBehaviour {
     @Test
     public void shouldCreateExamplesTableFromTableInput() {
         // Given
-        ExamplesTableFactory factory = new ExamplesTableFactory();
+        ExamplesTableFactory factory = newExamplesTableFactory(new LoadFromClasspath());
         
         // When        
         ExamplesTable examplesTable = factory.createExamplesTable(tableAsString);
@@ -30,7 +33,7 @@ public class ExamplesTableFactoryBehaviour {
     public void shouldCreateExamplesTableFromResourceInput() {
         // Given
         ResourceLoader resourceLoader = mock(ResourceLoader.class);
-        ExamplesTableFactory factory = new ExamplesTableFactory(resourceLoader);
+        ExamplesTableFactory factory = newExamplesTableFactory(resourceLoader);
         
         // When
         String resourcePath = "/path/to/table";
@@ -41,4 +44,8 @@ public class ExamplesTableFactoryBehaviour {
         assertThat(examplesTable.asString(), equalTo(tableAsString));
     }
 
+    private ExamplesTableFactory newExamplesTableFactory(ResourceLoader resourceLoader)
+    {
+        return new ExamplesTableFactory(new LocalizedKeywords(), resourceLoader, new ParameterConverters());
+    }
 }

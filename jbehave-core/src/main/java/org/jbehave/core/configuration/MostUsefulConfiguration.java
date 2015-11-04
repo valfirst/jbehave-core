@@ -19,6 +19,7 @@ import org.jbehave.core.reporters.StepdocReporter;
 import org.jbehave.core.reporters.ViewGenerator;
 import org.jbehave.core.steps.MarkUnmatchedStepsAsPending;
 import org.jbehave.core.steps.ParameterControls;
+import org.jbehave.core.steps.ParameterConverters;
 import org.jbehave.core.steps.SilentStepMonitor;
 import org.jbehave.core.steps.StepCollector;
 import org.jbehave.core.steps.StepFinder;
@@ -32,7 +33,6 @@ import com.thoughtworks.paranamer.Paranamer;
  * The elements configured are:
  * <ul>
  * <li>{@link Keywords}: {@link LocalizedKeywords}</li>
- * <li>{@link StoryParser}: {@link RegexStoryParser}</li>
  * <li>{@link StoryLoader}: {@link LoadFromClasspath}</li>
  * <li>{@link StoryControls}: {@link StoryControls}</li>
  * <li>{@link FailureStrategy}: {@link RethrowingFailure}</li>
@@ -46,6 +46,8 @@ import com.thoughtworks.paranamer.Paranamer;
  * <li>{@link Paranamer}: {@link NullParanamer}</li>
  * <li>{@link ParameterControls}: {@link ParameterControls}</li>
  * <li>{@link ViewGenerator}: {@link FreemarkerViewGenerator}</li>
+ * <li>{@link ParameterConverters}: {@link ParameterConverters}</li>
+ * <li>{@link StoryParser}: {@link RegexStoryParser}</li>
  * </ul>
  */
 public class MostUsefulConfiguration extends Configuration {
@@ -54,7 +56,6 @@ public class MostUsefulConfiguration extends Configuration {
         useKeywords(new LocalizedKeywords());
         useStoryControls(new StoryControls());
         useStoryLoader(new LoadFromClasspath());
-        useStoryParser(new RegexStoryParser(keywords()));
         useFailureStrategy(new RethrowingFailure());
         usePendingStepStrategy(new PassingUponPendingStep());
         useStepCollector(new MarkUnmatchedStepsAsPending());
@@ -65,6 +66,7 @@ public class MostUsefulConfiguration extends Configuration {
         useParanamer(new NullParanamer());
         useParameterControls(new ParameterControls());
         useViewGenerator(new FreemarkerViewGenerator());
+        useParameterConverters(new ParameterConverters(this));
+        useStoryParser(new RegexStoryParser(this));
     }
-
 }

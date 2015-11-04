@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jbehave.core.annotations.AfterScenario.Outcome;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.Keywords;
-import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.model.Description;
 import org.jbehave.core.model.ExamplesTable;
 import org.jbehave.core.model.ExamplesTableFactory;
@@ -37,29 +36,15 @@ public class RegexStoryParser implements StoryParser {
     private final ExamplesTableFactory tableFactory;
 
     public RegexStoryParser() {
-        this(new LocalizedKeywords());
-    }
-
-    public RegexStoryParser(Keywords keywords) {
-        this(keywords, new ExamplesTableFactory(keywords));
-    }
-
-    public RegexStoryParser(ExamplesTableFactory tableFactory) {
-        this(tableFactory.keywords(), tableFactory);
-    }
-
-    public RegexStoryParser(Keywords keywords, ExamplesTableFactory tableFactory) {
-        this.keywords = keywords;
-        this.tableFactory = tableFactory;
-        // must ensure that both are using same keywords
-        this.tableFactory.useKeywords(keywords);
+        this(new Configuration() {});
     }
 
     public RegexStoryParser(Configuration configuration) {
-    	this.keywords = configuration.keywords();
-    	this.tableFactory = new ExamplesTableFactory(configuration);
+        this.keywords = configuration.keywords();
+        this.tableFactory = new ExamplesTableFactory(configuration.keywords(), configuration.storyLoader(),
+                configuration.parameterConverters());
     }
-    
+
     public Story parseStory(String storyAsText) {
         return parseStory(storyAsText, null);
     }
@@ -392,5 +377,4 @@ public class RegexStoryParser implements StoryParser {
         }
         return StringUtils.removeEnd(builder.toString(), "|"); // remove last "|"
     }
-
 }
