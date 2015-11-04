@@ -23,7 +23,10 @@ import org.jbehave.core.annotations.needle.UsingNeedle;
 import org.jbehave.core.configuration.AnnotationBuilder;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
+import org.jbehave.core.i18n.LocalizedKeywords;
+import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.model.ExamplesTable;
+import org.jbehave.core.model.ExamplesTableFactory;
 import org.jbehave.core.steps.CandidateSteps;
 import org.jbehave.core.steps.ParameterConverters;
 import org.jbehave.core.steps.ParameterConverters.ParameterConverter;
@@ -259,6 +262,8 @@ public class NeedleAnnotationBuilderBehaviour {
 			ParameterConverters.ExamplesTableConverter {
 
 		public MyExampleTableConverter() {
+            super(new ExamplesTableFactory(new LocalizedKeywords(), new LoadFromClasspath(),
+                    new ParameterConverters()));
 		}
 
 	}
