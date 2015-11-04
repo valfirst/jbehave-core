@@ -46,19 +46,20 @@ public class MyStories extends JUnitStories {
         Class<? extends Embeddable> embeddableClass = this.getClass();
         // Start from default ParameterConverters instance
         ParameterConverters parameterConverters = new ParameterConverters();
+        LoadFromClasspath resourceLoader = new LoadFromClasspath(embeddableClass);
         // factory to allow parameter conversion and loading from external resources (used by StoryParser too)
-        ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(), new LoadFromClasspath(embeddableClass), parameterConverters);
+        ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(), resourceLoader, parameterConverters);
         // add custom converters
         parameterConverters.addConverters(new DateConverter(new SimpleDateFormat("yyyy-MM-dd")),
                 new ExamplesTableConverter(examplesTableFactory));
-        return new MostUsefulConfiguration()
-        .useStoryLoader(new LoadFromClasspath(embeddableClass))
-        .useStoryParser(new RegexStoryParser(examplesTableFactory))
+        Configuration configuration = new MostUsefulConfiguration()
+        .useStoryLoader(resourceLoader)
         .useStoryReporterBuilder(new StoryReporterBuilder()
         .withCodeLocation(CodeLocations.codeLocationFromClass(embeddableClass))
         .withDefaultFormats()
         .withFormats(CONSOLE, TXT, HTML, XML))
         .useParameterConverters(parameterConverters);
+        return configuration.useStoryParser(new RegexStoryParser(configuration));
     }
 
     @Override

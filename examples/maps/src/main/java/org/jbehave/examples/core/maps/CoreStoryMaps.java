@@ -28,10 +28,11 @@ public class CoreStoryMaps extends JUnitStoryMaps {
 
     @Override
     public Configuration configuration() {
-        return new MostUsefulConfiguration()
-            .useStoryParser(new RegexStoryParser(new ExamplesTableFactory(new LoadFromClasspath(this.getClass()))))
+        Configuration configuration = new MostUsefulConfiguration()
+            .useStoryLoader(new LoadFromClasspath(this.getClass()))
             .useStoryReporterBuilder(new StoryReporterBuilder()
                 .withCodeLocation(CodeLocations.codeLocationFromClass(this.getClass())));
+        return configuration.useStoryParser(new RegexStoryParser(configuration));
     }
 
     @Override
