@@ -778,7 +778,7 @@ public class PerformableTree {
                 context.reporter().storyNotAllowed(story, context.filter.asString());
                 this.status = Status.NOT_ALLOWED;
             }
-            context.reporter().beforeStory(story, context.givenStory);
+            context.reporter().beforeStory(story, givenStory);
             context.reporter().narrative(story.getNarrative());
             context.reporter().lifecyle(story.getLifecycle());
             State state = context.state();
@@ -794,7 +794,7 @@ public class PerformableTree {
             if (context.restartStory()) {
                 context.reporter().afterStory(true);
             } else {
-                context.reporter().afterStory(context.givenStory);
+                context.reporter().afterStory(givenStory);
             }
             this.status = context.status(state);
         }
@@ -802,12 +802,9 @@ public class PerformableTree {
         private void performGivenStories(RunContext context) throws InterruptedException {
             if (givenStories.size() > 0) {
                 context.reporter().givenStories(story.getGivenStories());
-                final boolean parentGivenStory = context.givenStory;
                 for (PerformableStory story : givenStories) {
-                    context.givenStory = story.givenStory();
                     story.perform(context);
                 }
-                context.givenStory = parentGivenStory;
            }
         }
 
@@ -972,12 +969,9 @@ public class PerformableTree {
             beforeSteps.perform(context);
 			if (givenStories.size() > 0) {
 				context.reporter().givenStories(scenario.getGivenStories());
-                final boolean parentGivenStory = context.givenStory;
 				for (PerformableStory story : givenStories) {
-					context.givenStory = story.givenStory();
 					story.perform(context);
 				}
-				context.givenStory = parentGivenStory;
 			}
 			performRestartableSteps(context);	        
             afterSteps.perform(context);
@@ -1006,12 +1000,9 @@ public class PerformableTree {
             beforeSteps.perform(context);
 			if (givenStories.size() > 0) {
 				context.reporter().givenStories(scenario.getGivenStories());
-				final boolean parentGivenStory = context.givenStory;
 				for (PerformableStory story : givenStories) {
-					context.givenStory = story.givenStory();
 					story.perform(context);
 				}
-				context.givenStory = parentGivenStory;
 			}
 			performRestartableSteps(context);	        
             afterSteps.perform(context);
