@@ -47,7 +47,11 @@ public class ParameterControls {
         this.delimiterNamedParameters = delimiterNamedParameters;
         return this;
     }
-    
+
+    public String createDelimitedName(String name) {
+        return nameDelimiterLeft + name + nameDelimiterRight;
+    }
+
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
