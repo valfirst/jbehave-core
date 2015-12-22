@@ -3,6 +3,7 @@ package org.jbehave.core.model;
 import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.ResourceLoader;
+import org.jbehave.core.steps.ParameterControls;
 import org.jbehave.core.steps.ParameterConverters;
 import org.junit.Test;
 
@@ -46,6 +47,7 @@ public class ExamplesTableFactoryBehaviour {
 
     private ExamplesTableFactory newExamplesTableFactory(ResourceLoader resourceLoader)
     {
-        return new ExamplesTableFactory(new LocalizedKeywords(), resourceLoader, new ParameterConverters());
+        return new ExamplesTableFactory(new LocalizedKeywords(), resourceLoader, new ParameterConverters(),
+                new ParameterControls());
     }
 }

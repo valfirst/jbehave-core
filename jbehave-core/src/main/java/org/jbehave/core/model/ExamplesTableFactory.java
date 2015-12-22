@@ -3,6 +3,7 @@ package org.jbehave.core.model;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.Keywords;
 import org.jbehave.core.io.ResourceLoader;
+import org.jbehave.core.steps.ParameterControls;
 import org.jbehave.core.steps.ParameterConverters;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -31,18 +32,21 @@ public class ExamplesTableFactory {
     private Keywords keywords;
     private final ResourceLoader resourceLoader;
     private final ParameterConverters parameterConverters;
+    private final ParameterControls parameterControls;
     private final TableTransformers tableTransformers;
 
     public ExamplesTableFactory(Keywords keywords, ResourceLoader resourceLoader,
-            ParameterConverters parameterConverters) {
-        this(keywords, resourceLoader, parameterConverters, new TableTransformers());
+            ParameterConverters parameterConverters, ParameterControls parameterControls) {
+        this(keywords, resourceLoader, parameterConverters, parameterControls, new TableTransformers());
     }
 
     public ExamplesTableFactory(Keywords keywords, ResourceLoader resourceLoader,
-            ParameterConverters parameterConverters, TableTransformers tableTransformers) {
+            ParameterConverters parameterConverters, ParameterControls parameterControls,
+            TableTransformers tableTransformers) {
         this.keywords = keywords;
         this.resourceLoader = resourceLoader;
         this.parameterConverters = parameterConverters;
+        this.parameterControls = parameterControls;
         this.tableTransformers = tableTransformers;
     }
 
@@ -55,7 +59,7 @@ public class ExamplesTableFactory {
         }
         return new ExamplesTable(tableAsString, keywords.examplesTableHeaderSeparator(),
                 keywords.examplesTableValueSeparator(), keywords.examplesTableIgnorableSeparator(),
-                parameterConverters, tableTransformers);
+                parameterConverters, parameterControls, tableTransformers);
     }
 
     protected boolean isTable(String input) {

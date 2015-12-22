@@ -66,6 +66,11 @@
             ],
             "propertiesAsString": "",
             "namedParameters": [],
+            "parameterControls": {
+              "nameDelimiterLeft": "<",
+              "nameDelimiterRight": ">",
+              "delimiterNamedParameters": true
+            },
             "trim": true
           }
         },
@@ -131,6 +136,11 @@
                 ],
                 "propertiesAsString": "",
                 "namedParameters": [],
+                "parameterControls": {
+                  "nameDelimiterLeft": "<",
+                  "nameDelimiterRight": ">",
+                  "delimiterNamedParameters": true
+                },
                 "trim": true
               }
             },
@@ -173,6 +183,11 @@
               ],
               "propertiesAsString": "",
               "namedParameters": [],
+              "parameterControls": {
+                "nameDelimiterLeft": "<",
+                "nameDelimiterRight": ">",
+                "delimiterNamedParameters": true
+              },
               "trim": true
             },
             "steps": [
@@ -247,6 +262,11 @@
                   ],
                   "propertiesAsString": "",
                   "namedParameters": [],
+                  "parameterControls": {
+                    "nameDelimiterLeft": "<",
+                    "nameDelimiterRight": ">",
+                    "delimiterNamedParameters": true
+                  },
                   "trim": true
                 }
               },
@@ -289,6 +309,11 @@
                 ],
                 "propertiesAsString": "",
                 "namedParameters": [],
+                "parameterControls": {
+                  "nameDelimiterLeft": "<",
+                  "nameDelimiterRight": ">",
+                  "delimiterNamedParameters": true
+                },
                 "trim": true
               },
               "steps": [
@@ -360,6 +385,11 @@
             ],
             "propertiesAsString": "",
             "namedParameters": [],
+            "parameterControls": {
+              "nameDelimiterLeft": "<",
+              "nameDelimiterRight": ">",
+              "delimiterNamedParameters": true
+            },
             "trim": true
           }
         },
@@ -402,6 +432,11 @@
           ],
           "propertiesAsString": "",
           "namedParameters": [],
+          "parameterControls": {
+            "nameDelimiterLeft": "<",
+            "nameDelimiterRight": ">",
+            "delimiterNamedParameters": true
+          },
           "trim": true
         },
         "steps": [
@@ -476,6 +511,11 @@
               ],
               "propertiesAsString": "",
               "namedParameters": [],
+              "parameterControls": {
+                "nameDelimiterLeft": "<",
+                "nameDelimiterRight": ">",
+                "delimiterNamedParameters": true
+              },
               "trim": true
             }
           },
@@ -518,6 +558,11 @@
             ],
             "propertiesAsString": "",
             "namedParameters": [],
+            "parameterControls": {
+              "nameDelimiterLeft": "<",
+              "nameDelimiterRight": ">",
+              "delimiterNamedParameters": true
+            },
             "trim": true
           },
           "steps": [
