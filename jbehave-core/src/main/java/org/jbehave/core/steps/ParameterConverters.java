@@ -120,7 +120,7 @@ public class ParameterConverters {
     protected ParameterConverter[] defaultConverters(Configuration configuration, Locale locale, String listSeparator) {
         String escapedListSeparator = escapeRegexPunctuation(listSeparator);
         ExamplesTableFactory tableFactory = new ExamplesTableFactory(configuration.keywords(),
-                configuration.storyLoader(), this);
+                configuration.storyLoader(), this, configuration.parameterControls());
         ParameterConverter[] defaultConverters = { new BooleanConverter(),
                 new NumberConverter(NumberFormat.getInstance(locale)),
                 new NumberListConverter(NumberFormat.getInstance(locale), escapedListSeparator),

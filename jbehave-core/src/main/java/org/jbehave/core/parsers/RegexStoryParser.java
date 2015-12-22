@@ -42,7 +42,7 @@ public class RegexStoryParser implements StoryParser {
     public RegexStoryParser(Configuration configuration) {
         this.keywords = configuration.keywords();
         this.tableFactory = new ExamplesTableFactory(configuration.keywords(), configuration.storyLoader(),
-                configuration.parameterConverters());
+                configuration.parameterConverters(), configuration.parameterControls());
     }
 
     public Story parseStory(String storyAsText) {

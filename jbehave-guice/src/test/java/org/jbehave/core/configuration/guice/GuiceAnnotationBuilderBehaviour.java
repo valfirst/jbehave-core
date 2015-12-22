@@ -45,6 +45,7 @@ import org.jbehave.core.parsers.RegexPrefixCapturingPatternParser;
 import org.jbehave.core.parsers.StepPatternParser;
 import org.jbehave.core.reporters.StoryReporterBuilder;
 import org.jbehave.core.steps.CandidateSteps;
+import org.jbehave.core.steps.ParameterControls;
 import org.jbehave.core.steps.ParameterConverters;
 import org.jbehave.core.steps.Steps;
 import org.jbehave.core.steps.ParameterConverters.DateConverter;
@@ -300,7 +301,7 @@ public class GuiceAnnotationBuilderBehaviour {
 
         public MyExampleTableConverter() {
             super(new ExamplesTableFactory(new LocalizedKeywords(), new LoadFromClasspath(),
-                    new ParameterConverters()));
+                    new ParameterConverters(), new ParameterControls()));
         }
 
     }
