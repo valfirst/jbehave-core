@@ -423,7 +423,8 @@ public class ParameterConvertersBehaviour {
 
     private ExamplesTableFactory newExamplesTableFactory()
     {
-        return new ExamplesTableFactory(new LocalizedKeywords(), new LoadFromClasspath(), new ParameterConverters());
+        return new ExamplesTableFactory(new LocalizedKeywords(), new LoadFromClasspath(), new ParameterConverters(),
+                new ParameterControls());
     }
 
     @Test
