@@ -70,8 +70,8 @@ public class StepCreator {
         this.parameterControls = parameterControls;
         this.stepMatcher = stepMatcher;
         this.stepMonitor = stepMonitor;
-        this.delimitedNamePattern = Pattern.compile(parameterControls.nameDelimiterLeft() + "(\\w+?)"
-                + parameterControls.nameDelimiterRight());
+        this.delimitedNamePattern = Pattern.compile(".*" + parameterControls.nameDelimiterLeft() + "(\\w+?)"
+                + parameterControls.nameDelimiterRight() + ".*");
     }
 
     public void useStepMonitor(StepMonitor stepMonitor) {
@@ -292,7 +292,7 @@ public class StepCreator {
 	private String markNamedParameterValue(String stepText, Map<String, String> namedParameters, String name) {
         String value = namedParameter(namedParameters, name);
         if (value != null) {
-            return stepText.replace(parameterControls.createDelimitedName(name), markedValue(value));
+            return parameterControls.replaceAllDelimitedNames(stepText, name, markedValue(value));
         }
         return stepText;
     }
@@ -362,21 +362,23 @@ public class StepCreator {
             boolean annotated = names[position].annotated;
             boolean fromContext = names[position].fromContext;
 
-            boolean delimitedNamedParameters = false;
+            String delimitedName = null;
 
             if (isGroupName(name)) {
                 parameter = matchedParameter(name);
-                String delimitedName = delimitedNameFor(parameter);
+                delimitedName = delimitedNameFor(parameter);
 
-                if (delimitedName != null) {
-                    name = delimitedName;
-                    delimitedNamedParameters = true;
-                } else {
+                if (delimitedName == null) {
                     monitorUsingNameForParameter(name, position, annotated);
                 }
             }
 
-            if (delimitedNamedParameters || isTableName(namedParameters, name)) {
+            if (delimitedName != null) {
+                monitorUsingTableNameForParameter(delimitedName, position, annotated);
+                parameter = parameterControls.replaceAllDelimitedNames(parameter, delimitedName,
+                        namedParameter(namedParameters, delimitedName));
+            }
+            else if (isTableName(namedParameters, name)) {
                 parameter = namedParameter(namedParameters, name);
                 if (parameter != null) {
                     monitorUsingTableNameForParameter(name, position, annotated); 
@@ -398,7 +400,8 @@ public class StepCreator {
             String delimitedName = delimitedNameFor(parameter);
 
             if (delimitedName != null && isTableName(namedParameters, delimitedName)) {
-                parameter = namedParameter(namedParameters, delimitedName);
+                parameter = parameterControls.replaceAllDelimitedNames(parameter, delimitedName,
+                        namedParameter(namedParameters, delimitedName));
             }
         }
 
