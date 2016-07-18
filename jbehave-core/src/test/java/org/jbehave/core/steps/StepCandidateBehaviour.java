@@ -152,6 +152,16 @@ public class StepCandidateBehaviour {
     }
 
     @Test
+    public void shouldCreatePerformableStepUsingTheMatchedStringAndNamedParameterWithPartialValue() throws Exception {
+        SomeSteps someSteps = new SomeSteps();
+        Method method = SomeSteps.class.getMethod("aMethodWith", String.class);
+        StepCandidate candidate = candidateWith("I live on the $nth floor", THEN, method, someSteps);
+        namedParameters.put("number", "1");
+        candidate.createMatchedStep("Then I live on the <number>st floor", namedParameters).perform(null);
+        assertThat((String) someSteps.args, equalTo("1st"));
+    }
+
+    @Test
     public void shouldCreatePerformableStepWithResultThatDescribesTheStepPerformed() throws Exception {
         StoryReporter reporter = mock(StoryReporter.class);
         SomeSteps someSteps = new SomeSteps();
