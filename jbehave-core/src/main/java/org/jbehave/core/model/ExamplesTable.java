@@ -352,8 +352,8 @@ public class ExamplesTable {
         for (String key : row.keySet()) {
             String replacedValue = row.get(key);
             for (Entry<String, String> namedParameter : namedParameters.entrySet()) {
-                replacedValue = replacedValue.replaceAll(parameterControls.createDelimitedName(namedParameter.getKey()),
-                        Matcher.quoteReplacement(namedParameter.getValue()));
+                replacedValue = parameterControls.replaceAllDelimitedNames(replacedValue, namedParameter.getKey(),
+                        namedParameter.getValue());
             }
             replaced.put(key, replacedValue);
         }
