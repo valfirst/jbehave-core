@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jbehave.core.annotations.AfterScenario.Outcome;
 import org.jbehave.core.configuration.Configuration;
@@ -283,7 +284,7 @@ public class RegexStoryParser implements StoryParser {
         int startAt = 0;
         while (matcher.find(startAt)) {
             steps.add(StringUtils.substringAfter(matcher.group(1), "\n"));
-            startAt = matcher.start(4);
+            startAt = matcher.start(5);
         }
         return steps;
     }
@@ -353,11 +354,22 @@ public class RegexStoryParser implements StoryParser {
     }
 
     private Pattern findingSteps() {
-        String initialStartingWords = concatenateWithOr("\\n", "", keywords.startingWords());
+        String initialStartingWords = concatenateWithOr("\\n", "", stepStartingWords());
         String followingStartingWords = concatenateWithOr("\\n", "\\s", keywords.startingWords());
         return compile(
                 "((" + initialStartingWords + ")\\s(.)*?)\\s*(\\Z|" + followingStartingWords + "|\\n"
                         + keywords.examplesTable() + ")", DOTALL);
+    }
+
+    private String[] stepStartingWords() {
+        String[] stepStartingWords = keywords.startingWords();
+        for (int i = 0; i < stepStartingWords.length; i++) {
+            if (keywords.ignorable().equals(stepStartingWords[i])) {
+                stepStartingWords[i] = keywords.ignorable() + "\\s("
+                        + concatenateWithOr("", "", ArrayUtils.remove(stepStartingWords, i)) + ")";
+            }
+        }
+        return stepStartingWords;
     }
 
     private Pattern findingExamplesTable() {
