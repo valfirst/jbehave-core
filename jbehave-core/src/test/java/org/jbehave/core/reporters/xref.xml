@@ -60,6 +60,43 @@
           </examplesTable>
         </givenStories>
         <lifecycle>
+          <examplesTable>
+            <tableAsString></tableAsString>
+            <headerSeparator>|</headerSeparator>
+            <valueSeparator>|</valueSeparator>
+            <ignorableSeparator>|--</ignorableSeparator>
+            <tableTransformers>
+              <transformers>
+                <entry>
+                  <string>FORMATTING</string>
+                  <formatting/>
+                </entry>
+                <entry>
+                  <string>REPLACING</string>
+                  <replacing/>
+                </entry>
+                <entry>
+                  <string>FROM_LANDSCAPE</string>
+                  <fromLandscape/>
+                </entry>
+              </transformers>
+            </tableTransformers>
+            <headers/>
+            <data/>
+            <properties>
+              <property name="headerSeparator" value="|"/>
+              <property name="valueSeparator" value="|"/>
+              <property name="ignorableSeparator" value="|--"/>
+            </properties>
+            <propertiesAsString></propertiesAsString>
+            <namedParameters/>
+            <parameterControls>
+              <nameDelimiterLeft>&lt;</nameDelimiterLeft>
+              <nameDelimiterRight>&gt;</nameDelimiterRight>
+              <delimiterNamedParameters>true</delimiterNamedParameters>
+            </parameterControls>
+            <trim>true</trim>
+          </examplesTable>
           <before>
             <steps class="java.util.Arrays$ArrayList">
               <a class="string-array"/>
