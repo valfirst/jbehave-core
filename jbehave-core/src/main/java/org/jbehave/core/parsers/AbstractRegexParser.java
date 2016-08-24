@@ -18,6 +18,7 @@ abstract class AbstractRegexParser {
     private static final String CRLF = "\\r?\\n";
 
     private final Keywords keywords;
+    private Pattern stepSkipPattern;
 
     protected AbstractRegexParser() {
         this(new LocalizedKeywords());
@@ -76,8 +77,15 @@ abstract class AbstractRegexParser {
         List<String> steps = new ArrayList<>();
         int startAt = 0;
         while (matcher.find(startAt)) {
-            steps.add(StringUtils.substringAfter(matcher.group(1), "\n"));
+            String step = StringUtils.substringAfter(matcher.group(1), "\n");
             startAt = matcher.start(4);
+            if (stepSkipPattern!=null) {
+                Matcher stepSkipMatcher = stepSkipPattern.matcher(step);
+                if (stepSkipMatcher.find()) {
+                    continue;
+                }
+            }
+            steps.add(step);
         }
         return steps;
     }
@@ -119,5 +127,9 @@ abstract class AbstractRegexParser {
             builder.deleteCharAt(builder.length() - 1); // remove last "|"
         }
         return builder.append(')').append(after).toString();
+    }
+
+    public void setStepSkipPattern(Pattern stepSkipPattern) {
+        this.stepSkipPattern = stepSkipPattern;
     }
 }
