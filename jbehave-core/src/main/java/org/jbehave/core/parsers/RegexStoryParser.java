@@ -35,6 +35,7 @@ public class RegexStoryParser implements StoryParser {
     private static final String NONE = "";
     private final Keywords keywords;
     private final ExamplesTableFactory tableFactory;
+    private Pattern stepSkipPattern;
 
     public RegexStoryParser() {
         this(new Configuration() {});
@@ -292,8 +293,15 @@ public class RegexStoryParser implements StoryParser {
         List<String> steps = new ArrayList<String>();
         int startAt = 0;
         while (matcher.find(startAt)) {
-            steps.add(StringUtils.substringAfter(matcher.group(1), "\n"));
+            String step = StringUtils.substringAfter(matcher.group(1), "\n");
             startAt = matcher.start(5);
+            if(stepSkipPattern!=null){
+                Matcher stepSkipMatcher = stepSkipPattern.matcher(step);
+                if(stepSkipMatcher.find()){
+                    continue;
+                }
+            }
+            steps.add(step);
         }
         return steps;
     }
@@ -397,5 +405,9 @@ public class RegexStoryParser implements StoryParser {
             builder.append(before).append(keyword).append(after).append("|");
         }
         return StringUtils.removeEnd(builder.toString(), "|"); // remove last "|"
+    }
+
+    public void setStepSkipPattern(Pattern stepSkipPattern) {
+        this.stepSkipPattern = stepSkipPattern;
     }
 }
