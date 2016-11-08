@@ -362,7 +362,7 @@ public class RegexStoryParser implements StoryParser {
 
     private Pattern findingScenarioMeta() {
         String startingWords = concatenateWithOr("\\n", "", keywords.startingWords());
-        return compile(".*" + keywords.meta() + "(.*?)\\s*(" + keywords.givenStories() + "|" + startingWords + ").*",
+        return compile(".*" + keywords.meta() + "(.*?)\\s*(" + keywords.givenStories() + "|" + startingWords + "|$).*",
                 DOTALL);
     }
 
