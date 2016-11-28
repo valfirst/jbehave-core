@@ -5,7 +5,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 public class StoryDuration {
 
-    private static final int CANCEL_TIMEOUT_RATIO = 50;
+    private static final int CANCEL_TIMEOUT_RATIO = 20;
 
 	private long startedAtMillis;
     private long durationInMillis;
