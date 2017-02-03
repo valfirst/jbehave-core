@@ -282,7 +282,7 @@ public class ParameterConvertersBehaviour {
     public void shouldConvertCommaSeparatedValuesToSetOfNumbersWithDefaultFormat() {
         ParameterConverters parameterConverters = new ParameterConverters();
         Type setOfNumbers = new TypeLiteral<Set<Number>>(){}.getType();
-        Set<Number> set = (Set<Number>)parameterConverters.convert("3, 0.5, 6.1, 8.00", setOfNumbers);
+        Set<Number> set = (Set<Number>)parameterConverters.convert("3, 0.5, 6.1, 8.00", setOfNumbers, null);
         assertThatCollectionIs(set, 3L, 0.5, 6.1d, 8L);
     }
 
@@ -461,7 +461,7 @@ public class ParameterConvertersBehaviour {
     @Test
     public void shouldFailToConvertToUnknownType() {
         expectedException.expect(ParameterConvertionFailed.class);
-        new ParameterConverters(new LoadFromClasspath(), new TableTransformers()).convert("abc", WrongType.class);
+        new ParameterConverters(new LoadFromClasspath(), new TableTransformers()).convert("abc", WrongType.class, null);
     }
 
     @Test
@@ -530,14 +530,14 @@ public class ParameterConvertersBehaviour {
         expectedException.expect(ParameterConvertionFailed.class);
         ParameterConverters original = new ParameterConverters(new LoadFromClasspath(), new TableTransformers());
         original.newInstanceAdding(new FooToBarParameterConverter());
-        original.convert("foo", Bar.class);
+        original.convert("foo", Bar.class, null);
     }
 
     @Test
     public void shouldConvertToCustomObjectUsingCustomConverter() {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
-        assertThat((Bar)parameterConverters.convert("foo", Bar.class), is(Bar.INSTANCE));
+        assertThat((Bar)parameterConverters.convert("foo", Bar.class, null), equalTo(Bar.INSTANCE));
     }
 
     @Test
@@ -545,7 +545,7 @@ public class ParameterConvertersBehaviour {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
         Type type = new TypeLiteral<List<Bar>>(){}.getType();
-        List<Bar> list = (List<Bar>)parameterConverters.convert("foo", type);
+        List<Bar> list = (List<Bar>)parameterConverters.convert("foo", type, null);
         assertThatCollectionIs(list, Bar.INSTANCE);
     }
 
@@ -555,7 +555,7 @@ public class ParameterConvertersBehaviour {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
         Type type = new TypeLiteral<LinkedList<Bar>>(){}.getType();
-        assertThatCollectionIs((LinkedList<Bar>) parameterConverters.convert("foo", type), Bar.INSTANCE);
+        assertThatCollectionIs((LinkedList<Bar>) parameterConverters.convert("foo", type, null), Bar.INSTANCE);
     }
 
     @SuppressWarnings("unchecked")
@@ -564,7 +564,7 @@ public class ParameterConvertersBehaviour {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
         Type type = new TypeLiteral<SortedSet<Bar>>(){}.getType();
-        Set<Bar> set  = (Set<Bar>) parameterConverters.convert("foo", type);
+        Set<Bar> set  = (Set<Bar>) parameterConverters.convert("foo", type, null);
         assertThatCollectionIs(set, Bar.INSTANCE);
     }
 
@@ -574,7 +574,7 @@ public class ParameterConvertersBehaviour {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
         Type type = new TypeLiteral<NavigableSet<Bar>>(){}.getType();
-        Set<Bar> set  = (Set<Bar>) parameterConverters.convert("foo", type);
+        Set<Bar> set  = (Set<Bar>) parameterConverters.convert("foo", type, null);
         assertThatCollectionIs(set, Bar.INSTANCE);
     }
 
@@ -586,7 +586,7 @@ public class ParameterConvertersBehaviour {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
         Type type = new TypeLiteral<Collection<Bar>>(){}.getType();
-        parameterConverters.convert("foo", type);
+        parameterConverters.convert("foo", type, null);
     }
 
     @Test
@@ -596,7 +596,7 @@ public class ParameterConvertersBehaviour {
                 "No parameter converter for java.util.List<org.jbehave.core.steps.ParameterConvertersBehaviour$Bar>");
         ParameterConverters parameterConverters = new ParameterConverters(new TableTransformers());
         Type type = new TypeLiteral<List<Bar>>(){}.getType();
-        parameterConverters.convert("foo", type);
+        parameterConverters.convert("foo", type, null);
     }
 
     @SuppressWarnings("unchecked")
@@ -604,7 +604,7 @@ public class ParameterConvertersBehaviour {
     public void shouldConvertEmptyStringToEmptyCollection() {
         ParameterConverters parameterConverters = new ParameterConverters();
         Type type = new TypeLiteral<List<Boolean>>(){}.getType();
-        List<Boolean> list = (List<Boolean>) parameterConverters.convert("", type);
+        List<Boolean> list = (List<Boolean>) parameterConverters.convert("", type, null);
         assertThatCollectionIs(list);
     }
 
@@ -613,7 +613,7 @@ public class ParameterConvertersBehaviour {
     public void shouldConvertBlankStringToEmptyCollection() {
         ParameterConverters parameterConverters = new ParameterConverters();
         Type type = new TypeLiteral<Set<Number>>(){}.getType();
-        Set<Number> set = (Set<Number>) parameterConverters.convert(" \t\n\r", type);
+        Set<Number> set = (Set<Number>) parameterConverters.convert(" \t\n\r", type, null);
         assertThatCollectionIs(set);
     }
 
