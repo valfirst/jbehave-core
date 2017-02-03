@@ -170,6 +170,8 @@ public abstract class Configuration {
      */
     protected PathCalculator pathCalculator;
 
+    private boolean parallelStoryExampleTableEnabled;
+
     public Configuration() {
 	}
 
@@ -425,4 +427,11 @@ public abstract class Configuration {
         return this;
     }
 
+    public boolean isParallelStoryExampleTableEnabled() {
+        return parallelStoryExampleTableEnabled;
+    }
+
+    public void setParallelStoryExampleTableEnabled(boolean parallelStoryExampleTableEnabled) {
+        this.parallelStoryExampleTableEnabled = parallelStoryExampleTableEnabled;
+    }
 }
