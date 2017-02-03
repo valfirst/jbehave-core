@@ -62,6 +62,7 @@ import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.ResourceLoader;
 import org.jbehave.core.model.*;
+import org.jbehave.core.model.Story;
 
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -343,7 +344,7 @@ public class ParameterConverters {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Object convert(String value, Type type) {
+    public Object convert(String value, Type type, Story story) {
         Queue<ChainableParameterConverter> converters = findConverters(type);
         if (isChainComplete(converters)) {
             Object converted = applyConverters(value, type, converters);
