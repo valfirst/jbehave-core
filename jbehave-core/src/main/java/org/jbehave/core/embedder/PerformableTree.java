@@ -7,8 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -129,7 +127,7 @@ public class PerformableTree {
         for (Map<String, String> storyExamplesTableRow : storyExamplesTableRows) {
             for (Map.Entry<String, String> entry : storyExamplesTableRow.entrySet()) {
                 entry.setValue((String)
-                        context.configuration().parameterConverters().convert(entry.getValue(), String.class));
+                        context.configuration().parameterConverters().convert(entry.getValue(), String.class, story));
             }
         }
         for (Map<String, String> storyExamplesTableRow : storyExamplesTableRows) {
@@ -170,8 +168,8 @@ public class PerformableTree {
                     Map<String, String> parameters = new HashMap<String, String>(storyExamplesTableRow);
                     Map<String, String> scenarioParametersCopy = new HashMap<String, String>(scenarioParameters);
                     for (Map.Entry<String, String> entry : scenarioParametersCopy.entrySet()) {
-                        entry.setValue((String)
-                                context.configuration().parameterConverters().convert(entry.getValue(), String.class));
+                        entry.setValue((String) context.configuration().parameterConverters().convert(entry.getValue(),
+                                String.class, story));
                     }
                     parameters.putAll(scenarioParametersCopy);
                     addExampleScenario(context, scenario, performableScenario, lifecycle, storyAndScenarioMeta,
