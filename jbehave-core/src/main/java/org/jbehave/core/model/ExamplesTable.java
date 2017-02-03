@@ -348,14 +348,14 @@ public class ExamplesTable {
     }
 
     private Map<String, String> replaceNamedParameters(Map<String, String> row) {
-        Map<String, String> replaced = new HashMap<String, String>();
-        for (String key : row.keySet()) {
-            String replacedValue = row.get(key);
+        Map<String, String> replaced = new LinkedHashMap<String, String>();
+        for (Entry<String, String> rowEntry : row.entrySet()) {
+            String replacedValue = rowEntry.getValue();
             for (Entry<String, String> namedParameter : namedParameters.entrySet()) {
                 replacedValue = parameterControls.replaceAllDelimitedNames(replacedValue, namedParameter.getKey(),
                         namedParameter.getValue());
             }
-            replaced.put(key, replacedValue);
+            replaced.put(rowEntry.getKey(), replacedValue);
         }
         return replaced;
     }
