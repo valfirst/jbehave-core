@@ -456,7 +456,7 @@ public class ParameterConvertersBehaviour {
 
     @Test(expected = ParameterConvertionFailed.class)
     public void shouldFailToConvertToUnknownType() throws ParseException, IntrospectionException {
-        new ParameterConverters(new LoadFromClasspath(), new TableTransformers()).convert("abc", WrongType.class);
+        new ParameterConverters(new LoadFromClasspath(), new TableTransformers()).convert("abc", WrongType.class, null);
     }
 
     static class WrongType {
@@ -547,7 +547,7 @@ public class ParameterConvertersBehaviour {
     }
 
     private void ensureItStillDoesNotKnowHowToConvertFooToBar(ParameterConverters original) {
-        original.convert("foo", Bar.class);
+        original.convert("foo", Bar.class, null);
     }
 
     private class Bar {
