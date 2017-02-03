@@ -27,6 +27,8 @@ import org.jbehave.core.configuration.MostUsefulConfiguration;
 import org.jbehave.core.model.ExamplesTable;
 import org.jbehave.core.model.ExamplesTableFactory;
 import org.jbehave.core.model.JsonFactory;
+import org.jbehave.core.model.Scenario;
+import org.jbehave.core.model.Story;
 
 import static java.util.Arrays.asList;
 
@@ -148,7 +150,7 @@ public class ParameterConverters {
         return this;
     }
 
-    public Object convert(String value, Type type) {
+    public Object convert(String value, Type type, Story story) {
 
         // check if any converters accepts type
         for (ParameterConverter converter : converters) {
