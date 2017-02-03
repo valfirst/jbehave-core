@@ -299,7 +299,7 @@ public class ParameterConvertersBehaviour {
     public void shouldConvertCommaSeparatedValuesToSetOfNumbersWithDefaultFormat() {
         ParameterConverters parameterConverters = new ParameterConverters();
         Type setOfNumbers = new TypeLiteral<Set<Number>>(){}.getType();
-        Set<Number> set = (Set<Number>)parameterConverters.convert("3, 0.5, 6.1, 8.00", setOfNumbers);
+        Set<Number> set = (Set<Number>)parameterConverters.convert("3, 0.5, 6.1, 8.00", setOfNumbers, null);
         assertThatCollectionIs(set, 3L, 0.5, 6.1d, 8L);
     }
 
@@ -478,7 +478,7 @@ public class ParameterConvertersBehaviour {
     @Test
     public void shouldFailToConvertToUnknownType() {
         expectedException.expect(ParameterConvertionFailed.class);
-        new ParameterConverters(new LoadFromClasspath(), new TableTransformers()).convert("abc", WrongType.class);
+        new ParameterConverters(new LoadFromClasspath(), new TableTransformers()).convert("abc", WrongType.class, null);
     }
 
     @Test
@@ -547,14 +547,14 @@ public class ParameterConvertersBehaviour {
         expectedException.expect(ParameterConvertionFailed.class);
         ParameterConverters original = new ParameterConverters(new LoadFromClasspath(), new TableTransformers());
         original.newInstanceAdding(new FooToBarParameterConverter());
-        original.convert("foo", Bar.class);
+        original.convert("foo", Bar.class, null);
     }
 
     @Test
     public void shouldConvertToCustomObjectUsingCustomConverter() {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
-        assertThat((Bar)parameterConverters.convert("foo", Bar.class), is(Bar.INSTANCE));
+        assertThat((Bar)parameterConverters.convert("foo", Bar.class, null), equalTo(Bar.INSTANCE));
     }
 
     @Test
@@ -562,7 +562,7 @@ public class ParameterConvertersBehaviour {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
         Type type = new TypeLiteral<List<Bar>>(){}.getType();
-        List<Bar> list = (List<Bar>)parameterConverters.convert("foo", type);
+        List<Bar> list = (List<Bar>)parameterConverters.convert("foo", type, null);
         assertThatCollectionIs(list, Bar.INSTANCE);
     }
 
@@ -572,7 +572,7 @@ public class ParameterConvertersBehaviour {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
         Type type = new TypeLiteral<LinkedList<Bar>>(){}.getType();
-        assertThatCollectionIs((LinkedList<Bar>) parameterConverters.convert("foo", type), Bar.INSTANCE);
+        assertThatCollectionIs((LinkedList<Bar>) parameterConverters.convert("foo", type, null), Bar.INSTANCE);
     }
 
     @SuppressWarnings("unchecked")
@@ -581,7 +581,7 @@ public class ParameterConvertersBehaviour {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
         Type type = new TypeLiteral<SortedSet<Bar>>(){}.getType();
-        Set<Bar> set  = (Set<Bar>) parameterConverters.convert("foo", type);
+        Set<Bar> set  = (Set<Bar>) parameterConverters.convert("foo", type, null);
         assertThatCollectionIs(set, Bar.INSTANCE);
     }
 
@@ -591,7 +591,7 @@ public class ParameterConvertersBehaviour {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
         Type type = new TypeLiteral<NavigableSet<Bar>>(){}.getType();
-        Set<Bar> set  = (Set<Bar>) parameterConverters.convert("foo", type);
+        Set<Bar> set  = (Set<Bar>) parameterConverters.convert("foo", type, null);
         assertThatCollectionIs(set, Bar.INSTANCE);
     }
 
@@ -603,7 +603,7 @@ public class ParameterConvertersBehaviour {
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath());
         parameterConverters.addConverters(new FooToBarParameterConverter());
         Type type = new TypeLiteral<Collection<Bar>>(){}.getType();
-        parameterConverters.convert("foo", type);
+        parameterConverters.convert("foo", type, null);
     }
 
     @Test
@@ -613,7 +613,7 @@ public class ParameterConvertersBehaviour {
                 "No parameter converter for java.util.List<org.jbehave.core.steps.ParameterConvertersBehaviour$Bar>");
         ParameterConverters parameterConverters = new ParameterConverters(new TableTransformers());
         Type type = new TypeLiteral<List<Bar>>(){}.getType();
-        parameterConverters.convert("foo", type);
+        parameterConverters.convert("foo", type, null);
     }
 
     @SuppressWarnings("unchecked")
@@ -621,7 +621,7 @@ public class ParameterConvertersBehaviour {
     public void shouldConvertEmptyStringToEmptyCollection() {
         ParameterConverters parameterConverters = new ParameterConverters();
         Type type = new TypeLiteral<List<Boolean>>(){}.getType();
-        List<Boolean> list = (List<Boolean>) parameterConverters.convert("", type);
+        List<Boolean> list = (List<Boolean>) parameterConverters.convert("", type, null);
         assertThatCollectionIs(list);
     }
 
@@ -630,7 +630,7 @@ public class ParameterConvertersBehaviour {
     public void shouldConvertBlankStringToEmptyCollection() {
         ParameterConverters parameterConverters = new ParameterConverters();
         Type type = new TypeLiteral<Set<Number>>(){}.getType();
-        Set<Number> set = (Set<Number>) parameterConverters.convert(" \t\n\r", type);
+        Set<Number> set = (Set<Number>) parameterConverters.convert(" \t\n\r", type, null);
         assertThatCollectionIs(set);
     }
 
@@ -776,78 +776,80 @@ public class ParameterConvertersBehaviour {
 
     @Test
     public void shouldConvertDuration() {
-        assertThat(new ParameterConverters().convert("PT1S", Duration.class), is(Duration.ofSeconds(1)));
+        assertThat(new ParameterConverters().convert("PT1S", Duration.class, null), is(Duration.ofSeconds(1)));
     }
 
     @Test
     public void shouldConvertInstant() {
-        assertThat(new ParameterConverters().convert("2019-07-04T21:50:35.00Z", Instant.class),
+        assertThat(new ParameterConverters().convert("2019-07-04T21:50:35.00Z", Instant.class, null),
                 is(Instant.ofEpochSecond(1562277035)));
     }
 
     @Test
     public void shouldConvertLocalDateTime() {
-        assertThat(new ParameterConverters().convert("2019-07-04T21:50:35.123", LocalDateTime.class),
+        assertThat(new ParameterConverters().convert("2019-07-04T21:50:35.123", LocalDateTime.class, null),
                 is(LocalDateTime.of(2019, 7, 4, 21, 50, 35, 123_000_000)));
     }
 
     @Test
     public void shouldConvertLocalDate() {
-        assertThat(new ParameterConverters().convert("2019-07-04", LocalDate.class), is(LocalDate.of(2019, 7, 4)));
+        assertThat(new ParameterConverters().convert("2019-07-04", LocalDate.class, null),
+                is(LocalDate.of(2019, 7, 4)));
     }
 
     @Test
     public void shouldConvertLocalTime() {
-        assertThat(new ParameterConverters().convert("21:50:35.123", LocalTime.class),
+        assertThat(new ParameterConverters().convert("21:50:35.123", LocalTime.class, null),
                 is(LocalTime.of(21, 50, 35, 123_000_000)));
     }
 
     @Test
     public void shouldConvertMonthDay() {
-        assertThat(new ParameterConverters().convert("--07-04", MonthDay.class), is(MonthDay.of(7, 4)));
+        assertThat(new ParameterConverters().convert("--07-04", MonthDay.class, null), is(MonthDay.of(7, 4)));
     }
 
     @Test
     public void shouldConvertOffsetDateTime() {
-        assertThat(new ParameterConverters().convert("2019-07-04T21:50:35.123Z", OffsetDateTime.class),
+        assertThat(new ParameterConverters().convert("2019-07-04T21:50:35.123Z", OffsetDateTime.class, null),
                 is(OffsetDateTime.of(2019, 7, 4, 21, 50, 35, 123_000_000, ZoneOffset.UTC)));
     }
 
     @Test
     public void shouldConvertOffsetTime() {
-        assertThat(new ParameterConverters().convert("21:50:35.123Z", OffsetTime.class),
+        assertThat(new ParameterConverters().convert("21:50:35.123Z", OffsetTime.class, null),
                 is(OffsetTime.of(21, 50, 35, 123_000_000, ZoneOffset.UTC)));
     }
 
     @Test
     public void shouldConvertPeriod() {
-        assertThat(new ParameterConverters().convert("P1Y2M3D", Period.class), is(Period.of(1, 2, 3)));
+        assertThat(new ParameterConverters().convert("P1Y2M3D", Period.class, null), is(Period.of(1, 2, 3)));
     }
 
     @Test
     public void shouldConvertYearMonth() {
-        assertThat(new ParameterConverters().convert("2019-07", YearMonth.class), is(YearMonth.of(2019, 7)));
+        assertThat(new ParameterConverters().convert("2019-07", YearMonth.class, null), is(YearMonth.of(2019, 7)));
     }
 
     @Test
     public void shouldConvertYear() {
-        assertThat(new ParameterConverters().convert("2019", Year.class), is(Year.of(2019)));
+        assertThat(new ParameterConverters().convert("2019", Year.class, null), is(Year.of(2019)));
     }
 
     @Test
     public void shouldConvertZonedDateTime() {
-        assertThat(new ParameterConverters().convert("2019-07-04T21:50:35.123Z", ZonedDateTime.class),
+        assertThat(new ParameterConverters().convert("2019-07-04T21:50:35.123Z", ZonedDateTime.class, null),
                 is(ZonedDateTime.of(2019, 7, 4, 21, 50, 35, 123_000_000, ZoneOffset.UTC)));
     }
 
     @Test
     public void shouldConvertZoneId() {
-        assertThat(new ParameterConverters().convert("Europe/Minsk", ZoneId.class), is(ZoneId.of("Europe/Minsk")));
+        assertThat(new ParameterConverters().convert("Europe/Minsk", ZoneId.class, null),
+                is(ZoneId.of("Europe/Minsk")));
     }
 
     @Test
     public void shouldConvertZoneOffset() {
-        assertThat(new ParameterConverters().convert("+03:00", ZoneOffset.class), is(ZoneOffset.ofHours(3)));
+        assertThat(new ParameterConverters().convert("+03:00", ZoneOffset.class, null), is(ZoneOffset.ofHours(3)));
     }
 
     @AsJson
