@@ -26,7 +26,7 @@ public class ConcurrencyBehaviour {
             }
         });
         t.start();
-        parameterConverters.convert("test", String.class);
+        parameterConverters.convert("test", String.class, null);
         active[0] = false;
     }
 }

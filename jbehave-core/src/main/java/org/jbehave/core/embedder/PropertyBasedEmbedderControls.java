@@ -87,7 +87,7 @@ public class PropertyBasedEmbedderControls extends EmbedderControls {
         if ( property == null ){
             return defaultValue;
         }
-        return (T) converters.convert(property, type);
+        return (T) converters.convert(property, type, null);
     }
 
     @Override
