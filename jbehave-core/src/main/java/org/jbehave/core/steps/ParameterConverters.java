@@ -42,6 +42,7 @@ import org.jbehave.core.io.ResourceLoader;
 import org.jbehave.core.model.ExamplesTable;
 import org.jbehave.core.model.ExamplesTableFactory;
 import org.jbehave.core.model.TableTransformers;
+import org.jbehave.core.model.Story;
 import org.jbehave.core.model.Verbatim;
 
 import static java.util.Arrays.asList;
@@ -224,7 +225,7 @@ public class ParameterConverters {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public Object convert(String value, Type type) {
+    public Object convert(String value, Type type, Story story) {
 
         ParameterConverter<?> converter = findConverter(type);
         if (converter != null) {
