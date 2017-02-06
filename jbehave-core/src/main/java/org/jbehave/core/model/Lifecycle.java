@@ -43,12 +43,20 @@ public class Lifecycle {
         return before.steps;
     }
 
+    public Steps getBefore() {
+        return before;
+    }
+
     public List<String> getAfterSteps() {
         List<String> afterSteps = new ArrayList<String>();
         for (Steps steps : after) {
             afterSteps.addAll(steps.steps);
         }
         return afterSteps;
+    }
+
+    public Steps[] getAfter() {
+        return after;
     }
 
     public Set<Outcome> getOutcomes() {
