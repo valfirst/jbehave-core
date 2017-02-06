@@ -48,6 +48,10 @@ public class Lifecycle {
         return stepsByScope(before, scope);
     }
 
+    public Steps getBefore() {
+        return before;
+    }
+
     public List<String> getAfterSteps() {
         return getAfterSteps(Scope.SCENARIO);
     }
@@ -58,6 +62,10 @@ public class Lifecycle {
             afterSteps.addAll(stepsByScope(steps, scope));
         }
         return afterSteps;
+    }
+
+    public Steps[] getAfter() {
+        return after;
     }
 
     public Set<Outcome> getOutcomes() {
