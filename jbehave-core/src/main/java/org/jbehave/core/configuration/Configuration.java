@@ -198,6 +198,8 @@ public abstract class Configuration {
      */
     protected ExamplesTableFactory examplesTableFactory;
 
+    private boolean parallelStoryExampleTableEnabled;
+
     public Configuration() {
     }
 
@@ -502,5 +504,13 @@ public abstract class Configuration {
     public Configuration useCompositePaths(Set<String> compositePaths) {
         this.compositePaths = compositePaths;
         return this;
+    }
+
+    public boolean isParallelStoryExampleTableEnabled() {
+        return parallelStoryExampleTableEnabled;
+    }
+
+    public void setParallelStoryExampleTableEnabled(boolean parallelStoryExampleTableEnabled) {
+        this.parallelStoryExampleTableEnabled = parallelStoryExampleTableEnabled;
     }
 }
