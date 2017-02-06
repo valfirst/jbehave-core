@@ -184,6 +184,8 @@ public abstract class Configuration {
      */
     protected List<String> compositePaths;
 
+    private boolean parallelStoryExampleTableEnabled;
+
     public Configuration() {
     }
 
@@ -461,5 +463,13 @@ public abstract class Configuration {
     public Configuration useCompositePaths(List<String> compositePaths) {
         this.compositePaths = compositePaths;
         return this;
+    }
+
+    public boolean isParallelStoryExampleTableEnabled() {
+        return parallelStoryExampleTableEnabled;
+    }
+
+    public void setParallelStoryExampleTableEnabled(boolean parallelStoryExampleTableEnabled) {
+        this.parallelStoryExampleTableEnabled = parallelStoryExampleTableEnabled;
     }
 }
