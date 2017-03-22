@@ -23,9 +23,6 @@
           <givenStoriesAsString></givenStoriesAsString>
           <examplesTable>
             <tableAsString></tableAsString>
-            <headerSeparator>|</headerSeparator>
-            <valueSeparator>|</valueSeparator>
-            <ignorableSeparator>|--</ignorableSeparator>
             <tableTransformers>
               <transformers>
                 <entry>
@@ -45,9 +42,11 @@
             <headers/>
             <data/>
             <properties>
-              <property name="headerSeparator" value="|"/>
-              <property name="valueSeparator" value="|"/>
-              <property name="ignorableSeparator" value="|--"/>
+              <properties>
+                <property name="headerSeparator" value="|"/>
+                <property name="valueSeparator" value="|"/>
+                <property name="ignorableSeparator" value="|--"/>
+              </properties>
             </properties>
             <propertiesAsString></propertiesAsString>
             <namedParameters/>
@@ -56,15 +55,11 @@
               <nameDelimiterRight>&gt;</nameDelimiterRight>
               <delimiterNamedParameters>true</delimiterNamedParameters>
             </parameterControls>
-            <trim>true</trim>
           </examplesTable>
         </givenStories>
         <lifecycle>
           <examplesTable>
             <tableAsString></tableAsString>
-            <headerSeparator>|</headerSeparator>
-            <valueSeparator>|</valueSeparator>
-            <ignorableSeparator>|--</ignorableSeparator>
             <tableTransformers>
               <transformers>
                 <entry>
@@ -84,9 +79,11 @@
             <headers/>
             <data/>
             <properties>
-              <property name="headerSeparator" value="|"/>
-              <property name="valueSeparator" value="|"/>
-              <property name="ignorableSeparator" value="|--"/>
+              <properties>
+                <property name="headerSeparator" value="|"/>
+                <property name="valueSeparator" value="|"/>
+                <property name="ignorableSeparator" value="|--"/>
+              </properties>
             </properties>
             <propertiesAsString></propertiesAsString>
             <namedParameters/>
@@ -95,7 +92,6 @@
               <nameDelimiterRight>&gt;</nameDelimiterRight>
               <delimiterNamedParameters>true</delimiterNamedParameters>
             </parameterControls>
-            <trim>true</trim>
           </examplesTable>
           <before>
             <steps class="java.util.Arrays$ArrayList">
@@ -121,9 +117,6 @@
               <givenStoriesAsString></givenStoriesAsString>
               <examplesTable>
                 <tableAsString></tableAsString>
-                <headerSeparator>|</headerSeparator>
-                <valueSeparator>|</valueSeparator>
-                <ignorableSeparator>|--</ignorableSeparator>
                 <tableTransformers>
                   <transformers>
                     <entry>
@@ -143,9 +136,11 @@
                 <headers/>
                 <data/>
                 <properties>
-                  <property name="headerSeparator" value="|"/>
-                  <property name="valueSeparator" value="|"/>
-                  <property name="ignorableSeparator" value="|--"/>
+                  <properties>
+                    <property name="headerSeparator" value="|"/>
+                    <property name="valueSeparator" value="|"/>
+                    <property name="ignorableSeparator" value="|--"/>
+                  </properties>
                 </properties>
                 <propertiesAsString></propertiesAsString>
                 <namedParameters/>
@@ -154,14 +149,10 @@
                   <nameDelimiterRight>&gt;</nameDelimiterRight>
                   <delimiterNamedParameters>true</delimiterNamedParameters>
                 </parameterControls>
-                <trim>true</trim>
               </examplesTable>
             </givenStories>
             <examplesTable>
               <tableAsString></tableAsString>
-              <headerSeparator>|</headerSeparator>
-              <valueSeparator>|</valueSeparator>
-              <ignorableSeparator>|--</ignorableSeparator>
               <tableTransformers>
                 <transformers>
                   <entry>
@@ -181,9 +172,11 @@
               <headers/>
               <data/>
               <properties>
-                <property name="headerSeparator" value="|"/>
-                <property name="valueSeparator" value="|"/>
-                <property name="ignorableSeparator" value="|--"/>
+                <properties>
+                  <property name="headerSeparator" value="|"/>
+                  <property name="valueSeparator" value="|"/>
+                  <property name="ignorableSeparator" value="|--"/>
+                </properties>
               </properties>
               <propertiesAsString></propertiesAsString>
               <namedParameters/>
@@ -192,7 +185,6 @@
                 <nameDelimiterRight>&gt;</nameDelimiterRight>
                 <delimiterNamedParameters>true</delimiterNamedParameters>
               </parameterControls>
-              <trim>true</trim>
             </examplesTable>
             <steps class="java.util.Arrays$ArrayList">
               <a class="string-array">
@@ -229,9 +221,6 @@
                 <givenStoriesAsString></givenStoriesAsString>
                 <examplesTable>
                   <tableAsString></tableAsString>
-                  <headerSeparator>|</headerSeparator>
-                  <valueSeparator>|</valueSeparator>
-                  <ignorableSeparator>|--</ignorableSeparator>
                   <tableTransformers>
                     <transformers>
                       <entry>
@@ -251,9 +240,11 @@
                   <headers/>
                   <data/>
                   <properties>
-                    <property name="headerSeparator" value="|"/>
-                    <property name="valueSeparator" value="|"/>
-                    <property name="ignorableSeparator" value="|--"/>
+                    <properties>
+                      <property name="headerSeparator" value="|"/>
+                      <property name="valueSeparator" value="|"/>
+                      <property name="ignorableSeparator" value="|--"/>
+                    </properties>
                   </properties>
                   <propertiesAsString></propertiesAsString>
                   <namedParameters/>
@@ -262,14 +253,10 @@
                     <nameDelimiterRight>&gt;</nameDelimiterRight>
                     <delimiterNamedParameters>true</delimiterNamedParameters>
                   </parameterControls>
-                  <trim>true</trim>
                 </examplesTable>
               </givenStories>
               <examplesTable>
                 <tableAsString></tableAsString>
-                <headerSeparator>|</headerSeparator>
-                <valueSeparator>|</valueSeparator>
-                <ignorableSeparator>|--</ignorableSeparator>
                 <tableTransformers>
                   <transformers>
                     <entry>
@@ -289,9 +276,11 @@
                 <headers/>
                 <data/>
                 <properties>
-                  <property name="headerSeparator" value="|"/>
-                  <property name="valueSeparator" value="|"/>
-                  <property name="ignorableSeparator" value="|--"/>
+                  <properties>
+                    <property name="headerSeparator" value="|"/>
+                    <property name="valueSeparator" value="|"/>
+                    <property name="ignorableSeparator" value="|--"/>
+                  </properties>
                 </properties>
                 <propertiesAsString></propertiesAsString>
                 <namedParameters/>
@@ -300,7 +289,6 @@
                   <nameDelimiterRight>&gt;</nameDelimiterRight>
                   <delimiterNamedParameters>true</delimiterNamedParameters>
                 </parameterControls>
-                <trim>true</trim>
               </examplesTable>
               <steps class="java.util.Arrays$ArrayList">
                 <a class="string-array">
@@ -334,9 +322,6 @@
           <givenStoriesAsString></givenStoriesAsString>
           <examplesTable>
             <tableAsString></tableAsString>
-            <headerSeparator>|</headerSeparator>
-            <valueSeparator>|</valueSeparator>
-            <ignorableSeparator>|--</ignorableSeparator>
             <tableTransformers>
               <transformers>
                 <entry>
@@ -356,9 +341,11 @@
             <headers/>
             <data/>
             <properties>
-              <property name="headerSeparator" value="|"/>
-              <property name="valueSeparator" value="|"/>
-              <property name="ignorableSeparator" value="|--"/>
+              <properties>
+                <property name="headerSeparator" value="|"/>
+                <property name="valueSeparator" value="|"/>
+                <property name="ignorableSeparator" value="|--"/>
+              </properties>
             </properties>
             <propertiesAsString></propertiesAsString>
             <namedParameters/>
@@ -367,14 +354,10 @@
               <nameDelimiterRight>&gt;</nameDelimiterRight>
               <delimiterNamedParameters>true</delimiterNamedParameters>
             </parameterControls>
-            <trim>true</trim>
           </examplesTable>
         </givenStories>
         <examplesTable>
           <tableAsString></tableAsString>
-          <headerSeparator>|</headerSeparator>
-          <valueSeparator>|</valueSeparator>
-          <ignorableSeparator>|--</ignorableSeparator>
           <tableTransformers>
             <transformers>
               <entry>
@@ -394,9 +377,11 @@
           <headers/>
           <data/>
           <properties>
-            <property name="headerSeparator" value="|"/>
-            <property name="valueSeparator" value="|"/>
-            <property name="ignorableSeparator" value="|--"/>
+            <properties>
+              <property name="headerSeparator" value="|"/>
+              <property name="valueSeparator" value="|"/>
+              <property name="ignorableSeparator" value="|--"/>
+            </properties>
           </properties>
           <propertiesAsString></propertiesAsString>
           <namedParameters/>
@@ -405,7 +390,6 @@
             <nameDelimiterRight>&gt;</nameDelimiterRight>
             <delimiterNamedParameters>true</delimiterNamedParameters>
           </parameterControls>
-          <trim>true</trim>
         </examplesTable>
         <steps class="java.util.Arrays$ArrayList">
           <a class="string-array">
@@ -442,9 +426,6 @@
             <givenStoriesAsString></givenStoriesAsString>
             <examplesTable>
               <tableAsString></tableAsString>
-              <headerSeparator>|</headerSeparator>
-              <valueSeparator>|</valueSeparator>
-              <ignorableSeparator>|--</ignorableSeparator>
               <tableTransformers>
                 <transformers>
                   <entry>
@@ -464,9 +445,11 @@
               <headers/>
               <data/>
               <properties>
-                <property name="headerSeparator" value="|"/>
-                <property name="valueSeparator" value="|"/>
-                <property name="ignorableSeparator" value="|--"/>
+                <properties>
+                  <property name="headerSeparator" value="|"/>
+                  <property name="valueSeparator" value="|"/>
+                  <property name="ignorableSeparator" value="|--"/>
+                </properties>
               </properties>
               <propertiesAsString></propertiesAsString>
               <namedParameters/>
@@ -475,14 +458,10 @@
                 <nameDelimiterRight>&gt;</nameDelimiterRight>
                 <delimiterNamedParameters>true</delimiterNamedParameters>
               </parameterControls>
-              <trim>true</trim>
             </examplesTable>
           </givenStories>
           <examplesTable>
             <tableAsString></tableAsString>
-            <headerSeparator>|</headerSeparator>
-            <valueSeparator>|</valueSeparator>
-            <ignorableSeparator>|--</ignorableSeparator>
             <tableTransformers>
               <transformers>
                 <entry>
@@ -502,9 +481,11 @@
             <headers/>
             <data/>
             <properties>
-              <property name="headerSeparator" value="|"/>
-              <property name="valueSeparator" value="|"/>
-              <property name="ignorableSeparator" value="|--"/>
+              <properties>
+                <property name="headerSeparator" value="|"/>
+                <property name="valueSeparator" value="|"/>
+                <property name="ignorableSeparator" value="|--"/>
+              </properties>
             </properties>
             <propertiesAsString></propertiesAsString>
             <namedParameters/>
@@ -513,7 +494,6 @@
               <nameDelimiterRight>&gt;</nameDelimiterRight>
               <delimiterNamedParameters>true</delimiterNamedParameters>
             </parameterControls>
-            <trim>true</trim>
           </examplesTable>
           <steps class="java.util.Arrays$ArrayList">
             <a class="string-array">
