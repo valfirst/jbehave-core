@@ -29,9 +29,6 @@
           "givenStoriesAsString": "",
           "examplesTable": {
             "tableAsString": "",
-            "headerSeparator": "|",
-            "valueSeparator": "|",
-            "ignorableSeparator": "|--",
             "tableTransformers": {
               "transformers": [
                 [
@@ -50,36 +47,34 @@
             },
             "headers": [],
             "data": [],
-            "properties": [
-              {
-                "@name": "headerSeparator",
-                "@value": "|"
-              },
-              {
-                "@name": "valueSeparator",
-                "@value": "|"
-              },
-              {
-                "@name": "ignorableSeparator",
-                "@value": "|--"
-              }
-            ],
+            "properties": {
+              "properties": [
+                {
+                  "@name": "headerSeparator",
+                  "@value": "|"
+                },
+                {
+                  "@name": "valueSeparator",
+                  "@value": "|"
+                },
+                {
+                  "@name": "ignorableSeparator",
+                  "@value": "|--"
+                }
+              ]
+            },
             "propertiesAsString": "",
             "namedParameters": [],
             "parameterControls": {
               "nameDelimiterLeft": "<",
               "nameDelimiterRight": ">",
               "delimiterNamedParameters": true
-            },
-            "trim": true
+            }
           }
         },
         "lifecycle": {
           "examplesTable": {
             "tableAsString": "",
-            "headerSeparator": "|",
-            "valueSeparator": "|",
-            "ignorableSeparator": "|--",
             "tableTransformers": {
               "transformers": [
                 [
@@ -98,28 +93,29 @@
             },
             "headers": [],
             "data": [],
-            "properties": [
-              {
-                "@name": "headerSeparator",
-                "@value": "|"
-              },
-              {
-                "@name": "valueSeparator",
-                "@value": "|"
-              },
-              {
-                "@name": "ignorableSeparator",
-                "@value": "|--"
-              }
-            ],
+            "properties": {
+              "properties": [
+                {
+                  "@name": "headerSeparator",
+                  "@value": "|"
+                },
+                {
+                  "@name": "valueSeparator",
+                  "@value": "|"
+                },
+                {
+                  "@name": "ignorableSeparator",
+                  "@value": "|--"
+                }
+              ]
+            },
             "propertiesAsString": "",
             "namedParameters": [],
             "parameterControls": {
               "nameDelimiterLeft": "<",
               "nameDelimiterRight": ">",
               "delimiterNamedParameters": true
-            },
-            "trim": true
+            }
           },
           "before": {
             "steps": [
@@ -145,9 +141,6 @@
               "givenStoriesAsString": "",
               "examplesTable": {
                 "tableAsString": "",
-                "headerSeparator": "|",
-                "valueSeparator": "|",
-                "ignorableSeparator": "|--",
                 "tableTransformers": {
                   "transformers": [
                     [
@@ -166,35 +159,33 @@
                 },
                 "headers": [],
                 "data": [],
-                "properties": [
-                  {
-                    "@name": "headerSeparator",
-                    "@value": "|"
-                  },
-                  {
-                    "@name": "valueSeparator",
-                    "@value": "|"
-                  },
-                  {
-                    "@name": "ignorableSeparator",
-                    "@value": "|--"
-                  }
-                ],
+                "properties": {
+                  "properties": [
+                    {
+                      "@name": "headerSeparator",
+                      "@value": "|"
+                    },
+                    {
+                      "@name": "valueSeparator",
+                      "@value": "|"
+                    },
+                    {
+                      "@name": "ignorableSeparator",
+                      "@value": "|--"
+                    }
+                  ]
+                },
                 "propertiesAsString": "",
                 "namedParameters": [],
                 "parameterControls": {
                   "nameDelimiterLeft": "<",
                   "nameDelimiterRight": ">",
                   "delimiterNamedParameters": true
-                },
-                "trim": true
+                }
               }
             },
             "examplesTable": {
               "tableAsString": "",
-              "headerSeparator": "|",
-              "valueSeparator": "|",
-              "ignorableSeparator": "|--",
               "tableTransformers": {
                 "transformers": [
                   [
@@ -213,28 +204,29 @@
               },
               "headers": [],
               "data": [],
-              "properties": [
-                {
-                  "@name": "headerSeparator",
-                  "@value": "|"
-                },
-                {
-                  "@name": "valueSeparator",
-                  "@value": "|"
-                },
-                {
-                  "@name": "ignorableSeparator",
-                  "@value": "|--"
-                }
-              ],
+              "properties": {
+                "properties": [
+                  {
+                    "@name": "headerSeparator",
+                    "@value": "|"
+                  },
+                  {
+                    "@name": "valueSeparator",
+                    "@value": "|"
+                  },
+                  {
+                    "@name": "ignorableSeparator",
+                    "@value": "|--"
+                  }
+                ]
+              },
               "propertiesAsString": "",
               "namedParameters": [],
               "parameterControls": {
                 "nameDelimiterLeft": "<",
                 "nameDelimiterRight": ">",
                 "delimiterNamedParameters": true
-              },
-              "trim": true
+              }
             },
             "steps": [
               [
@@ -271,9 +263,6 @@
                 "givenStoriesAsString": "",
                 "examplesTable": {
                   "tableAsString": "",
-                  "headerSeparator": "|",
-                  "valueSeparator": "|",
-                  "ignorableSeparator": "|--",
                   "tableTransformers": {
                     "transformers": [
                       [
@@ -292,35 +281,33 @@
                   },
                   "headers": [],
                   "data": [],
-                  "properties": [
-                    {
-                      "@name": "headerSeparator",
-                      "@value": "|"
-                    },
-                    {
-                      "@name": "valueSeparator",
-                      "@value": "|"
-                    },
-                    {
-                      "@name": "ignorableSeparator",
-                      "@value": "|--"
-                    }
-                  ],
+                  "properties": {
+                    "properties": [
+                      {
+                        "@name": "headerSeparator",
+                        "@value": "|"
+                      },
+                      {
+                        "@name": "valueSeparator",
+                        "@value": "|"
+                      },
+                      {
+                        "@name": "ignorableSeparator",
+                        "@value": "|--"
+                      }
+                    ]
+                  },
                   "propertiesAsString": "",
                   "namedParameters": [],
                   "parameterControls": {
                     "nameDelimiterLeft": "<",
                     "nameDelimiterRight": ">",
                     "delimiterNamedParameters": true
-                  },
-                  "trim": true
+                  }
                 }
               },
               "examplesTable": {
                 "tableAsString": "",
-                "headerSeparator": "|",
-                "valueSeparator": "|",
-                "ignorableSeparator": "|--",
                 "tableTransformers": {
                   "transformers": [
                     [
@@ -339,28 +326,29 @@
                 },
                 "headers": [],
                 "data": [],
-                "properties": [
-                  {
-                    "@name": "headerSeparator",
-                    "@value": "|"
-                  },
-                  {
-                    "@name": "valueSeparator",
-                    "@value": "|"
-                  },
-                  {
-                    "@name": "ignorableSeparator",
-                    "@value": "|--"
-                  }
-                ],
+                "properties": {
+                  "properties": [
+                    {
+                      "@name": "headerSeparator",
+                      "@value": "|"
+                    },
+                    {
+                      "@name": "valueSeparator",
+                      "@value": "|"
+                    },
+                    {
+                      "@name": "ignorableSeparator",
+                      "@value": "|--"
+                    }
+                  ]
+                },
                 "propertiesAsString": "",
                 "namedParameters": [],
                 "parameterControls": {
                   "nameDelimiterLeft": "<",
                   "nameDelimiterRight": ">",
                   "delimiterNamedParameters": true
-                },
-                "trim": true
+                }
               },
               "steps": [
                 [
@@ -394,9 +382,6 @@
           "givenStoriesAsString": "",
           "examplesTable": {
             "tableAsString": "",
-            "headerSeparator": "|",
-            "valueSeparator": "|",
-            "ignorableSeparator": "|--",
             "tableTransformers": {
               "transformers": [
                 [
@@ -415,35 +400,33 @@
             },
             "headers": [],
             "data": [],
-            "properties": [
-              {
-                "@name": "headerSeparator",
-                "@value": "|"
-              },
-              {
-                "@name": "valueSeparator",
-                "@value": "|"
-              },
-              {
-                "@name": "ignorableSeparator",
-                "@value": "|--"
-              }
-            ],
+            "properties": {
+              "properties": [
+                {
+                  "@name": "headerSeparator",
+                  "@value": "|"
+                },
+                {
+                  "@name": "valueSeparator",
+                  "@value": "|"
+                },
+                {
+                  "@name": "ignorableSeparator",
+                  "@value": "|--"
+                }
+              ]
+            },
             "propertiesAsString": "",
             "namedParameters": [],
             "parameterControls": {
               "nameDelimiterLeft": "<",
               "nameDelimiterRight": ">",
               "delimiterNamedParameters": true
-            },
-            "trim": true
+            }
           }
         },
         "examplesTable": {
           "tableAsString": "",
-          "headerSeparator": "|",
-          "valueSeparator": "|",
-          "ignorableSeparator": "|--",
           "tableTransformers": {
             "transformers": [
               [
@@ -462,28 +445,29 @@
           },
           "headers": [],
           "data": [],
-          "properties": [
-            {
-              "@name": "headerSeparator",
-              "@value": "|"
-            },
-            {
-              "@name": "valueSeparator",
-              "@value": "|"
-            },
-            {
-              "@name": "ignorableSeparator",
-              "@value": "|--"
-            }
-          ],
+          "properties": {
+            "properties": [
+              {
+                "@name": "headerSeparator",
+                "@value": "|"
+              },
+              {
+                "@name": "valueSeparator",
+                "@value": "|"
+              },
+              {
+                "@name": "ignorableSeparator",
+                "@value": "|--"
+              }
+            ]
+          },
           "propertiesAsString": "",
           "namedParameters": [],
           "parameterControls": {
             "nameDelimiterLeft": "<",
             "nameDelimiterRight": ">",
             "delimiterNamedParameters": true
-          },
-          "trim": true
+          }
         },
         "steps": [
           [
@@ -520,9 +504,6 @@
             "givenStoriesAsString": "",
             "examplesTable": {
               "tableAsString": "",
-              "headerSeparator": "|",
-              "valueSeparator": "|",
-              "ignorableSeparator": "|--",
               "tableTransformers": {
                 "transformers": [
                   [
@@ -541,35 +522,33 @@
               },
               "headers": [],
               "data": [],
-              "properties": [
-                {
-                  "@name": "headerSeparator",
-                  "@value": "|"
-                },
-                {
-                  "@name": "valueSeparator",
-                  "@value": "|"
-                },
-                {
-                  "@name": "ignorableSeparator",
-                  "@value": "|--"
-                }
-              ],
+              "properties": {
+                "properties": [
+                  {
+                    "@name": "headerSeparator",
+                    "@value": "|"
+                  },
+                  {
+                    "@name": "valueSeparator",
+                    "@value": "|"
+                  },
+                  {
+                    "@name": "ignorableSeparator",
+                    "@value": "|--"
+                  }
+                ]
+              },
               "propertiesAsString": "",
               "namedParameters": [],
               "parameterControls": {
                 "nameDelimiterLeft": "<",
                 "nameDelimiterRight": ">",
                 "delimiterNamedParameters": true
-              },
-              "trim": true
+              }
             }
           },
           "examplesTable": {
             "tableAsString": "",
-            "headerSeparator": "|",
-            "valueSeparator": "|",
-            "ignorableSeparator": "|--",
             "tableTransformers": {
               "transformers": [
                 [
@@ -588,28 +567,29 @@
             },
             "headers": [],
             "data": [],
-            "properties": [
-              {
-                "@name": "headerSeparator",
-                "@value": "|"
-              },
-              {
-                "@name": "valueSeparator",
-                "@value": "|"
-              },
-              {
-                "@name": "ignorableSeparator",
-                "@value": "|--"
-              }
-            ],
+            "properties": {
+              "properties": [
+                {
+                  "@name": "headerSeparator",
+                  "@value": "|"
+                },
+                {
+                  "@name": "valueSeparator",
+                  "@value": "|"
+                },
+                {
+                  "@name": "ignorableSeparator",
+                  "@value": "|--"
+                }
+              ]
+            },
             "propertiesAsString": "",
             "namedParameters": [],
             "parameterControls": {
               "nameDelimiterLeft": "<",
               "nameDelimiterRight": ">",
               "delimiterNamedParameters": true
-            },
-            "trim": true
+            }
           },
           "steps": [
             [
@@ -620,5 +600,5 @@
       },
       "examplePerformableScenarios": []
     }
-  ]
-}}
+  ]}
+}
