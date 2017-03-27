@@ -8,6 +8,8 @@ import org.jbehave.core.failures.RethrowingFailure;
 import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.StoryLoader;
+import org.jbehave.core.model.ExamplesTableFactory;
+import org.jbehave.core.model.TableTransformers;
 import org.jbehave.core.parsers.RegexPrefixCapturingPatternParser;
 import org.jbehave.core.parsers.RegexStoryParser;
 import org.jbehave.core.parsers.StepPatternParser;
@@ -68,5 +70,6 @@ public class MostUsefulConfiguration extends Configuration {
         useViewGenerator(new FreemarkerViewGenerator());
         useParameterConverters(new ParameterConverters(this));
         useStoryParser(new RegexStoryParser(this));
+        useTableTransformers(new TableTransformers());
     }
 }

@@ -46,7 +46,12 @@ public class RegexStoryParser implements StoryParser {
                 configuration.parameterConverters(), configuration.parameterControls());
     }
 
-    public Story parseStory(String storyAsText) {
+    public RegexStoryParser(Configuration configuration, ExamplesTableFactory examplesTableFactory) {
+        this.keywords = configuration.keywords();
+        this.tableFactory = examplesTableFactory;
+	}
+
+	public Story parseStory(String storyAsText) {
         return parseStory(storyAsText, null);
     }
 
