@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jbehave.core.annotations.Parameter;
-import org.jbehave.core.model.TableTransformers.TableTransformer;
 import org.jbehave.core.steps.ChainedRow;
 import org.jbehave.core.steps.ConvertedParameters;
 import org.jbehave.core.steps.ParameterControls;
@@ -120,10 +119,6 @@ import static java.util.regex.Pattern.DOTALL;
  * |value m1|value m2| .... |value mn|
  * </pre>
  * 
- * The transformer needs to be registered by name via the
- * {@link TableTransformers#useTransformer(String, TableTransformer)}. A few
- * transformers are already registered by default in {@link TableTransformers}.
- * </p>
  * 
  * <p>
  * The table allow filtering on meta by row via the "metaByRow" inlined property:
@@ -165,7 +160,6 @@ public class ExamplesTable {
 
     private final String tableAsString;
     private final ParameterConverters parameterConverters;
-    private final TableTransformers tableTransformers;
     private final Row defaults;
     private final List<String> headers = new ArrayList<String>();
     private final List<Map<String, String>> data = new ArrayList<Map<String, String>>();
@@ -184,19 +178,11 @@ public class ExamplesTable {
                 parameterControls);
     }
 
-    public ExamplesTable(String tableAsString, String headerSeparator, String valueSeparator,
-            String ignorableSeparator, ParameterConverters parameterConverters, ParameterControls parameterControls) {
-        this(tableAsString, headerSeparator, valueSeparator, ignorableSeparator, parameterConverters, parameterControls,
-                new TableTransformers());
-    }
-
     public ExamplesTable(String tableAsString, String headerSeparator, String valueSeparator, String ignorableSeparator,
-            ParameterConverters parameterConverters, ParameterControls parameterControls,
-            TableTransformers tableTransformers) {
+            ParameterConverters parameterConverters, ParameterControls parameterControls) {
         this.tableAsString = tableAsString;
         this.parameterConverters = parameterConverters;
         this.parameterControls = parameterControls;
-        this.tableTransformers = tableTransformers;
         this.defaults = new ConvertedParameters(EMPTY_MAP, parameterConverters);
         parse(headerSeparator, valueSeparator, ignorableSeparator);
     }
@@ -211,7 +197,6 @@ public class ExamplesTable {
         this.data.addAll(other.data);
         this.tableAsString = other.tableAsString;
         this.parameterConverters = other.parameterConverters;
-        this.tableTransformers = other.tableTransformers;
         this.headers.addAll(other.headers);
         this.properties = other.properties;
         this.defaults = defaults;
@@ -229,10 +214,6 @@ public class ExamplesTable {
     private void parseTable(String tableAsString) {
         headers.clear();
         data.clear();
-        String transformer = properties.getTransformer();
-        if (transformer != null) {
-            tableAsString = tableTransformers.transform(transformer, tableAsString, properties);
-        }
         parseByRows(headers, data, tableAsString);
     }
 

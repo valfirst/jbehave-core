@@ -16,6 +16,7 @@ import org.jbehave.core.io.PathCalculator;
 import org.jbehave.core.io.StoryLoader;
 import org.jbehave.core.io.StoryPathResolver;
 import org.jbehave.core.io.UnderscoredCamelCaseResolver;
+import org.jbehave.core.model.TableTransformers;
 import org.jbehave.core.parsers.RegexPrefixCapturingPatternParser;
 import org.jbehave.core.parsers.RegexStoryParser;
 import org.jbehave.core.parsers.StepPatternParser;
@@ -56,6 +57,8 @@ import com.thoughtworks.paranamer.Paranamer;
  * </p>
  */
 public abstract class Configuration {
+
+	protected TableTransformers tableTransformers;
 
     /**
      * Use default story controls
@@ -174,6 +177,13 @@ public abstract class Configuration {
 
     public Configuration() {
 	}
+
+    public TableTransformers tableTransformers() {
+    	if (tableTransformers == null) {
+    		tableTransformers = new TableTransformers();
+    	}
+    	return tableTransformers;
+    }
 
 	public Keywords keywords() {
 		if (keywords == null) {
@@ -325,6 +335,11 @@ public abstract class Configuration {
 			pathCalculator = new AbsolutePathCalculator();
 		}
 		return pathCalculator;
+	}
+
+	public Configuration useTableTransformers(TableTransformers tableTransformers){
+		this.tableTransformers = tableTransformers;
+		return this;
 	}
 
     public Configuration useKeywords(Keywords keywords) {
