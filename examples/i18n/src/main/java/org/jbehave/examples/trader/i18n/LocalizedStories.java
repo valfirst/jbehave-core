@@ -16,6 +16,7 @@ import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.StoryFinder;
 import org.jbehave.core.junit.JUnitStories;
 import org.jbehave.core.model.ExamplesTableFactory;
+import org.jbehave.core.model.TableTransformers;
 import org.jbehave.core.parsers.RegexStoryParser;
 import org.jbehave.core.reporters.FilePrintStreamFactory.ResolveToSimpleName;
 import org.jbehave.core.reporters.StoryReporterBuilder;
@@ -58,7 +59,7 @@ public abstract class LocalizedStories extends JUnitStories {
         LoadFromClasspath resourceLoader = new LoadFromClasspath(classLoader);
         ParameterControls parameterControls = new ParameterControls();
         ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(),
-                resourceLoader, parameterConverters, parameterControls);
+                resourceLoader, parameterConverters, parameterControls, new TableTransformers());
         Configuration configuration = new MostUsefulConfiguration()
                 .useKeywords(keywords)
                 .useStepCollector(new MarkUnmatchedStepsAsPending(keywords))
