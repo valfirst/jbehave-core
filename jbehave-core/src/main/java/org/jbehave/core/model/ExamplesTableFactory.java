@@ -36,11 +36,6 @@ public class ExamplesTableFactory {
     private final TableTransformers tableTransformers;
 
     public ExamplesTableFactory(Keywords keywords, ResourceLoader resourceLoader,
-            ParameterConverters parameterConverters, ParameterControls parameterControls) {
-        this(keywords, resourceLoader, parameterConverters, parameterControls, new TableTransformers());
-    }
-
-    public ExamplesTableFactory(Keywords keywords, ResourceLoader resourceLoader,
             ParameterConverters parameterConverters, ParameterControls parameterControls,
             TableTransformers tableTransformers) {
         this.keywords = keywords;

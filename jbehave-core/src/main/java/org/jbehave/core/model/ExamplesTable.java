@@ -175,19 +175,17 @@ public class ExamplesTable {
     private ParameterControls parameterControls;
 
     public ExamplesTable(String tableAsString) {
-        this(tableAsString, HEADER_SEPARATOR, VALUE_SEPARATOR, new ParameterControls());
+        this(tableAsString, HEADER_SEPARATOR, VALUE_SEPARATOR, new ParameterControls(), new TableTransformers());
+    }
+
+    public ExamplesTable(String tableAsString, TableTransformers tableTransformers) {
+        this(tableAsString, HEADER_SEPARATOR, VALUE_SEPARATOR, new ParameterControls(), tableTransformers);
     }
 
     public ExamplesTable(String tableAsString, String headerSeparator, String valueSeparator,
-            ParameterControls parameterControls) {
+            ParameterControls parameterControls, TableTransformers tableTransformers) {
         this(tableAsString, headerSeparator, valueSeparator, IGNORABLE_SEPARATOR, new ParameterConverters(),
-                parameterControls);
-    }
-
-    public ExamplesTable(String tableAsString, String headerSeparator, String valueSeparator,
-            String ignorableSeparator, ParameterConverters parameterConverters, ParameterControls parameterControls) {
-        this(tableAsString, headerSeparator, valueSeparator, ignorableSeparator, parameterConverters, parameterControls,
-                new TableTransformers());
+                parameterControls, tableTransformers);
     }
 
     public ExamplesTable(String tableAsString, String headerSeparator, String valueSeparator, String ignorableSeparator,

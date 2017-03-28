@@ -85,10 +85,11 @@ public abstract class CoreStory extends JUnitStory {
         ParameterConverters parameterConverters = new ParameterConverters();
         LoadFromClasspath resourceLoader = new LoadFromClasspath(embeddableClass);
         ParameterControls parameterControls = new ParameterControls();
+        TableTransformers tableTransformers = new TableTransformers();
         // factory to allow parameter conversion and loading from external
         // resources (used by StoryParser too)
         ExamplesTableFactory examplesTableFactory = new ExamplesTableFactory(new LocalizedKeywords(),
-                resourceLoader, parameterConverters, parameterControls);
+                resourceLoader, parameterConverters, parameterControls, tableTransformers);
         // add custom converters
         parameterConverters.addConverters(new DateConverter(new SimpleDateFormat("yyyy-MM-dd")),
                 new ExamplesTableConverter(examplesTableFactory));
@@ -107,6 +108,7 @@ public abstract class CoreStory extends JUnitStory {
                                 .withFailureTrace(true).withFailureTraceCompression(true))
                 .useParameterConverters(parameterConverters)
                 .useParameterControls(parameterControls)
+                .useTableTransformers(tableTransformers)
                 // use '%' instead of '$' to identify parameters
                 .useStepPatternParser(new RegexPrefixCapturingPatternParser("%"));
         return configuration.useStoryParser(new RegexStoryParser(configuration));

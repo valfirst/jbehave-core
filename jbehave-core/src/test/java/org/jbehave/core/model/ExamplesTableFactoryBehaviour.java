@@ -74,6 +74,6 @@ public class ExamplesTableFactoryBehaviour {
     private ExamplesTableFactory newExamplesTableFactory(ResourceLoader resourceLoader)
     {
         return new ExamplesTableFactory(new LocalizedKeywords(), resourceLoader, new ParameterConverters(),
-                new ParameterControls());
+                new ParameterControls(), new TableTransformers());
     }
 }
