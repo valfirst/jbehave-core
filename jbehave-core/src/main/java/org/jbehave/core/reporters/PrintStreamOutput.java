@@ -33,6 +33,7 @@ import org.jbehave.core.model.OutcomesTable.Outcome;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
 import org.jbehave.core.model.StoryDuration;
+import org.jbehave.core.model.TableTransformers;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeXml;

@@ -37,7 +37,7 @@ public final class ExamplesTableProperties
         return properties.getProperty(HEADER_SEPARATOR_KEY);
     }
 
-    String getValueSeparator() {
+    public String getValueSeparator() {
         return properties.getProperty(VALUE_SEPARATOR_KEY);
     }
 

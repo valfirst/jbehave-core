@@ -24,6 +24,7 @@ import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Narrative;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
+import org.jbehave.core.model.TableTransformers;
 
 /**
  * Pattern-based story parser, which uses the keywords provided to parse the
@@ -34,6 +35,7 @@ public class RegexStoryParser implements StoryParser {
     private static final String NONE = "";
     private final Keywords keywords;
     private final ExamplesTableFactory tableFactory;
+    private final TableTransformers tableTransformers;
     private Pattern stepSkipPattern;
 
     public RegexStoryParser() {
@@ -41,12 +43,14 @@ public class RegexStoryParser implements StoryParser {
     }
 
     public RegexStoryParser(Configuration configuration) {
+    	this.tableTransformers = configuration.tableTransformers();
         this.keywords = configuration.keywords();
         this.tableFactory = new ExamplesTableFactory(configuration.keywords(), configuration.storyLoader(),
-                configuration.parameterConverters(), configuration.parameterControls());
+                configuration.parameterConverters(), configuration.parameterControls(), tableTransformers);
     }
 
     public RegexStoryParser(Configuration configuration, ExamplesTableFactory examplesTableFactory) {
+    	this.tableTransformers = configuration.tableTransformers();
         this.keywords = configuration.keywords();
         this.tableFactory = examplesTableFactory;
 	}
@@ -146,7 +150,7 @@ public class RegexStoryParser implements StoryParser {
         }
         else {
             lifecycle = NONE;
-            examplesTable = ExamplesTable.EMPTY;
+            examplesTable = new ExamplesTable("", tableTransformers);
         }
         Matcher findingBeforeAndAfter = compile(".*" + keywords.before() + "(.*)\\s*" + keywords.after() + "(.*)\\s*", DOTALL).matcher(lifecycle);
         if ( findingBeforeAndAfter.matches() ){
