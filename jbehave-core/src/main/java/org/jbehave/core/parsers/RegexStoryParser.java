@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +32,8 @@ import org.jbehave.core.model.Narrative;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
 import org.jbehave.core.model.TableTransformers;
+import org.jbehave.core.steps.ParameterControls;
+import org.jbehave.core.steps.ParameterConverters;
 
 /**
  * Pattern-based story parser, which uses the keywords provided to parse the
@@ -44,6 +47,8 @@ public class RegexStoryParser implements StoryParser {
     private final Keywords keywords;
     private final ExamplesTableFactory tableFactory;
     private Pattern stepSkipPattern;
+    private Meta storySkipMeta;
+    private String skippedExample;
 
     public RegexStoryParser() {
         this(new LocalizedKeywords());
@@ -87,6 +92,9 @@ public class RegexStoryParser implements StoryParser {
         Narrative narrative = parseNarrativeFrom(storyAsText);
         GivenStories givenStories = parseGivenStories(storyAsText);
         Lifecycle lifecycle = parseLifecycle(storyAsText);
+        if (lifecycle == null) {
+            meta = meta.inheritFrom(storySkipMeta);
+        }
         List<Scenario> scenarios = parseScenariosFrom(storyAsText);
         Story story = new Story(storyPath, description, meta, narrative, givenStories, lifecycle, scenarios);
         if (storyPath != null) {
@@ -169,6 +177,9 @@ public class RegexStoryParser implements StoryParser {
         if (findingLifecycle.find()) {
             lifecycle = findingLifecycle.group(1).trim();
             examplesTable = findExamplesTable(findingLifecycle.group(0));
+            if (examplesTable == null) {
+                return null;
+            }
         }
         else {
             lifecycle = NONE;
@@ -348,7 +359,56 @@ public class RegexStoryParser implements StoryParser {
     private ExamplesTable findExamplesTable(String scenarioAsText) {
         Matcher findingTable = findingExamplesTable().matcher(scenarioAsText);
         String tableInput = findingTable.find() ? findingTable.group(1).trim() : NONE;
-        return tableFactory.createExamplesTable(tableInput);
+        Matcher findingTableWithParams = compile("table:\\s*(.*)\\nparameters:\\s*(.*)", DOTALL).matcher(tableInput);
+        List<String> examplesParameters = new ArrayList<String>();
+        if (findingTableWithParams.find()) {
+            tableInput = findingTableWithParams.group(1).trim();
+            examplesParameters = splitExamplesParameters(findingTableWithParams.group(2).trim());
+        }
+        ExamplesTable examplesTable = tableFactory.createExamplesTable(tableInput);
+        return examplesParameters.isEmpty() || examplesTable.isEmpty() ? examplesTable : cutExamplesTable(examplesTable, examplesParameters);
+    }
+
+    private List<String> splitExamplesParameters(String examplesParameters) {
+        List<String> splitExamplesParameters = new ArrayList<String>();
+        for (String examplesParameter : examplesParameters.split(",")) {
+            splitExamplesParameters.add(examplesParameter.trim());
+        }
+        return splitExamplesParameters;
+    }
+
+    private ExamplesTable cutExamplesTable(ExamplesTable examplesTable, List<String> examplesParameters) {
+        List<String> headers = examplesTable.getHeaders();
+        headers.removeAll(examplesParameters);
+        List<Map<String, String>> examplesTableRows = examplesTable.getRows();
+        int cutIndex = 0;
+        for (Map<String, String> examplesTableRow : examplesTableRows) {
+            for (String header : headers) {
+                examplesTableRow.remove(header);
+            }
+            if (examplesTableRow.containsValue(skippedExample)) {
+                checkTableAlignment(skippedExample, examplesTableRow);
+                break;
+            }
+            ++cutIndex;
+        }
+        List<Map<String, String>> resultRows = examplesTableRows.subList(0, cutIndex);
+        TableTransformers tableTransformers = new TableTransformers();
+        ParameterControls parameterControls = new ParameterControls();
+        ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath(), parameterControls,
+                tableTransformers, true);
+        return !resultRows.isEmpty() ?
+                new ExamplesTable("", examplesTable.getHeaderSeparator(), examplesTable.getValueSeparator(),
+                        parameterConverters, parameterControls, tableTransformers).withRows(resultRows) :
+                null;
+    }
+
+    private void checkTableAlignment(String skipKeyword, Map<String, String> examplesTableRow) {
+        for (Map.Entry<String, String> entry : examplesTableRow.entrySet()) {
+            if (!skipKeyword.equals(entry.getValue())) {
+                throw new ExamplesCutException("Story refers to variables with different number of examples at story level");
+            }
+        }
     }
 
     private GivenStories findScenarioGivenStories(String scenarioAsText) {
@@ -472,6 +532,14 @@ public class RegexStoryParser implements StoryParser {
 
     public void setStepSkipPattern(Pattern stepSkipPattern) {
         this.stepSkipPattern = stepSkipPattern;
+    }
+
+    public void setStorySkipMeta(Meta storySkipMeta) {
+        this.storySkipMeta = storySkipMeta;
+    }
+
+    public void setSkippedExample(String skippedExample) {
+        this.skippedExample = skippedExample;
     }
 
 }
