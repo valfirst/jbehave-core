@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ import org.jbehave.core.embedder.StoryTimeouts.TimeoutParser;
 import org.jbehave.core.failures.BatchFailures;
 import org.jbehave.core.model.Story;
 import org.jbehave.core.model.StoryDuration;
+import org.jbehave.core.parsers.ExamplesCutException;
 import org.jbehave.core.steps.InjectableStepsFactory;
 import org.jbehave.core.steps.StepCollector.Stage;
 
@@ -66,7 +68,7 @@ public class StoryManager {
 		for (String storyPath : storyPaths) {
 			stories.add(storyOfPath(storyPath));
 		}
-		return StorySplitter.splitStories(stories, configuration.isParallelStoryExampleTableEnabled());
+		return configuration.splitExampleTableIntoParallel() ? StorySplitter.splitStories(stories) : stories;
 	}
 
 	public Story storyOfText(String storyAsText, String storyId) {
