@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -34,7 +35,9 @@ import org.jbehave.core.model.Narrative;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
 import org.jbehave.core.steps.ParameterConverters;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 
 public class RegexStoryParserBehaviour {
@@ -43,11 +46,16 @@ public class RegexStoryParserBehaviour {
     private StoryParser parser = newRegexStoryParser(new LocalizedKeywords());
     private String storyPath = "path/to/my.story";
 
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
     private RegexStoryParser newRegexStoryParser(LocalizedKeywords localizedKeywords)
     {
         Configuration configuration = new Configuration(){};
         configuration.useKeywords(localizedKeywords);
-        return new RegexStoryParser(configuration);
+        RegexStoryParser parser = new RegexStoryParser(configuration);
+        parser.setSkippedExample("${skip}");
+        return parser;
     }
 
     @Test
@@ -454,15 +462,86 @@ public class RegexStoryParserBehaviour {
                 "|21|22|23|" + NL +
                 "Scenario:"+ NL +
                 "Given a scenario";
+        String expectedExamplesTable = "|one|two|three|" + NL +
+                "|11|12|13|" + NL +
+                "|21|22|23|" + NL;
+        testParseStoryWithLifecycleExamplesOnly(wholeStory, expectedExamplesTable);
+    }
+
+    @Test
+    public void shouldParseStoryWithLifecycleParametrisedExamplesOnly() {
+        String wholeStory = "Lifecycle: " + NL +
+                "Examples:" + NL +
+                "table:" + NL +
+                "|one|two|three|" + NL +
+                "|11|12|13|" + NL +
+                "|21|22|23|" + NL +
+                "parameters: one, two" + NL +
+                "Scenario:" + NL +
+                "Given a scenario";
+        String expectedExamplesTable = "|one|two|" + NL +
+                "|11|12|" + NL +
+                "|21|22|" + NL;
+        testParseStoryWithLifecycleExamplesOnly(wholeStory, expectedExamplesTable);
+    }
+
+    @Test
+    public void shouldParseStoryWithLifecycleParametrisedExamplesWithSkippedCellsOnly() {
+        String wholeStory = "Lifecycle: " + NL +
+                "Examples:" + NL +
+                "table:" + NL +
+                "|one|two|three|" + NL +
+                "|11|12|13|" + NL +
+                "|21|${skip}|${skip}|" + NL +
+                "parameters: two, three" + NL +
+                "Scenario:" + NL +
+                "Given a scenario";
+        String expectedExamplesTable = "|two|three|" + NL +
+                "|12|13|" + NL;
+        testParseStoryWithLifecycleExamplesOnly(wholeStory, expectedExamplesTable);
+    }
+
+    private void testParseStoryWithLifecycleExamplesOnly(String wholeStory, String expectedExamplesTable) {
         Story story = parser.parseStory(wholeStory, storyPath);
         ExamplesTable table = story.getLifecycle().getExamplesTable();
-        assertThat(table.asString(), equalTo(
-                "|one|two|three|" + NL +
-                        "|11|12|13|" + NL +
-                        "|21|22|23|" + NL));
+        assertThat(table.asString(), equalTo(expectedExamplesTable));
         Scenario scenario = story.getScenarios().get(0);
         List<String> steps = scenario.getSteps();
         assertThat(steps.get(0), equalTo("Given a scenario"));
+    }
+
+    @Test
+    public void shouldParseStoryWithLifecycleParametrisedExamplesWithAllSkippedCellsOnly() {
+        String wholeStory = "Lifecycle: " + NL +
+                "Examples:" + NL +
+                "table:" + NL +
+                "|one|two|three|" + NL +
+                "|11|12|${skip}|" + NL +
+                "|21|${skip}|${skip}|" + NL +
+                "parameters: three" + NL +
+                "Scenario:" + NL +
+                "Given a scenario";
+        LocalizedKeywords keywords = new LocalizedKeywords();
+        RegexStoryParser parser = newRegexStoryParser(keywords);
+        parser.setStorySkipMeta(Meta.createMeta("@skip", keywords));
+        Story story = parser.parseStory(wholeStory, storyPath);
+        assertTrue(story.getMeta().hasProperty("skip"));
+    }
+
+    @Test
+    public void shouldParseStoryWithLifecycleParametrisedExamplesWithDifferentAmountOnly() {
+        expectedException.expect(ExamplesCutException.class);
+        expectedException.expectMessage("Story refers to variables with different number of examples at story level");
+        String wholeStory = "Lifecycle: " + NL +
+                "Examples:" + NL +
+                "table:" + NL +
+                "|one|two|three|" + NL +
+                "|11|12|${skip}|" + NL +
+                "|21|${skip}|${skip}|" + NL +
+                "parameters: two, three" + NL +
+                "Scenario:" + NL +
+                "Given a scenario";
+        Story story = parser.parseStory(wholeStory, storyPath);
     }
 
     @Test
