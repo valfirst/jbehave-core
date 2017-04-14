@@ -21,9 +21,11 @@ import org.jbehave.core.embedder.PerformableTree.PerformableRoot;
 import org.jbehave.core.embedder.PerformableTree.RunContext;
 import org.jbehave.core.embedder.StoryTimeouts.TimeoutParser;
 import org.jbehave.core.failures.BatchFailures;
+import org.jbehave.core.model.FailedStory;
 import org.jbehave.core.model.Story;
 import org.jbehave.core.model.StoryDuration;
 import org.jbehave.core.parsers.ExamplesCutException;
+import org.jbehave.core.reporters.StoryReporter;
 import org.jbehave.core.steps.InjectableStepsFactory;
 import org.jbehave.core.steps.StepCollector.Stage;
 
@@ -150,8 +152,25 @@ public class StoryManager {
 		if (filteredStory.allowed()) {
 			runningStories.put(story.getPath(), runningStory(story));
 		} else {
-			notAllowedBy(context.getFilter()).add(story);
+			if (story instanceof FailedStory) {
+				reportFailedStory((FailedStory) story);
+				context.addFailure(story.getPath(), ((FailedStory) story).getCause());
+			} else {
+				notAllowedBy(context.getFilter()).add(story);
+			}
 		}
+	}
+
+	private void reportFailedStory(FailedStory story) {
+		StoryReporter reporter = context.reporter();
+		reporter.beforeStory(story, false);
+		reporter.beforeScenario(story.getScenarioStage());
+		reporter.beforeScenario(story.getStage());
+		String subStage = story.getSubStage();
+		reporter.beforeStep(subStage);
+		reporter.failed(subStage, story.getCause());
+		reporter.afterScenario();
+		reporter.afterStory(false);
 	}
 
 	public List<Story> notAllowedBy(MetaFilter filter) {
