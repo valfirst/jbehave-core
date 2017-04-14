@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -25,6 +26,7 @@ import org.jbehave.core.configuration.Keywords;
 import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.model.Description;
 import org.jbehave.core.model.ExamplesTable;
+import org.jbehave.core.model.FailedStory;
 import org.jbehave.core.model.GivenStories;
 import org.jbehave.core.model.GivenStory;
 import org.jbehave.core.model.Lifecycle;
@@ -32,9 +34,7 @@ import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Narrative;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 
 public class RegexStoryParserBehaviour {
@@ -42,9 +42,6 @@ public class RegexStoryParserBehaviour {
     private static final String NL = "\n";
     private StoryParser parser = newRegexStoryParser(new LocalizedKeywords());
     private String storyPath = "path/to/my.story";
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     private RegexStoryParser newRegexStoryParser(LocalizedKeywords localizedKeywords)
     {
@@ -527,8 +524,6 @@ public class RegexStoryParserBehaviour {
 
     @Test
     public void shouldParseStoryWithLifecycleParametrisedExamplesWithDifferentAmountOnly() {
-        expectedException.expect(ExamplesCutException.class);
-        expectedException.expectMessage("Story refers to variables with different number of examples at story level");
         String wholeStory = "Lifecycle: " + NL +
                 "Examples:" + NL +
                 "table:" + NL +
@@ -539,6 +534,13 @@ public class RegexStoryParserBehaviour {
                 "Scenario:" + NL +
                 "Given a scenario";
         Story story = parser.parseStory(wholeStory, storyPath);
+        assertTrue(story instanceof FailedStory);
+        assertEquals(storyPath, story.getPath());
+        Throwable cause = ((FailedStory) story).getCause().getCause();
+        assertTrue(cause instanceof ExamplesCutException);
+        assertEquals("Story refers to variables with different number of examples at story level", cause.getMessage());
+        assertEquals("Exception at story parsing", ((FailedStory) story).getStage());
+        assertEquals("Exception at building Examples Table", ((FailedStory) story).getSubStage());
     }
 
     @Test
