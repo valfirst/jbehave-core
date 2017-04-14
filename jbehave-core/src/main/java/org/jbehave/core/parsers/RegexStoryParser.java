@@ -22,6 +22,7 @@ import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.ResourceLoader;
 import org.jbehave.core.model.*;
+import org.jbehave.core.model.FailedStory;
 import org.jbehave.core.model.Lifecycle.Steps;
 import org.jbehave.core.steps.ParameterControls;
 import org.jbehave.core.steps.ParameterConverters;
@@ -84,12 +85,23 @@ public class RegexStoryParser extends AbstractRegexParser implements StoryParser
         Meta meta = parseStoryMetaFrom(storyAsText);
         Narrative narrative = parseNarrativeFrom(storyAsText);
         GivenStories givenStories = parseGivenStories(storyAsText);
-        Lifecycle lifecycle = parseLifecycle(storyAsText);
+        Lifecycle lifecycle = null;
+        try {
+            lifecycle = parseLifecycle(storyAsText);
+        } catch (ExamplesCutException ex) {
+            return nameStory(new FailedStory(storyPath, meta, "Exception at story parsing", "Exception at building " +
+                    "Examples Table", ex), storyPath);
+        }
         if (lifecycle == null) {
             meta = meta.inheritFrom(storySkipMeta);
+            lifecycle = Lifecycle.EMPTY;
         }
         List<Scenario> scenarios = parseScenariosFrom(storyAsText);
         Story story = new Story(storyPath, description, meta, narrative, givenStories, lifecycle, scenarios);
+        return nameStory(story, storyPath);
+    }
+
+    private Story nameStory(Story story, String storyPath) {
         if (storyPath != null) {
             story.namedAs(new File(storyPath).getName());
         }
