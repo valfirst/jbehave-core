@@ -93,6 +93,7 @@ public class RegexStoryParser implements StoryParser {
         }
         if (lifecycle == null) {
             meta = meta.inheritFrom(storySkipMeta);
+            lifecycle = Lifecycle.EMPTY;
         }
         List<Scenario> scenarios = parseScenariosFrom(storyAsText);
         Story story = new Story(storyPath, description, meta, narrative, givenStories, lifecycle, scenarios);
