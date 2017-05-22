@@ -451,4 +451,8 @@ public abstract class Configuration {
     public void setParallelStoryExampleTableEnabled(boolean parallelStoryExampleTableEnabled) {
         this.parallelStoryExampleTableEnabled = parallelStoryExampleTableEnabled;
     }
+    
+    public boolean splitExampleTableIntoParallel() {
+        return storyReporterBuilder.multiThreading() && parallelStoryExampleTableEnabled;
+    }
 }
