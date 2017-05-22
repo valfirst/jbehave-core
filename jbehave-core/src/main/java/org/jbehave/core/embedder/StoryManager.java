@@ -66,14 +66,9 @@ public class StoryManager {
 	public List<Story> storiesOfPaths(List<String> storyPaths) {
 		List<Story> stories = new ArrayList<>(storyPaths.size());
 		for (String storyPath : storyPaths) {
-			try {
-				stories.add(storyOfPath(storyPath));
-			} catch (ExamplesCutException ex) {
-				embedderMonitor.storyFailed(storyPath, ex);
-				return Collections.emptyList();
-			}
+			stories.add(storyOfPath(storyPath));
 		}
-		return StorySplitter.splitStories(stories, configuration.isParallelStoryExampleTableEnabled());
+		return configuration.splitExampleTableIntoParallel() ? StorySplitter.splitStories(stories) : stories;
 	}
 
 	public Story storyOfText(String storyAsText, String storyId) {
