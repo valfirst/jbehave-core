@@ -102,6 +102,12 @@ public class RegexStoryParser extends AbstractRegexParser implements StoryParser
             meta = meta.inheritFrom(storySkipMeta);
             lifecycle = Lifecycle.EMPTY;
         }
+        else {
+            ExamplesTable storyExamplesTable = lifecycle.getExamplesTable();
+            if (!storyExamplesTable.isEmpty()) {
+                useExamplesTableForGivenStories(givenStories, storyExamplesTable);
+            }
+        }
         List<Scenario> scenarios = parseScenariosFrom(storyAsText);
         Story story = new Story(storyPath, description, meta, narrative, givenStories, lifecycle, scenarios);
         return nameStory(story, storyPath);
@@ -339,9 +345,7 @@ public class RegexStoryParser extends AbstractRegexParser implements StoryParser
         String examplesTableAsString = findExamplesTable(scenarioWithoutTitle);
         ExamplesTable examplesTable = parseExamplesTable(examplesTableAsString);
         GivenStories givenStories = findScenarioGivenStories(scenarioWithoutTitle);
-        if (givenStories.requireParameters()) {
-            givenStories.useExamplesTable(examplesTable);
-        }
+        useExamplesTableForGivenStories(givenStories, examplesTable);
         List<String> steps = new ArrayList<>();
         if(examplesTableAsString.trim().isEmpty()) {
             steps.addAll(findSteps(scenarioWithoutTitle));
@@ -350,6 +354,13 @@ public class RegexStoryParser extends AbstractRegexParser implements StoryParser
             steps.addAll(findSteps(scenarioWithoutTitle.substring(0, afterExampleIndex)));
         }
         return new Scenario(title, meta, givenStories, examplesTable, steps);
+    }
+
+    private void useExamplesTableForGivenStories(GivenStories givenStories, ExamplesTable examplesTable) {
+        if (givenStories.requireParameters()) {
+            givenStories.useExamplesTable(examplesTable);
+        }
+
     }
 
     private String findScenarioTitle(String scenarioAsText) {
