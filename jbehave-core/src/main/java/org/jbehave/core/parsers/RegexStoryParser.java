@@ -95,6 +95,12 @@ public class RegexStoryParser implements StoryParser {
             meta = meta.inheritFrom(storySkipMeta);
             lifecycle = Lifecycle.EMPTY;
         }
+        else {
+            ExamplesTable storyExamplesTable = lifecycle.getExamplesTable();
+            if (!storyExamplesTable.isEmpty()) {
+                useExamplesTableForGivenStories(givenStories, storyExamplesTable);
+            }
+        }
         List<Scenario> scenarios = parseScenariosFrom(storyAsText);
         Story story = new Story(storyPath, description, meta, narrative, givenStories, lifecycle, scenarios);
         return nameStory(story, storyPath);
@@ -320,11 +326,15 @@ public class RegexStoryParser implements StoryParser {
         Meta meta = findScenarioMeta(scenarioWithoutTitle);
         ExamplesTable examplesTable = findExamplesTable(scenarioWithoutTitle);
         GivenStories givenStories = findScenarioGivenStories(scenarioWithoutTitle);
+        useExamplesTableForGivenStories(givenStories, examplesTable);
+        List<String> steps = findSteps(scenarioWithoutTitle);
+        return new Scenario(title, meta, givenStories, examplesTable, steps);
+    }
+
+    private void useExamplesTableForGivenStories(GivenStories givenStories, ExamplesTable examplesTable) {
         if (givenStories.requireParameters()) {
             givenStories.useExamplesTable(examplesTable);
         }
-        List<String> steps = findSteps(scenarioWithoutTitle);
-        return new Scenario(title, meta, givenStories, examplesTable, steps);
     }
 
     private String startingWithNL(String text) {
