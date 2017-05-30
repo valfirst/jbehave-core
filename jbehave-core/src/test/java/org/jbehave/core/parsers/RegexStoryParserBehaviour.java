@@ -617,7 +617,7 @@ public class RegexStoryParserBehaviour {
         assertEquals("Story path equals", storyPath, story.getPath());
         Throwable cause = ((FailedStory) story).getCause().getCause();
         assertTrue(cause instanceof ExamplesCutException);
-        assertEquals("Requested variables have different number of examples", cause.getMessage());
+        assertEquals("Story or scenario refer to variables with different number of examples", cause.getMessage());
         assertEquals("Exception at story parsing", ((FailedStory) story).getStage());
         assertEquals("Exception at building Examples Table", ((FailedStory) story).getSubStage());
     }
