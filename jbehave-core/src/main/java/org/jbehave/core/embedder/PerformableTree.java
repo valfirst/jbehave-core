@@ -97,7 +97,7 @@ public class PerformableTree {
                 Map<String, String> givenStoryParameters = new HashMap<>(storyParameters);
                 addMetaParameters(givenStoryParameters, storyMeta);
                 performableStory.addGivenStories(performableGivenStories(context, story.getGivenStories(),
-                        givenStoryParameters));
+                        givenStoryParameters, storyMeta));
             }
 
             performableStory.addAfterSteps(context.lifecycleSteps(story.getLifecycle(), storyMeta, Stage.AFTER, Scope.STORY));
@@ -254,21 +254,24 @@ public class PerformableTree {
 		performableScenario.addBeforeSteps(context.lifecycleSteps(lifecycle, storyAndScenarioMeta, Stage.BEFORE));
 		addMetaParameters(parameters, storyAndScenarioMeta);
 		performableScenario.addGivenStories(performableGivenStories(context, scenario.getGivenStories(),
-		        parameters));
+		        parameters, storyAndScenarioMeta));
 		performableScenario.addSteps(context.scenarioSteps(scenario, parameters));
 		performableScenario.addAfterSteps(context.lifecycleSteps(lifecycle, storyAndScenarioMeta, Stage.AFTER));
 		performableScenario.addAfterSteps(context.beforeOrAfterScenarioSteps(storyAndScenarioMeta, Stage.AFTER,
                 ScenarioType.ANY));
 	}
 
-    private List<PerformableStory> performableGivenStories(RunContext context, GivenStories givenStories,
-            Map<String, String> parameters) {
+    private List<PerformableStory> performableGivenStories(RunContext context, GivenStories givenStories, Map<String,
+            String> parameters, Meta meta) {
         List<PerformableStory> stories = new ArrayList<PerformableStory>();
         if (givenStories.getPaths().size() > 0) {
             for (GivenStory givenStory : givenStories.getStories()) {
                 RunContext childContext = context.childContextFor(givenStory);
                 // run given story, using any parameters provided
-                Story story = storyOfPath(context.configuration(), childContext.path());                
+                Story story = storyOfPath(context.configuration(), childContext.path());
+                if (!meta.isEmpty()) {
+                    story = createNewStory(story, story.getMeta().inheritFrom(meta), story.getScenarios());
+                }
                 if ( givenStory.hasAnchorParameters() ){
                     story = storyWithMatchingScenarios(story, givenStory.getAnchorParameters());
                 }
@@ -287,7 +290,12 @@ public class PerformableTree {
                 scenarios.add(scenario);
             }
         }
-        return new Story(story.getPath(), story.getDescription(), story.getMeta(), story.getNarrative(), scenarios); 
+        return createNewStory(story, story.getMeta(), scenarios);
+    }
+
+    private Story createNewStory(Story baseStory, Meta newMeta, List<Scenario> newScenarios) {
+        return new Story(baseStory.getPath(), baseStory.getDescription(), newMeta, baseStory.getNarrative(),
+                baseStory.getGivenStories(), baseStory.getLifecycle(), newScenarios);
     }
 
     private boolean matchesParameters(Scenario scenario, Map<String, String> parameters) {
