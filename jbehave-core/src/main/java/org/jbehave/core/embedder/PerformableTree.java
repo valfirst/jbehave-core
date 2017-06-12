@@ -435,8 +435,8 @@ public class PerformableTree {
             }
 	        throw new UUIDExceptionWrapper(e);
         } finally {
-            if (!context.givenStory() && context.reporter() instanceof ConcurrentStoryReporter && !restartingStory ) {
-                ((ConcurrentStoryReporter) context.reporter()).invokeDelayed();
+            if (!context.givenStory() && !restartingStory) {
+                invokeDelayedReporters(context.reporter());
             }
         }
     }
@@ -466,11 +466,16 @@ public class PerformableTree {
         } catch (InterruptedException e) {
             throw new UUIDExceptionWrapper(e);
         } finally {
-            if (context.reporter() instanceof ConcurrentStoryReporter) {
-                ((ConcurrentStoryReporter) context.reporter()).invokeDelayed();
-            }
+            invokeDelayedReporters(context.reporter());
         }
         context.reporter().afterStory(false);
+        invokeDelayedReporters(context.reporter());
+    }
+
+    private void invokeDelayedReporters(StoryReporter reporter) {
+        if (reporter instanceof ConcurrentStoryReporter) {
+            ((ConcurrentStoryReporter) reporter).invokeDelayed();
+        }
     }
 
     @Override
