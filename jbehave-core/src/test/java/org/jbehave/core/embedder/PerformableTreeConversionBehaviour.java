@@ -21,8 +21,10 @@ import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Narrative;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
+import org.jbehave.core.reporters.StoryReporter;
 import org.jbehave.core.steps.ParameterConverters;
 import org.jbehave.core.steps.StepCollector;
+import org.jbehave.core.steps.context.StepsContext;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -32,7 +34,7 @@ import org.mockito.Mockito;
 public class PerformableTreeConversionBehaviour {
 
     @Test
-    public void shouldConvertParameters(){
+    public void shouldConvertParameters() throws Exception {
         SharpParameterConverters sharpParameterConverters = new SharpParameterConverters();
         PerformableTree performableTree = new PerformableTree();
         PerformableTree.RunContext context = mock(PerformableTree.RunContext.class);
@@ -94,6 +96,10 @@ public class PerformableTreeConversionBehaviour {
         when(context.filter()).thenReturn(metaFilter);
         when(metaFilter.allow(Mockito.<Meta>anyObject())).thenReturn(true);
 
+        when(context.beforeOrAfterStorySteps(story, StepCollector.Stage.BEFORE)).thenReturn(new PerformableTree
+                .PerformableSteps());
+        when(context.beforeOrAfterStorySteps(story, StepCollector.Stage.AFTER)).thenReturn(new PerformableTree
+                .PerformableSteps());
         when(context.beforeOrAfterScenarioSteps(meta, StepCollector.Stage.BEFORE, ScenarioType.EXAMPLE))
                 .thenReturn(new PerformableTree.PerformableSteps());
         when(context.beforeOrAfterScenarioSteps(meta, StepCollector.Stage.AFTER, ScenarioType.EXAMPLE))
@@ -112,7 +118,13 @@ public class PerformableTreeConversionBehaviour {
         when(scenario.getGivenStories()).thenReturn(givenStories);
         when(givenStories.getPaths()).thenReturn(Collections.EMPTY_LIST);
         when(story.getGivenStories()).thenReturn(givenStories);
+
+        when(context.stepsContext()).thenReturn(mock(StepsContext.class));
+        when(context.reporter()).thenReturn(mock(StoryReporter.class));
+
         performableTree.addStories(context, Collections.singletonList(story));
+        performableTree.getRoot().getStories().get(0).perform(context);
+
         List<PerformableTree.PerformableScenario> performableScenarios = performableTree.getRoot().getStories().get(0)
                 .getScenarios();
 

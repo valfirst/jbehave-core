@@ -33,6 +33,7 @@ import org.jbehave.core.reporters.ConcurrentStoryReporter;
 import org.jbehave.core.reporters.DelegatingStoryReporter;
 import org.jbehave.core.reporters.StoryReporter;
 import org.jbehave.core.steps.CandidateSteps;
+import org.jbehave.core.steps.ParameterConverters;
 import org.jbehave.core.steps.context.StepsContext;
 import org.jbehave.core.steps.InjectableStepsFactory;
 import org.jbehave.core.steps.PendingStepMethodGenerator;
@@ -118,12 +119,6 @@ public class PerformableTree {
         // determine if before and after scenario steps should be run
         boolean runBeforeAndAfterScenarioSteps = shouldRunBeforeOrAfterScenarioSteps(context);
         for (Map<String, String> storyExamplesTableRow : storyExamplesTableRows) {
-            for (Map.Entry<String, String> entry : storyExamplesTableRow.entrySet()) {
-                entry.setValue((String)
-                        context.configuration().parameterConverters().convert(entry.getValue(), String.class, story));
-            }
-        }
-        for (Map<String, String> storyExamplesTableRow : storyExamplesTableRows) {
             for (Scenario scenario : story.getScenarios()) {
                 Map<String, String> scenarioParameters = new HashMap<String, String>(storyParameters);
                 PerformableScenario performableScenario = performableScenario(context, story, scenarioParameters,
@@ -156,12 +151,7 @@ public class PerformableTree {
             if (isParameterisedByExamples(scenario)) {
                 ExamplesTable table = scenario.getExamplesTable();
                 for (Map<String, String> scenarioParameters : table.getRows()) {
-                    Map<String, String> scenarioParametersCopy = new HashMap<String, String>(scenarioParameters);
-                    for (Map.Entry<String, String> entry : scenarioParametersCopy.entrySet()) {
-                        entry.setValue((String) context.configuration().parameterConverters().convert(entry.getValue(),
-                                String.class, story));
-                    }
-                    Map<String, String> parameters = new LinkedHashMap<String, String>(scenarioParametersCopy);
+                    Map<String, String> parameters = new LinkedHashMap<String, String>(scenarioParameters);
                     for(Map.Entry<String, String> storyExamplesTableRowEntry: storyExamplesTableRow.entrySet()) {
                         String key = storyExamplesTableRowEntry.getKey();
                         if(!parameters.containsKey(key)) {
@@ -861,7 +851,17 @@ public class PerformableTree {
 
         private void performScenarios(RunContext context) throws InterruptedException {
             for (PerformableScenario scenario : scenarios) {
+                convertParameters(context.configuration().parameterConverters(), scenario.getExamples());
                 scenario.perform(context);
+            }
+        }
+
+        private void convertParameters(ParameterConverters parameterConverters, List<ExamplePerformableScenario>
+                examplePerformableScenarios) {
+            for (ExamplePerformableScenario examplePerformableScenario : examplePerformableScenarios) {
+                for (Map.Entry<String, String> entry : examplePerformableScenario.getParameters().entrySet()) {
+                    entry.setValue((String) parameterConverters.convert(entry.getValue(), String.class, story));
+                }
             }
         }
 
