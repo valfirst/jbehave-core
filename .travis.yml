@@ -2,4 +2,8 @@ language: java
 install: mvn install -s settings.xml -DskipTests=true -Dmaven.javadoc.skip=true --batch-mode -e --quiet
 jdk:
   - oraclejdk8
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
 script: mvn install -s settings.xml -P examples --batch-mode -e
