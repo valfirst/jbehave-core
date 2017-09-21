@@ -165,7 +165,9 @@ public class PerformableTree {
                 List<Map<String, String>> tableRows = table.getRows();
                 for (int exampleIndex = 0; exampleIndex < tableRows.size(); exampleIndex++) {
                     Map<String, String> scenarioParameters = tableRows.get(exampleIndex);
-                    Map<String, String> scenarioParametersCopy = new HashMap<String, String>(scenarioParameters);
+                    Map<String, String> scenarioParametersCopy = new HashMap<String, String>(storyParameters);
+                    scenarioParametersCopy.putAll(storyExamplesTableRow);
+                    scenarioParametersCopy.putAll(scenarioParameters);
                     for (Map.Entry<String, String> entry : scenarioParametersCopy.entrySet()) {
                         entry.setValue((String) context.configuration().parameterConverters().convert(entry.getValue(),
                                 String.class, story));
