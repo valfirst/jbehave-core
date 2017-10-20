@@ -117,7 +117,7 @@ public class StepCreator {
             ParameterName[] parameterNames = parameterNames(method);
             Type[] types = parameterTypes(method, parameterNames);
 
-            String[] values = parameterValuesForStep(namedParameters, types, parameterNames, false);
+            String[] values = parameterValuesForStep(namedParameters, types, parameterNames, true);
             for (int i = 0; i < parameterNames.length; i++) {
                 String name = parameterNames[i].name;
                 if (name == null) {
@@ -470,7 +470,7 @@ public class StepCreator {
                             namedParameter(namedParameters, delimitedName));
                 }
             }
-            else if (overrideWithTableParameters && isTableName(namedParameters, name)) {
+            else if (overrideWithTableParameters && parameter == null && isTableName(namedParameters, name)) {
                 parameter = namedParameter(namedParameters, name);
                 if (parameter != null) {
                     monitorUsingTableNameForParameter(name, position, annotated); 
