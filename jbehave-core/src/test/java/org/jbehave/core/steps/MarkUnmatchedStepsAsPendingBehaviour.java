@@ -23,6 +23,7 @@ import org.jbehave.core.annotations.*;
 import org.jbehave.core.annotations.AfterScenario.Outcome;
 import org.jbehave.core.failures.PendingStepFound;
 import org.jbehave.core.failures.UUIDExceptionWrapper;
+import org.jbehave.core.model.ExamplesTable;
 import org.jbehave.core.model.Lifecycle;
 import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Scenario;
@@ -114,7 +115,7 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
 
         List<CandidateSteps> steps = mockCandidateSteps(anyCandidate, successCandidate, failureCandidate);
 
-        Lifecycle lifecycle = new Lifecycle(
+        Lifecycle lifecycle = new Lifecycle(ExamplesTable.EMPTY,
                 org.jbehave.core.model.Lifecycle.Steps.EMPTY,
                 new org.jbehave.core.model.Lifecycle.Steps(Outcome.ANY, asList(myAnyStep)),
                 new org.jbehave.core.model.Lifecycle.Steps(Outcome.SUCCESS, asList(mySuccessStep)),
