@@ -64,7 +64,12 @@
               ]
             },
             "propertiesAsString": "",
-            "namedParameters": []
+            "namedParameters": [],
+            "parameterControls": {
+              "nameDelimiterLeft": "<",
+              "nameDelimiterRight": ">",
+              "delimiterNamedParameters": true
+            }
           }
         },
         "lifecycle": {
@@ -127,7 +132,12 @@
                   ]
                 },
                 "propertiesAsString": "",
-                "namedParameters": []
+                "namedParameters": [],
+                "parameterControls": {
+                  "nameDelimiterLeft": "<",
+                  "nameDelimiterRight": ">",
+                  "delimiterNamedParameters": true
+                }
               }
             },
             "examplesTable": {
@@ -167,7 +177,12 @@
                 ]
               },
               "propertiesAsString": "",
-              "namedParameters": []
+              "namedParameters": [],
+              "parameterControls": {
+                "nameDelimiterLeft": "<",
+                "nameDelimiterRight": ">",
+                "delimiterNamedParameters": true
+              }
             },
             "steps": [
               [
@@ -239,7 +254,12 @@
                     ]
                   },
                   "propertiesAsString": "",
-                  "namedParameters": []
+                  "namedParameters": [],
+                  "parameterControls": {
+                    "nameDelimiterLeft": "<",
+                    "nameDelimiterRight": ">",
+                    "delimiterNamedParameters": true
+                  }
                 }
               },
               "examplesTable": {
@@ -279,7 +299,12 @@
                   ]
                 },
                 "propertiesAsString": "",
-                "namedParameters": []
+                "namedParameters": [],
+                "parameterControls": {
+                  "nameDelimiterLeft": "<",
+                  "nameDelimiterRight": ">",
+                  "delimiterNamedParameters": true
+                }
               },
               "steps": [
                 [
@@ -348,7 +373,12 @@
               ]
             },
             "propertiesAsString": "",
-            "namedParameters": []
+            "namedParameters": [],
+            "parameterControls": {
+              "nameDelimiterLeft": "<",
+              "nameDelimiterRight": ">",
+              "delimiterNamedParameters": true
+            }
           }
         },
         "examplesTable": {
@@ -388,7 +418,12 @@
             ]
           },
           "propertiesAsString": "",
-          "namedParameters": []
+          "namedParameters": [],
+          "parameterControls": {
+            "nameDelimiterLeft": "<",
+            "nameDelimiterRight": ">",
+            "delimiterNamedParameters": true
+          }
         },
         "steps": [
           [
@@ -460,7 +495,12 @@
                 ]
               },
               "propertiesAsString": "",
-              "namedParameters": []
+              "namedParameters": [],
+              "parameterControls": {
+                "nameDelimiterLeft": "<",
+                "nameDelimiterRight": ">",
+                "delimiterNamedParameters": true
+              }
             }
           },
           "examplesTable": {
@@ -500,7 +540,12 @@
               ]
             },
             "propertiesAsString": "",
-            "namedParameters": []
+            "namedParameters": [],
+            "parameterControls": {
+              "nameDelimiterLeft": "<",
+              "nameDelimiterRight": ">",
+              "delimiterNamedParameters": true
+            }
           },
           "steps": [
             [

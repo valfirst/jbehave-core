@@ -50,6 +50,11 @@
             </properties>
             <propertiesAsString></propertiesAsString>
             <namedParameters/>
+            <parameterControls>
+              <nameDelimiterLeft>&lt;</nameDelimiterLeft>
+              <nameDelimiterRight>&gt;</nameDelimiterRight>
+              <delimiterNamedParameters>true</delimiterNamedParameters>
+            </parameterControls>
           </examplesTable>
         </givenStories>
         <lifecycle>
@@ -62,9 +67,7 @@
         </lifecycle>
         <scenarios/>
       </story>
-      <localizedNarrative>In order to renovate my house
-As a customer
-I want to get a loan</localizedNarrative>
+      <localizedNarrative>In order to renovate my houseAs a customerI want to get a loan</localizedNarrative>
       <allowed>false</allowed>
       <givenStories/>
       <scenarios>
@@ -106,6 +109,11 @@ I want to get a loan</localizedNarrative>
                 </properties>
                 <propertiesAsString></propertiesAsString>
                 <namedParameters/>
+                <parameterControls>
+                  <nameDelimiterLeft>&lt;</nameDelimiterLeft>
+                  <nameDelimiterRight>&gt;</nameDelimiterRight>
+                  <delimiterNamedParameters>true</delimiterNamedParameters>
+                </parameterControls>
               </examplesTable>
             </givenStories>
             <examplesTable>
@@ -137,6 +145,11 @@ I want to get a loan</localizedNarrative>
               </properties>
               <propertiesAsString></propertiesAsString>
               <namedParameters/>
+              <parameterControls>
+                <nameDelimiterLeft>&lt;</nameDelimiterLeft>
+                <nameDelimiterRight>&gt;</nameDelimiterRight>
+                <delimiterNamedParameters>true</delimiterNamedParameters>
+              </parameterControls>
             </examplesTable>
             <steps class="java.util.Arrays$ArrayList">
               <a class="string-array">
@@ -200,6 +213,11 @@ I want to get a loan</localizedNarrative>
                   </properties>
                   <propertiesAsString></propertiesAsString>
                   <namedParameters/>
+                  <parameterControls>
+                    <nameDelimiterLeft>&lt;</nameDelimiterLeft>
+                    <nameDelimiterRight>&gt;</nameDelimiterRight>
+                    <delimiterNamedParameters>true</delimiterNamedParameters>
+                  </parameterControls>
                 </examplesTable>
               </givenStories>
               <examplesTable>
@@ -231,6 +249,11 @@ I want to get a loan</localizedNarrative>
                 </properties>
                 <propertiesAsString></propertiesAsString>
                 <namedParameters/>
+                <parameterControls>
+                  <nameDelimiterLeft>&lt;</nameDelimiterLeft>
+                  <nameDelimiterRight>&gt;</nameDelimiterRight>
+                  <delimiterNamedParameters>true</delimiterNamedParameters>
+                </parameterControls>
               </examplesTable>
               <steps class="java.util.Arrays$ArrayList">
                 <a class="string-array">
@@ -291,6 +314,11 @@ I want to get a loan</localizedNarrative>
             </properties>
             <propertiesAsString></propertiesAsString>
             <namedParameters/>
+            <parameterControls>
+              <nameDelimiterLeft>&lt;</nameDelimiterLeft>
+              <nameDelimiterRight>&gt;</nameDelimiterRight>
+              <delimiterNamedParameters>true</delimiterNamedParameters>
+            </parameterControls>
           </examplesTable>
         </givenStories>
         <examplesTable>
@@ -322,6 +350,11 @@ I want to get a loan</localizedNarrative>
           </properties>
           <propertiesAsString></propertiesAsString>
           <namedParameters/>
+          <parameterControls>
+            <nameDelimiterLeft>&lt;</nameDelimiterLeft>
+            <nameDelimiterRight>&gt;</nameDelimiterRight>
+            <delimiterNamedParameters>true</delimiterNamedParameters>
+          </parameterControls>
         </examplesTable>
         <steps class="java.util.Arrays$ArrayList">
           <a class="string-array">
@@ -385,6 +418,11 @@ I want to get a loan</localizedNarrative>
               </properties>
               <propertiesAsString></propertiesAsString>
               <namedParameters/>
+              <parameterControls>
+                <nameDelimiterLeft>&lt;</nameDelimiterLeft>
+                <nameDelimiterRight>&gt;</nameDelimiterRight>
+                <delimiterNamedParameters>true</delimiterNamedParameters>
+              </parameterControls>
             </examplesTable>
           </givenStories>
           <examplesTable>
@@ -416,6 +454,11 @@ I want to get a loan</localizedNarrative>
             </properties>
             <propertiesAsString></propertiesAsString>
             <namedParameters/>
+            <parameterControls>
+              <nameDelimiterLeft>&lt;</nameDelimiterLeft>
+              <nameDelimiterRight>&gt;</nameDelimiterRight>
+              <delimiterNamedParameters>true</delimiterNamedParameters>
+            </parameterControls>
           </examplesTable>
           <steps class="java.util.Arrays$ArrayList">
             <a class="string-array">
