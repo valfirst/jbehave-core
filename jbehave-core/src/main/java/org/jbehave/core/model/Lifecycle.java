@@ -18,14 +18,24 @@ public class Lifecycle {
 
     public static final Lifecycle EMPTY = new Lifecycle();
 
+    private ExamplesTable examplesTable;
     private List<Steps> before;
     private List<Steps> after;
-    
+
     public Lifecycle() {
         this(Arrays.<Steps>asList(), Arrays.<Steps>asList());
     }
 
+    public Lifecycle(ExamplesTable examplesTable) {
+        this(examplesTable, Arrays.<Steps>asList(), Arrays.<Steps>asList());
+    }
+
     public Lifecycle(List<Steps> before, List<Steps> after) {
+        this(ExamplesTable.EMPTY, before, after);
+    }
+
+    public Lifecycle(ExamplesTable examplesTable, List<Steps> before, List<Steps> after) {
+        this.examplesTable = examplesTable;
         this.before = before;
         this.after = after;
     }
@@ -36,6 +46,10 @@ public class Lifecycle {
         scopes.add(Scope.SCENARIO);
         scopes.add(Scope.STORY);
         return scopes;
+    }
+
+    public ExamplesTable getExamplesTable() {
+        return examplesTable;
     }
 
     public boolean hasBeforeSteps() {
@@ -66,17 +80,17 @@ public class Lifecycle {
         return unwrap(filter(this.after, scope));
     }
 
-    public Set<Outcome> getOutcomes(){
+    public Set<Outcome> getOutcomes() {
         Set<Outcome> outcomes = new LinkedHashSet<>();
-        for ( Steps steps : after ){
+        for (Steps steps : after) {
             outcomes.add(steps.outcome);
         }
         return outcomes;
     }
 
-    public MetaFilter getMetaFilter(Outcome outcome){
-        for ( Steps steps : after ){
-            if ( outcome.equals(steps.outcome) && isNotBlank(steps.metaFilter) ){
+    public MetaFilter getMetaFilter(Outcome outcome) {
+        for (Steps steps : after){
+            if (outcome.equals(steps.outcome) && isNotBlank(steps.metaFilter)) {
                 return new MetaFilter(steps.metaFilter);
             }
         }
@@ -127,7 +141,7 @@ public class Lifecycle {
     }
 
     public boolean isEmpty() {
-        return EMPTY == this;
+        return examplesTable.isEmpty() && before.isEmpty() && after.isEmpty();
     }
 
     @Override
@@ -175,7 +189,5 @@ public class Lifecycle {
         public String toString() {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
         }
-
     }
-
 }
