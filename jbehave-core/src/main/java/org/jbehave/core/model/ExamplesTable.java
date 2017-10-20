@@ -30,7 +30,6 @@ import org.jbehave.core.steps.Row;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.util.regex.Pattern.DOTALL;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 /**
  * <p>
@@ -415,6 +414,10 @@ public class ExamplesTable {
         return format();
     }
 
+    public boolean isEmpty() {
+        return getHeaders().isEmpty();
+    }
+
     public void outputTo(PrintStream output) {
         output.print(asString());
     }
@@ -508,7 +511,7 @@ public class ExamplesTable {
 
         private Map<String, String> parseProperties(String propertiesAsString) {
             Map<String, String> result = new LinkedHashMap<>();
-            if (!isEmpty(propertiesAsString)) {
+            if (!StringUtils.isEmpty(propertiesAsString)) {
                 for (String propertyAsString : propertiesAsString.split("(?<!\\\\),")) {
                     String[] property = StringUtils.split(propertyAsString, "=", 2);
                     result.put(property[0].trim(), StringUtils.replace(property[1], "\\,", ",").trim());
