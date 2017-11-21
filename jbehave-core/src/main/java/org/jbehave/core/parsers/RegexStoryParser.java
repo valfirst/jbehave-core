@@ -583,7 +583,7 @@ public class RegexStoryParser implements StoryParser {
         String followingStartingWords = concatenateWithOr("\\n", "\\s", keywords.startingWords());
         return compile(
                 "((" + initialStartingWords + ")\\s(.)*?)\\s*(\\Z|" + followingStartingWords + "|\\n"
-                        + keywords.examplesTable() + ")", DOTALL);
+                        + keywords.examplesTable() + "|\\n" + keywords.givenStories() + ")", DOTALL);
     }
 
     private Pattern delimetedNamePattern() {
