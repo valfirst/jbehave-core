@@ -106,7 +106,7 @@ public class JsonOutput extends PrintStreamOutput {
                 print("\"scenarios\": [");
                 scenarioPublishingPerLevels.put(storyPublishingLevel, Boolean.TRUE);
             }
-        } else if ("afterScenario".equals(key)) {
+        } else if ("afterScenario".equals(key) || "afterScenarioWithFailure".equals(key)) {
             // Need to complete scenario with examples
             scenarioCompleted = true;
         } else if (scenarioPublishingPerLevels.get(storyPublishingLevel) == Boolean.TRUE && scenarioCompleted && !ArrayUtils.contains(PARAMETER_KEYS, key)) {
