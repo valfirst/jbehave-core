@@ -512,6 +512,65 @@ public class StepCreatorBehaviour {
         verify(storyReporter).beforeStep(stepAsString);
     }
 
+    @Test
+    public void shouldMatchParametersByNestedDelimitedNameWithNoNamedAnnotations() throws Exception {
+        // Given
+        SomeSteps stepsInstance = new SomeSteps();
+        parameterConverters = new ParameterConverters(new LoadFromClasspath(), new TableTransformers());
+        StepMatcher stepMatcher = mock(StepMatcher.class);
+        ParameterControls parameterControls = new ParameterControls().useDelimiterNamedParameters(true);
+        StepCreator stepCreator = stepCreatorUsing(stepsInstance, stepMatcher, parameterControls);
+        Map<String, String> params = new HashMap<>();
+        params.put("param1", "<param3>");
+        params.put("param3", "lifecycleValue");
+        params.put("param2", "value");
+        when(stepMatcher.parameterNames()).thenReturn(new String[] {"combinedParameter", "singleParameter"});
+        when(stepMatcher.parameter(1)).thenReturn("<param1>te<param2>st");
+        when(stepMatcher.parameter(2)).thenReturn("<param1>");
+        StoryReporter storyReporter = mock(StoryReporter.class);
+
+        // When
+        Step step = stepCreator.createParametrisedStep(SomeSteps.methodFor("aMultipleParamMethodWithoutNamedAnnotation"),
+                "When a parameter <combinedParameter> is set to <singleParameter>",
+                "a parameter <combinedParameter> is set to <singleParameter>", params, Collections.emptyList());
+        step.perform(storyReporter, null);
+
+        // Then
+        @SuppressWarnings("unchecked")
+        Map<String, String> methodArgs = (Map<String, String>) stepsInstance.args;
+        assertThat(methodArgs.get("theme"), is("lifecycleValuetevaluest"));
+        assertThat(methodArgs.get("variant"), is("lifecycleValue"));
+    }
+
+    @Test
+    public void shouldMatchParametersByAbsentNestedDelimitedNameWithNoNamedAnnotations() throws Exception {
+        // Given
+        SomeSteps stepsInstance = new SomeSteps();
+        parameterConverters = new ParameterConverters(new LoadFromClasspath(), new TableTransformers());
+        StepMatcher stepMatcher = mock(StepMatcher.class);
+        ParameterControls parameterControls = new ParameterControls().useDelimiterNamedParameters(true);
+        StepCreator stepCreator = stepCreatorUsing(stepsInstance, stepMatcher, parameterControls);
+        Map<String, String> params = new HashMap<>();
+        params.put("param1", "<param3>");
+        params.put("param2", "value");
+        when(stepMatcher.parameterNames()).thenReturn(new String[] {"combinedParameter", "singleParameter"});
+        when(stepMatcher.parameter(1)).thenReturn("<param1>te<param2>st");
+        when(stepMatcher.parameter(2)).thenReturn("<param1>");
+        StoryReporter storyReporter = mock(StoryReporter.class);
+
+        // When
+        Step step = stepCreator.createParametrisedStep(SomeSteps.methodFor("aMultipleParamMethodWithoutNamedAnnotation"),
+                "When a parameter <combinedParameter> is set to <singleParameter>",
+                "a parameter <combinedParameter> is set to <singleParameter>", params, Collections.emptyList());
+        step.perform(storyReporter, null);
+
+        // Then
+        @SuppressWarnings("unchecked")
+        Map<String, String> methodArgs = (Map<String, String>) stepsInstance.args;
+        assertThat(methodArgs.get("theme"), is("<param3>tevaluest"));
+        assertThat(methodArgs.get("variant"), is("<param3>"));
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void shouldMatchParametersByDelimitedNameWithDistinctNamedAnnotations() throws Exception {
