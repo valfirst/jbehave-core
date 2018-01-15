@@ -59,9 +59,11 @@ public class ParameterConvertersBehaviour {
     public void shouldDefineDefaultConverters() {
         LoadFromClasspath resourceLoader = new LoadFromClasspath();
         TableTransformers tableTransformers = new TableTransformers();
-        ParameterConverters converters = new ParameterConverters(resourceLoader, tableTransformers);
-        ParameterConverter[] defaultConverters = converters.defaultConverters(resourceLoader, tableTransformers,
-                Locale.ENGLISH, ",");
+        ParameterControls parameterControls = new ParameterControls();
+        ParameterConverters converters = new ParameterConverters(resourceLoader, parameterControls, tableTransformers,
+                true);
+        ParameterConverter[] defaultConverters = converters.defaultConverters(resourceLoader, parameterControls,
+                tableTransformers, Locale.ENGLISH, ",");
         assertThatDefaultConvertersInclude(defaultConverters, BooleanConverter.class, NumberConverter.class,
                 NumberListConverter.class, StringListConverter.class, DateConverter.class, EnumConverter.class,
                 EnumListConverter.class, ExamplesTableConverter.class, ExamplesTableParametersConverter.class);
@@ -454,7 +456,7 @@ public class ParameterConvertersBehaviour {
 
     @Test(expected = ParameterConvertionFailed.class)
     public void shouldFailToConvertToUnknownType() throws ParseException, IntrospectionException {
-        new ParameterConverters(new LoadFromClasspath(), new TableTransformers()).convert("abc", WrongType.class);
+        new ParameterConverters(new LoadFromClasspath(), new TableTransformers()).convert("abc", WrongType.class, null);
     }
 
     static class WrongType {
@@ -545,7 +547,7 @@ public class ParameterConvertersBehaviour {
     }
 
     private void ensureItStillDoesNotKnowHowToConvertFooToBar(ParameterConverters original) {
-        original.convert("foo", Bar.class);
+        original.convert("foo", Bar.class, null);
     }
 
     private class Bar {

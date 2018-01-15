@@ -46,6 +46,7 @@ import org.jbehave.core.parsers.RegexPrefixCapturingPatternParser;
 import org.jbehave.core.parsers.StepPatternParser;
 import org.jbehave.core.reporters.StoryReporterBuilder;
 import org.jbehave.core.steps.CandidateSteps;
+import org.jbehave.core.steps.ParameterControls;
 import org.jbehave.core.steps.ParameterConverters;
 import org.jbehave.core.steps.Steps;
 import org.jbehave.core.steps.ParameterConverters.DateConverter;
@@ -114,14 +115,14 @@ public class GuiceAnnotationBuilderBehaviour {
     }
 
     private void assertThatCustomObjectIsConverted(ParameterConverters parameterConverters) {
-        assertThat(((CustomObject) parameterConverters.convert("value", CustomObject.class)).toString(),
+        assertThat(((CustomObject) parameterConverters.convert("value", CustomObject.class, null)).toString(),
                 equalTo(new CustomObject("value").toString()));
     }
 
     private void assertThatDateIsConvertedWithFormat(ParameterConverters parameterConverters, DateFormat dateFormat) {
         String date = "2010-10-10";
         try {
-            assertThat((Date) parameterConverters.convert(date, Date.class), equalTo(dateFormat.parse(date)));
+            assertThat((Date) parameterConverters.convert(date, Date.class, null), equalTo(dateFormat.parse(date)));
         } catch (ParseException e) {
             Assert.fail();
         }
@@ -300,7 +301,8 @@ public class GuiceAnnotationBuilderBehaviour {
     public static class MyExampleTableConverter extends ParameterConverters.ExamplesTableConverter {
 
         public MyExampleTableConverter() {
-            super(new ExamplesTableFactory(new LoadFromClasspath(), new TableTransformers()));
+            super(new ExamplesTableFactory(new LoadFromClasspath(), new ParameterConverters(), new ParameterControls(),
+                    new TableTransformers()));
         }
 
     }

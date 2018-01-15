@@ -38,22 +38,15 @@ public class XmlOutput extends PrintStreamOutput {
 
     public XmlOutput(PrintStream output, Properties outputPatterns,
             Keywords keywords, boolean reportFailureTrace) {
-        this(output, mergeWithDefault(outputPatterns), keywords, reportFailureTrace, false);
+        this(output, outputPatterns, keywords, reportFailureTrace, false);
     }
 
     public XmlOutput(PrintStream output, Properties outputPatterns,
             Keywords keywords, boolean reportFailureTrace, boolean compressFailureTrace) {
-        super(XML, output, mergeWithDefault(outputPatterns), keywords, reportFailureTrace, compressFailureTrace);
+        super(XML, output, defaultXmlPatterns(), outputPatterns, keywords, reportFailureTrace, compressFailureTrace);
     }
 
-    private static Properties mergeWithDefault(Properties outputPatterns) {
-        Properties patterns = defaultHtmlPatterns();
-        // override any default pattern
-        patterns.putAll(outputPatterns);
-        return patterns;
-    }
-
-    private static Properties defaultHtmlPatterns() {
+    private static Properties defaultXmlPatterns() {
         Properties patterns = new Properties();
         patterns.setProperty("dryRun", "<dryRun>{0}</dryRun>\n");        
         patterns.setProperty("beforeStory", "<story path=\"{1}\" title=\"{0}\">\n");

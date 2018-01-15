@@ -8,6 +8,7 @@ import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_END;
 import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_START;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -29,6 +30,7 @@ import org.jbehave.core.failures.UUIDExceptionWrapper;
 import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.TableTransformers;
+import org.jbehave.core.model.Story;
 import org.jbehave.core.parsers.RegexStepMatcher;
 import org.jbehave.core.parsers.StepMatcher;
 import org.jbehave.core.reporters.StoryReporter;
@@ -59,8 +61,8 @@ public class StepCreatorBehaviour {
 
     @Before
     public void setUp() throws Exception {
-        when(parameterConverters.convert("shopping cart", String.class)).thenReturn("shopping cart");
-        when(parameterConverters.convert("book", String.class)).thenReturn("book");
+        when(parameterConverters.convert("shopping cart", String.class, null)).thenReturn("shopping cart");
+        when(parameterConverters.convert("book", String.class, null)).thenReturn("book");
         when(parameterConverters.newInstanceAdding(Matchers.<ParameterConverters.ParameterConverter> anyObject()))
                 .thenReturn(parameterConverters);
     }
@@ -420,7 +422,7 @@ public class StepCreatorBehaviour {
 
         // When
         Date aDate = new Date();
-        when(parameterConverters.convert(anyString(), eq(Date.class))).thenReturn(aDate);
+        when(parameterConverters.convert(anyString(), eq(Date.class), (Story) isNull())).thenReturn(aDate);
         Step stepWithMeta = stepCreator.createBeforeOrAfterStep(SomeSteps.methodFor("aMethodWithDate"), new Meta());
         StepResult stepResult = stepWithMeta.perform(null);
 
@@ -488,6 +490,37 @@ public class StepCreatorBehaviour {
 
     }
 
+    @Test
+    public void shouldMatchParametersByNestedDelimitedNameWithNoNamedAnnotations() throws Exception {
+
+        // Given
+        SomeSteps stepsInstance = new SomeSteps();
+        parameterConverters = new ParameterConverters(new LoadFromClasspath(), new TableTransformers());
+        StepMatcher stepMatcher = mock(StepMatcher.class);
+        ParameterControls parameterControls = new ParameterControls().useDelimiterNamedParameters(true);
+        StepCreator stepCreator = stepCreatorUsing(stepsInstance, stepMatcher, parameterControls);
+        Map<String, String> params = new HashMap<>();
+        params.put("param1", "<param3>");
+        params.put("param3", "lifecycleValue");
+        params.put("param2", "value");
+        when(stepMatcher.parameterNames()).thenReturn(new String[] {"combinedParameter", "singleParameter"});
+        when(stepMatcher.parameter(1)).thenReturn("<param1>te<param2>st");
+        when(stepMatcher.parameter(2)).thenReturn("<param1>");
+
+        // When
+        Step step = stepCreator.createParametrisedStep(SomeSteps.methodFor("aMultipleParamMethodWithoutNamedAnnotation"),
+                "When a parameter <combinedParameter> is set to <singleParameter>",
+                "a parameter <combinedParameter> is set to <singleParameter>", params);
+        step.perform(null);
+
+        // Then
+        @SuppressWarnings("unchecked")
+        Map<String, String> methodArgs = (Map<String, String>) stepsInstance.args;
+        assertThat(methodArgs.get("theme"), is("lifecycleValuetevaluest"));
+        assertThat(methodArgs.get("variant"), is("lifecycleValue"));
+
+    }
+
     @SuppressWarnings("unchecked")
     @Test
     public void shouldMatchParametersByDelimitedNameWithDistinctNamedAnnotations() throws Exception {
@@ -500,8 +533,8 @@ public class StepCreatorBehaviour {
         StepCreator stepCreator = stepCreatorUsing(stepsInstance, stepMatcher, parameterControls);
         Map<String, String> params = new HashMap<String, String>();
         params.put("t", "distinct theme");
-        params.put("v", "distinct variant");
-        when(stepMatcher.parameterNames()).thenReturn(params.keySet().toArray(new String[params.size()]));
+        params.put("v", "distinct variant <with non variable inside>");
+        when(stepMatcher.parameterNames()).thenReturn(new String[]{"theme", "variant"});
         when(stepMatcher.parameter(1)).thenReturn("<t>");
         when(stepMatcher.parameter(2)).thenReturn("<v>");
 
@@ -513,25 +546,25 @@ public class StepCreatorBehaviour {
         // Then
         Map<String, String> results = (Map<String, String>) stepsInstance.args;
         assertThat(results.get("theme"), equalTo("distinct theme"));
-        assertThat(results.get("variant"), equalTo("distinct variant"));
+        assertThat(results.get("variant"), equalTo("distinct variant <with non variable inside>"));
 
     }
 
-
     @SuppressWarnings("unchecked")
     @Test
-    public void shouldMatchParametersByNamedAnnotationsIfConfiguredToNotUseDelimiterNamedParamters() throws Exception {
+    public void shouldMatchParametersByDelimitedNameWithDistinctNamedAnnotationsWithStoryExampleVariable() throws Exception {
 
         // Given
         SomeSteps stepsInstance = new SomeSteps();
-        parameterConverters = new ParameterConverters(new LoadFromClasspath(), new TableTransformers());
+        parameterConverters = new ParameterConverters();
         StepMatcher stepMatcher = mock(StepMatcher.class);
-        ParameterControls parameterControls = new ParameterControls().useDelimiterNamedParameters(false);
+        ParameterControls parameterControls = new ParameterControls().useDelimiterNamedParameters(true);
         StepCreator stepCreator = stepCreatorUsing(stepsInstance, stepMatcher, parameterControls);
         Map<String, String> params = new HashMap<String, String>();
-        params.put("theme", "a theme");
-        params.put("variant", "a variant");
-        when(stepMatcher.parameterNames()).thenReturn(params.keySet().toArray(new String[params.size()]));
+        params.put("t", "distinct theme");
+        params.put("v", "distinct variant <with_story_variable_inside>");
+        params.put("with_story_variable_inside", "with story variable value");
+        when(stepMatcher.parameterNames()).thenReturn(new String[]{"theme", "variant"});
         when(stepMatcher.parameter(1)).thenReturn("<t>");
         when(stepMatcher.parameter(2)).thenReturn("<v>");
 
@@ -542,8 +575,37 @@ public class StepCreatorBehaviour {
 
         // Then
         Map<String, String> results = (Map<String, String>) stepsInstance.args;
-        assertThat(results.get("theme"), equalTo("a theme"));
-        assertThat(results.get("variant"), equalTo("a variant"));
+        assertThat(results.get("theme"), equalTo("distinct theme"));
+        assertThat(results.get("variant"), equalTo("distinct variant with story variable value"));
+
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    public void shouldNotMatchParametersByNamedAnnotationsIfConfiguredToNotUseDelimiterNamedParamters() throws Exception {
+
+        // Given
+        SomeSteps stepsInstance = new SomeSteps();
+        parameterConverters = new ParameterConverters(new LoadFromClasspath(), new TableTransformers());
+        StepMatcher stepMatcher = mock(StepMatcher.class);
+        ParameterControls parameterControls = new ParameterControls().useDelimiterNamedParameters(false);
+        StepCreator stepCreator = stepCreatorUsing(stepsInstance, stepMatcher, parameterControls);
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("theme", "a theme");
+        params.put("variant", "a variant");
+        when(stepMatcher.parameterNames()).thenReturn(new String[]{"theme", "variant"});
+        when(stepMatcher.parameter(1)).thenReturn("<t>");
+        when(stepMatcher.parameter(2)).thenReturn("<v>");
+
+        // When
+        Step step = stepCreator.createParametrisedStep(SomeSteps.methodFor("aMethodWithANamedParameter"),
+                "When I use parameters <t> and <v>", "I use parameters <t> and <v>", params);
+        step.perform(null);
+
+        // Then
+        Map<String, String> results = (Map<String, String>) stepsInstance.args;
+        assertThat(results.get("theme"), equalTo("<t>"));
+        assertThat(results.get("variant"), equalTo("<v>"));
     }
 
     @Test

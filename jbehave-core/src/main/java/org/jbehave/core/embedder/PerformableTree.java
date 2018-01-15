@@ -1,6 +1,7 @@
 package org.jbehave.core.embedder;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,7 +61,7 @@ import org.jbehave.core.steps.Timer;
  */
 public class PerformableTree {
 
-    private static final Map<String, String> NO_PARAMETERS = new HashMap<String, String>();
+    private static final Map<String, String> NO_PARAMETERS = Collections.emptyMap();
 
     private PerformableRoot root = new PerformableRoot();
 
@@ -80,13 +81,9 @@ public class PerformableTree {
         PerformableStory performableStory = new PerformableStory(story, context.configuration().keywords(),
                 context.givenStory());
 
-        // determine if story is allowed
-        boolean storyAllowed = true;
         FilteredStory filteredStory = context.filter(story);
         Meta storyMeta = story.getMeta();
-        if (!filteredStory.allowed()) {
-            storyAllowed = false;
-        }
+        boolean storyAllowed = filteredStory.allowed();
 
         performableStory.allowed(storyAllowed);
 
@@ -94,91 +91,130 @@ public class PerformableTree {
 
             performableStory.addBeforeSteps(context.beforeOrAfterStorySteps(story, Stage.BEFORE));
             performableStory.addBeforeSteps(context.lifecycleSteps(story.getLifecycle(), storyMeta, Stage.BEFORE, Scope.STORY));
-
-            // determine if before and after scenario steps should be run
-            boolean runBeforeAndAfterScenarioSteps = shouldRunBeforeOrAfterScenarioSteps(context);
-
-
-            for (Scenario scenario : story.getScenarios()) {
-                Map<String, String> scenarioParameters = new HashMap<String, String>(storyParameters);
-                PerformableScenario performableScenario = performableScenario(context, story, scenarioParameters, filteredStory, storyMeta,
-                        runBeforeAndAfterScenarioSteps, scenario);
-                if (performableScenario.isNormalPerformableScenario() || performableScenario.hasExamples()) {
-                    performableStory.add(performableScenario);
-                }
-            }
+            performableStory.addAll(performableScenarios(context, story, storyParameters, filteredStory));
 
             // Add Given stories only if story contains scenarios
             if (!performableStory.getScenarios().isEmpty()) {
                 Map<String, String> givenStoryParameters = new HashMap<>(storyParameters);
                 addMetaParameters(givenStoryParameters, storyMeta);
                 performableStory.addGivenStories(performableGivenStories(context, story.getGivenStories(),
-                        givenStoryParameters));
+                        givenStoryParameters, storyMeta));
             }
 
             performableStory.addAfterSteps(context.lifecycleSteps(story.getLifecycle(), storyMeta, Stage.AFTER, Scope.STORY));
             performableStory.addAfterSteps(context.beforeOrAfterStorySteps(story, Stage.AFTER));
-
         }
 
         return performableStory;
     }
 
+    private List<PerformableScenario> performableScenarios(RunContext context, Story story,
+            Map<String, String> storyParameters, FilteredStory filterContext) {
+        List<PerformableScenario> performableScenarios = new ArrayList<PerformableScenario>();
+
+        ExamplesTable storyExamplesTable = story.getLifecycle().getExamplesTable();
+        List<Map<String, String>> storyExamplesTableRows;
+        if (storyExamplesTable.isEmpty()) {
+            storyExamplesTableRows = new ArrayList<Map<String, String>>();
+            storyExamplesTableRows.add(new HashMap<String, String>());
+        }
+        else {
+            storyExamplesTableRows = storyExamplesTable.getRows();
+        }
+
+        // determine if before and after scenario steps should be run
+        boolean runBeforeAndAfterScenarioSteps = shouldRunBeforeOrAfterScenarioSteps(context);
+        for (Map<String, String> storyExamplesTableRow : storyExamplesTableRows) {
+            for (Map.Entry<String, String> entry : storyExamplesTableRow.entrySet()) {
+                entry.setValue((String)
+                        context.configuration().parameterConverters().convert(entry.getValue(), String.class, story));
+            }
+        }
+        for (Map<String, String> storyExamplesTableRow : storyExamplesTableRows) {
+            for (Scenario scenario : story.getScenarios()) {
+                Map<String, String> scenarioParameters = new HashMap<String, String>(storyParameters);
+                PerformableScenario performableScenario = performableScenario(context, story, scenarioParameters,
+                        filterContext, runBeforeAndAfterScenarioSteps, scenario, storyExamplesTableRow);
+                if (performableScenario.isNormalPerformableScenario() || performableScenario.hasExamples()) {
+                    performableScenarios.add(performableScenario);
+                }
+            }
+        }
+        return performableScenarios;
+    }
+
     private PerformableScenario performableScenario(RunContext context, Story story,
-            Map<String, String> storyParameters, FilteredStory filterContext, Meta storyMeta,
-            boolean runBeforeAndAfterScenarioSteps, Scenario scenario) {
+            Map<String, String> storyParameters, FilteredStory filterContext, boolean runBeforeAndAfterScenarioSteps,
+            Scenario scenario, Map<String, String> storyExamplesTableRow) {
         PerformableScenario performableScenario = new PerformableScenario(scenario, story.getPath());
-        // scenario also inherits meta from story
-        boolean scenarioAllowed = true;
-        if (failureOccurred(context) && context.configuration().storyControls().skipScenariosAfterFailure()) {
+        if (context.failureOccurred() && context.configuration().storyControls().skipScenariosAfterFailure()) {
             return performableScenario;
         }
 
-        if (!filterContext.allowed(scenario)) {
-            scenarioAllowed = false;
-        }
+        boolean scenarioAllowed = filterContext.allowed(scenario);
 
         performableScenario.allowed(scenarioAllowed);
 
         if (scenarioAllowed) {
             Lifecycle lifecycle = story.getLifecycle();
 
-            Meta storyAndScenarioMeta = scenario.getMeta().inheritFrom(storyMeta);
-			NormalPerformableScenario normalScenario = normalScenario(
-					context, lifecycle, scenario, storyAndScenarioMeta,
-					storyParameters);
+            Meta storyAndScenarioMeta = scenario.getMeta().inheritFrom(story.getMeta());
 
-            // run before scenario steps, if allowed
-            if (runBeforeAndAfterScenarioSteps) {
-            	normalScenario.addBeforeSteps(context.beforeOrAfterScenarioSteps(storyAndScenarioMeta,
-                        Stage.BEFORE, ScenarioType.NORMAL));
-            }
-            
-			if (isParameterisedByExamples(scenario)) {
+            if (isParameterisedByExamples(scenario)) {
                 ExamplesTable table = scenario.getExamplesTable();
                 for (Map<String, String> scenarioParameters : table.getRows()) {
-                    Meta exampleScenarioMeta = parameterMeta(context, scenarioParameters).inheritFrom(storyAndScenarioMeta);
-                    boolean exampleScenarioAllowed = context.filter().allow(exampleScenarioMeta);
-
-                    if (exampleScenarioAllowed) {
-                        ExamplePerformableScenario exampleScenario = exampleScenario(
-                                context, lifecycle, scenario, storyAndScenarioMeta,
-                                scenarioParameters);
-                        performableScenario.addExampleScenario(exampleScenario);
+                    Map<String, String> scenarioParametersCopy = new HashMap<String, String>(storyParameters);
+                    scenarioParametersCopy.putAll(storyExamplesTableRow);
+                    scenarioParametersCopy.putAll(scenarioParameters);
+                    for (Map.Entry<String, String> entry : scenarioParametersCopy.entrySet()) {
+                        entry.setValue((String) context.configuration().parameterConverters().convert(entry.getValue(),
+                                String.class, story));
                     }
+                    Map<String, String> parameters = new LinkedHashMap<String, String>(scenarioParametersCopy);
+                    for(Map.Entry<String, String> storyExamplesTableRowEntry: storyExamplesTableRow.entrySet()) {
+                        String key = storyExamplesTableRowEntry.getKey();
+                        if(!parameters.containsKey(key)) {
+                            parameters.put(key, storyExamplesTableRowEntry.getValue());
+                        }
+                    }
+                    addExampleScenario(context, scenario, performableScenario, lifecycle, storyAndScenarioMeta,
+                            parameters);
                 }
-            } else { // plain old scenario
-				performableScenario.useNormalScenario(normalScenario);
             }
+            else if (!storyExamplesTableRow.isEmpty()){
+                    addExampleScenario(context, scenario, performableScenario, lifecycle, storyAndScenarioMeta,
+                            new HashMap<String, String>(storyExamplesTableRow));
+            }else { // plain old scenario
+                NormalPerformableScenario normalScenario = normalScenario(context, lifecycle, scenario,
+                        storyAndScenarioMeta, storyParameters);
 
-            // after scenario steps, if allowed
-            if (runBeforeAndAfterScenarioSteps) {
-            	normalScenario.addAfterSteps(context.beforeOrAfterScenarioSteps(storyAndScenarioMeta, Stage.AFTER,
-                        ScenarioType.NORMAL));
+                // run before scenario steps, if allowed
+                if (runBeforeAndAfterScenarioSteps) {
+                    normalScenario.addBeforeSteps(context.beforeOrAfterScenarioSteps(storyAndScenarioMeta, Stage.BEFORE,
+                            ScenarioType.NORMAL));
+                }
+                performableScenario.useNormalScenario(normalScenario);
+                // after scenario steps, if allowed
+                if (runBeforeAndAfterScenarioSteps) {
+                    normalScenario.addAfterSteps(context.beforeOrAfterScenarioSteps(storyAndScenarioMeta, Stage.AFTER,
+                            ScenarioType.NORMAL));
+                }
             }
-
         }
         return performableScenario;
+    }
+
+    private void addExampleScenario(RunContext context, Scenario scenario, PerformableScenario performableScenario,
+            Lifecycle lifecycle, Meta storyAndScenarioMeta, Map<String, String> parameters)
+    {
+        Meta exampleScenarioMeta = parameterMeta(context, parameters).inheritFrom(storyAndScenarioMeta);
+        boolean exampleScenarioAllowed = context.filter().allow(exampleScenarioMeta);
+
+        if (exampleScenarioAllowed) {
+            ExamplePerformableScenario exampleScenario = exampleScenario(context, lifecycle, scenario,
+                    storyAndScenarioMeta, parameters);
+            performableScenario.addExampleScenario(exampleScenario);
+        }
     }
 
 	private NormalPerformableScenario normalScenario(RunContext context,
@@ -221,26 +257,30 @@ public class PerformableTree {
 		performableScenario.addBeforeSteps(context.lifecycleSteps(lifecycle, storyAndScenarioMeta, Stage.BEFORE));
 		addMetaParameters(parameters, storyAndScenarioMeta);
 		performableScenario.addGivenStories(performableGivenStories(context, scenario.getGivenStories(),
-		        parameters));
+		        parameters, storyAndScenarioMeta));
 		performableScenario.addSteps(context.scenarioSteps(scenario, parameters));
 		performableScenario.addAfterSteps(context.lifecycleSteps(lifecycle, storyAndScenarioMeta, Stage.AFTER));
 		performableScenario.addAfterSteps(context.beforeOrAfterScenarioSteps(storyAndScenarioMeta, Stage.AFTER,
                 ScenarioType.ANY));
 	}
 
-    private List<PerformableStory> performableGivenStories(RunContext context, GivenStories givenStories,
-            Map<String, String> parameters) {
+    private List<PerformableStory> performableGivenStories(RunContext context, GivenStories givenStories, Map<String,
+            String> parameters, Meta meta) {
         List<PerformableStory> stories = new ArrayList<PerformableStory>();
         if (givenStories.getPaths().size() > 0) {
             for (GivenStory givenStory : givenStories.getStories()) {
                 RunContext childContext = context.childContextFor(givenStory);
                 // run given story, using any parameters provided
-                Story story = storyOfPath(context.configuration(), childContext.path());                
+                Story story = storyOfPath(context.configuration(), childContext.path());
+                if (!meta.isEmpty()) {
+                    story = createNewStory(story, story.getMeta().inheritFrom(meta), story.getScenarios());
+                }
                 if ( givenStory.hasAnchorParameters() ){
                     story = storyWithMatchingScenarios(story, givenStory.getAnchorParameters());
                 }
-                parameters.putAll(givenStory.getParameters());
-                stories.add(performableStory(childContext, story, parameters));
+                Map<String, String> storyParameters = new HashMap<String, String>(parameters);
+                storyParameters.putAll(givenStory.getParameters());
+                stories.add(performableStory(childContext, story, storyParameters));
             }
         }
         return stories;
@@ -254,7 +294,12 @@ public class PerformableTree {
                 scenarios.add(scenario);
             }
         }
-        return new Story(story.getPath(), story.getDescription(), story.getMeta(), story.getNarrative(), scenarios); 
+        return createNewStory(story, story.getMeta(), scenarios);
+    }
+
+    private Story createNewStory(Story baseStory, Meta newMeta, List<Scenario> newScenarios) {
+        return new Story(baseStory.getPath(), baseStory.getDescription(), newMeta, baseStory.getNarrative(),
+                baseStory.getGivenStories(), baseStory.getLifecycle(), newScenarios);
     }
 
     private boolean matchesParameters(Scenario scenario, Map<String, String> parameters) {
@@ -300,20 +345,12 @@ public class PerformableTree {
     }
 
     private boolean shouldRunBeforeOrAfterScenarioSteps(RunContext context) {
-        Configuration configuration = context.configuration();
-        if (!configuration.storyControls().skipBeforeAndAfterScenarioStepsIfGivenStory()) {
-            return true;
-        }
-
-        return !context.givenStory();
-    }
-
-    private boolean failureOccurred(RunContext context) {
-        return context.failureOccurred();
+        return !context.configuration().storyControls().skipBeforeAndAfterScenarioStepsIfGivenStory()
+                || !context.givenStory();
     }
 
     private boolean isParameterisedByExamples(Scenario scenario) {
-        return scenario.getExamplesTable().getHeaders().size() > 0 && !scenario.getGivenStories().requireParameters();
+        return !scenario.getExamplesTable().isEmpty() && !scenario.getGivenStories().requireParameters();
     }
 
     static void generatePendingStepMethods(RunContext context, List<Step> steps) {
@@ -737,6 +774,18 @@ public class PerformableTree {
         SUCCESSFUL, FAILED, PENDING, NOT_PERFORMED, NOT_ALLOWED;
     }
 
+    private static void performGivenStories(RunContext context, List<PerformableStory> performableGivenStories,
+            GivenStories givenStories) throws InterruptedException {
+        if (performableGivenStories.size() > 0) {
+            context.reporter().beforeGivenStories();
+            context.reporter().givenStories(givenStories);
+            for (PerformableStory story : performableGivenStories) {
+                story.perform(context);
+            }
+            context.reporter().afterGivenStories();
+        }
+    }
+
     public static class PerformableStory implements Performable {
 
         private final Story story;
@@ -784,8 +833,8 @@ public class PerformableTree {
             this.afterSteps = afterSteps;
         }
 
-        public void add(PerformableScenario performableScenario) {
-            scenarios.add(performableScenario);
+        public void addAll(List<PerformableScenario> performableScenarios) {
+            scenarios.addAll(performableScenarios);
         }
 
         public Story getStory() {
@@ -806,14 +855,14 @@ public class PerformableTree {
                 this.status = Status.NOT_ALLOWED;
             }
             context.stepsContext().resetStory();
-            context.reporter().beforeStory(story, context.givenStory);
+            context.reporter().beforeStory(story, givenStory);
             context.reporter().narrative(story.getNarrative());
             context.reporter().lifecyle(story.getLifecycle());
             State state = context.state();
             Timer timer = new Timer().start();
             try {
                 beforeSteps.perform(context);
-            	performGivenStories(context);
+                performGivenStories(context, givenStories, story.getGivenStories());
                 performScenarios(context);
                 afterSteps.perform(context);
             } finally {
@@ -822,21 +871,9 @@ public class PerformableTree {
             if (context.restartStory()) {
                 context.reporter().afterStory(true);
             } else {
-                context.reporter().afterStory(context.givenStory);
+                context.reporter().afterStory(givenStory);
             }
             this.status = context.status(state);
-        }
-
-        private void performGivenStories(RunContext context) throws InterruptedException {
-            if (givenStories.size() > 0) {
-                context.reporter().givenStories(story.getGivenStories());
-                final boolean parentGivenStory = context.givenStory;
-                for (PerformableStory story : givenStories) {
-                    context.givenStory = story.givenStory();
-                    story.perform(context);
-                }
-                context.givenStory = parentGivenStory;
-           }
         }
 
         private void performScenarios(RunContext context) throws InterruptedException {
@@ -908,8 +945,8 @@ public class PerformableTree {
         		return;
         	}
         	context.stepsContext().resetScenario();
-        	context.reporter().beforeScenario(scenario.getTitle());
         	context.reporter().scenarioMeta(scenario.getMeta());
+        	context.reporter().beforeScenario(scenario.getTitle());
             State state = context.state();
 			if (!examplePerformableScenarios.isEmpty()) {
 				context.reporter().beforeExamples(scenario.getSteps(),
@@ -1001,16 +1038,8 @@ public class PerformableTree {
                 context.resetState();
             }
             beforeSteps.perform(context);
-			if (givenStories.size() > 0) {
-				context.reporter().givenStories(scenario.getGivenStories());
-                final boolean parentGivenStory = context.givenStory;
-				for (PerformableStory story : givenStories) {
-					context.givenStory = story.givenStory();
-					story.perform(context);
-				}
-				context.givenStory = parentGivenStory;
-			}
-			performRestartableSteps(context);	        
+            performGivenStories(context, givenStories, scenario.getGivenStories());
+			performRestartableSteps(context);
             afterSteps.perform(context);
         }
 
@@ -1036,16 +1065,8 @@ public class PerformableTree {
             context.stepsContext().resetExample();
             context.reporter().example(parameters);
             beforeSteps.perform(context);
-			if (givenStories.size() > 0) {
-				context.reporter().givenStories(scenario.getGivenStories());
-				final boolean parentGivenStory = context.givenStory;
-				for (PerformableStory story : givenStories) {
-					context.givenStory = story.givenStory();
-					story.perform(context);
-				}
-				context.givenStory = parentGivenStory;
-			}
-			performRestartableSteps(context);	        
+            performGivenStories(context, givenStories, scenario.getGivenStories());
+			performRestartableSteps(context);
             afterSteps.perform(context);
         }
 

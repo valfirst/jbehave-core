@@ -35,6 +35,7 @@ import org.jbehave.core.model.Story;
 import org.jbehave.core.model.StoryDuration;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeJson;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeXml;
 import static org.apache.commons.lang3.StringUtils.substringBetween;
 import static org.jbehave.core.steps.StepCreator.PARAMETER_TABLE_END;
@@ -91,7 +92,36 @@ public abstract class PrintStreamOutput implements StoryReporter {
     private static final String EMPTY = "";
 
     public enum Format {
-        TXT, HTML, XML
+        TXT {
+            @Override
+            public Object escapeValue(Object object) {
+                return object;
+            }
+        },
+        HTML {
+            @Override
+            public Object escapeValue(Object object) {
+                return escapeHtml4(asString(object));
+            }
+        },
+        XML {
+            @Override
+            public Object escapeValue(Object object) {
+                return escapeXml(asString(object));
+            }
+        },
+        JSON {
+            @Override
+            public Object escapeValue(Object object) {
+                return escapeJson(asString(object));
+            }
+        };
+
+        public abstract Object escapeValue(Object object);
+
+        private static String asString(Object object) {
+            return object != null ? object.toString() : EMPTY;
+        }
     }
 
     private final Format format;
@@ -102,6 +132,18 @@ public abstract class PrintStreamOutput implements StoryReporter {
     private ThreadLocal<Boolean> compressFailureTrace = new ThreadLocal<Boolean>();
     private ThreadLocal<Throwable> cause = new ThreadLocal<Throwable>();
 
+    protected PrintStreamOutput(Format format, PrintStream output, Properties defaultPatterns,
+            Properties outputPatterns, Keywords keywords) {
+        this(format, output, mergePatterns(defaultPatterns, outputPatterns), keywords, false,
+                false);
+    }
+
+    protected PrintStreamOutput(Format format, PrintStream output, Properties defaultPatterns,
+            Properties outputPatterns, Keywords keywords, boolean reportFailureTrace, boolean compressFailureTrace) {
+        this(format, output, mergePatterns(defaultPatterns, outputPatterns), keywords, reportFailureTrace,
+                compressFailureTrace);
+    }
+
     protected PrintStreamOutput(Format format, PrintStream output, Properties outputPatterns, Keywords keywords,
             boolean reportFailureTrace, boolean compressFailureTrace) {
         this.format = format;
@@ -110,6 +152,14 @@ public abstract class PrintStreamOutput implements StoryReporter {
         this.keywords = keywords;
         doReportFailureTrace(reportFailureTrace);
         doCompressFailureTrace(compressFailureTrace);
+    }
+
+    private static Properties mergePatterns(Properties defaultPatterns, Properties outputPatterns) {
+        Properties patterns = new Properties();
+        patterns.putAll(defaultPatterns);
+        // override any default pattern
+        patterns.putAll(outputPatterns);
+        return patterns;
     }
 
     @Override
@@ -230,7 +280,7 @@ public abstract class PrintStreamOutput implements StoryReporter {
             if (!lifecycle.getBeforeSteps().isEmpty()) {
                 print(format("lifecycleBeforeStart", "{0}\n", keywords.before()));
                 print(lifecycle.getBeforeSteps());
-                print(format("lifecycleBeforeEnd", ""));
+                print(format("lifecycleBeforeEnd", EMPTY));
             }
             if (!lifecycle.getAfterSteps().isEmpty()) {
                 print(format("lifecycleAfterStart", "{0}\n", keywords.after()));
@@ -242,7 +292,7 @@ public abstract class PrintStreamOutput implements StoryReporter {
                     }
                     print(lifecycle.getAfterSteps(outcome));
                 }
-                print(format("lifecycleAfterEnd", ""));
+                print(format("lifecycleAfterEnd", EMPTY));
             }
             print(format("lifecycleEnd", "\n"));
         }
@@ -282,6 +332,11 @@ public abstract class PrintStreamOutput implements StoryReporter {
     }
 
     @Override
+    public void beforeGivenStories() {
+        print(format("beforeGivenStories", ""));
+    }
+
+    @Override
     public void givenStories(GivenStories givenStories) {
         print(format("givenStoriesStart", "{0}\n", keywords.givenStories()));
         for (GivenStory givenStory : givenStories.getStories()) {
@@ -294,6 +349,11 @@ public abstract class PrintStreamOutput implements StoryReporter {
     @Override
     public void givenStories(List<String> storyPaths) {
         givenStories(new GivenStories(StringUtils.join(storyPaths, ",")));
+    }
+
+    @Override
+    public void afterGivenStories() {
+        print(format("afterGivenStories", ""));
     }
 
     @Override
@@ -327,9 +387,11 @@ public abstract class PrintStreamOutput implements StoryReporter {
     @Override
     public void beforeExamples(List<String> steps, ExamplesTable table) {
         print(format("beforeExamples", "{0}\n", keywords.examplesTable()));
+        print(format("examplesStepsStart", EMPTY));
         for (String step : steps) {
             print(format("examplesStep", "{0}\n", step));
         }
+        print(format("examplesStepsEnd", EMPTY));
         print(formatTable(table));
     }
 
@@ -350,9 +412,11 @@ public abstract class PrintStreamOutput implements StoryReporter {
 
     @Override
     public void pendingMethods(List<String> methods) {
+        print(format("pendingMethodsStart", EMPTY));
         for (String method : methods) {
             print(format("pendingMethod", "{0}\n", method));
         }
+        print(format("pendingMethodsEnd", EMPTY));
     }
 
     @Override
@@ -384,24 +448,24 @@ public abstract class PrintStreamOutput implements StoryReporter {
     protected String formatTable(ExamplesTable table) {
         OutputStream formatted = new ByteArrayOutputStream();
         PrintStream out = new PrintStream(formatted);
-        out.print(format("examplesTableStart", "\n"));
+        print(out, format("examplesTableStart", "\n"));
         List<Map<String, String>> rows = table.getRows();
         List<String> headers = table.getHeaders();
-        out.print(format("examplesTableHeadStart", "|"));
+        print(out, format("examplesTableHeadStart", "|"));
         for (String header : headers) {
-            out.print(format("examplesTableHeadCell", "{0}|", header));
+            print(out, format("examplesTableHeadCell", "{0}|", header));
         }
-        out.print(format("examplesTableHeadEnd", "\n"));
-        out.print(format("examplesTableBodyStart", EMPTY));
+        print(out, format("examplesTableHeadEnd", "\n"));
+        print(out, format("examplesTableBodyStart", EMPTY));
         for (Map<String, String> row : rows) {
-            out.print(format("examplesTableRowStart", "|"));
+            print(out, format("examplesTableRowStart", "|"));
             for (String header : headers) {
-                out.print(format("examplesTableCell", "{0}|", row.get(header)));
+                print(out, format("examplesTableCell", "{0}|", row.get(header)));
             }
-            out.print(format("examplesTableRowEnd", "\n"));
+            print(out, format("examplesTableRowEnd", "\n"));
         }
-        out.print(format("examplesTableBodyEnd", ""));
-        out.print(format("examplesTableEnd", ""));
+        print(out, format("examplesTableBodyEnd", EMPTY));
+        print(out, format("examplesTableEnd", EMPTY));
         return formatted.toString();
     }
 
@@ -425,18 +489,7 @@ public abstract class PrintStreamOutput implements StoryReporter {
         Transformer<Object, Object> escapingTransformer = new Transformer<Object, Object>() {
             @Override
             public Object transform(Object object) {
-                switch (format) {
-                case HTML:
-                    return escapeHtml4(asString(object));
-                case XML:
-                    return escapeXml(asString(object));
-                default:
-                    return object;
-                }
-            }
-
-            private String asString(Object object) {
-                return (object != null ? object.toString() : EMPTY);
+                return format.escapeValue(object);
             }
         };
         List<Object> list = Arrays.asList(ArrayUtils.clone(args));
@@ -496,31 +549,26 @@ public abstract class PrintStreamOutput implements StoryReporter {
      * @param text the String to print
      */
     protected void print(String text) {
-        if (containsTable(text)) {
-            String tableStart = format(PARAMETER_TABLE_START, PARAMETER_TABLE_START);
-            String tableEnd = format(PARAMETER_TABLE_END, PARAMETER_TABLE_END);
-            String tableAsString = substringBetween(text, tableStart, tableEnd);
-            output.print(text
-                    .replace(tableAsString, formatTable(new ExamplesTable(tableAsString)))
-                    .replace(tableStart, format("parameterValueStart", EMPTY))
-                    .replace(tableEnd, format("parameterValueEnd", EMPTY))
-                    .replace(format(PARAMETER_VALUE_START, PARAMETER_VALUE_START), format("parameterValueStart", EMPTY))
-                    .replace(format(PARAMETER_VALUE_END, PARAMETER_VALUE_END), format("parameterValueEnd", EMPTY))
-                    .replace(format(PARAMETER_VALUE_NEWLINE, PARAMETER_VALUE_NEWLINE),
-                            format("parameterValueNewline", "\n")));
-        } else {
-            output.print(text
-                    .replace(format(PARAMETER_VALUE_START, PARAMETER_VALUE_START), format("parameterValueStart", EMPTY))
-                    .replace(format(PARAMETER_VALUE_END, PARAMETER_VALUE_END), format("parameterValueEnd", EMPTY))
-                    .replace(format(PARAMETER_VALUE_NEWLINE, PARAMETER_VALUE_NEWLINE),
-                            format("parameterValueNewline", "\n")));
-        }
-    }
-
-    private boolean containsTable(String text) {
         String tableStart = format(PARAMETER_TABLE_START, PARAMETER_TABLE_START);
         String tableEnd = format(PARAMETER_TABLE_END, PARAMETER_TABLE_END);
-        return text.contains(tableStart) && text.contains(tableEnd);
+        boolean containsTable = text.contains(tableStart) && text.contains(tableEnd);
+        String textToPrint = containsTable ? transformPrintingTable(text, tableStart, tableEnd) : text;
+        print(output, textToPrint
+                .replace(format(PARAMETER_VALUE_START, PARAMETER_VALUE_START), format("parameterValueStart", EMPTY))
+                .replace(format(PARAMETER_VALUE_END, PARAMETER_VALUE_END), format("parameterValueEnd", EMPTY))
+                .replace(format(PARAMETER_VALUE_NEWLINE, PARAMETER_VALUE_NEWLINE), format("parameterValueNewline", "\n")));
+    }
+
+    protected String transformPrintingTable(String text, String tableStart, String tableEnd) {
+        String tableAsString = substringBetween(text, tableStart, tableEnd);
+        return text
+                .replace(tableAsString, formatTable(new ExamplesTable(tableAsString)))
+                .replace(tableStart, format("parameterValueStart", EMPTY))
+                .replace(tableEnd, format("parameterValueEnd", EMPTY));
+    }
+
+    protected void print(PrintStream output, String text) {
+        output.print(text);
     }
 
     @Override

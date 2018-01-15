@@ -16,7 +16,7 @@ public class ConcurrencyBehaviour {
     public void shouldAllowConcurrentAdditionOfParameterConvertersInThreadSafeMode() {
 
         final ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath(),
-                new TableTransformers(), true);
+                new ParameterControls(), new TableTransformers(), true);
 
         final boolean[] active = new boolean[] { true };
         final ParameterConverter[] toAdd = new ParameterConverter[] { mock(ParameterConverter.class, "one"),
@@ -30,7 +30,7 @@ public class ConcurrencyBehaviour {
             }
         });
         t.start();
-        parameterConverters.convert("test", String.class);
+        parameterConverters.convert("test", String.class, null);
         active[0] = false;
     }
 }

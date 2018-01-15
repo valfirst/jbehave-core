@@ -25,6 +25,7 @@ import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.model.ExamplesTable.RowNotFound;
 import org.jbehave.core.model.TableTransformers.TableTransformer;
 import org.jbehave.core.steps.ConvertedParameters.ValueNotFound;
+import org.jbehave.core.steps.ParameterControls;
 import org.jbehave.core.steps.ParameterConverters;
 import org.jbehave.core.steps.ParameterConverters.MethodReturningConverter;
 import org.jbehave.core.steps.ParameterConverters.ParameterConverter;
@@ -68,8 +69,11 @@ public class ExamplesTableBehaviour {
         String valueSeparator = "|";
         String tableWithCustomSeparator = wikiTableAsString;
         TableTransformers tableTransformers = new TableTransformers();
+        ParameterControls parameterControls = new ParameterControls();
+        ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath(), parameterControls,
+                tableTransformers, true);
         ExamplesTable table = new ExamplesTable(tableWithCustomSeparator, headerSeparator, valueSeparator,
-                new ParameterConverters(new LoadFromClasspath(), tableTransformers), tableTransformers);
+                parameterConverters, parameterControls, tableTransformers);
         assertThat(table.getHeaderSeparator(), equalTo(headerSeparator));
         assertThat(table.getValueSeparator(), equalTo(valueSeparator));
         ensureColumnOrderIsPreserved(table);
@@ -82,8 +86,11 @@ public class ExamplesTableBehaviour {
         String valueSeparator = "!";
         String tableWithCustomSeparator = wikiTableAsString.replace("|", "!");
         TableTransformers tableTransformers = new TableTransformers();
+        ParameterControls parameterControls = new ParameterControls();
+        ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath(), parameterControls,
+                tableTransformers, true);
         ExamplesTable table = new ExamplesTable(tableWithCustomSeparator, headerSeparator, valueSeparator,
-                new ParameterConverters(new LoadFromClasspath(), tableTransformers), tableTransformers);
+                parameterConverters, parameterControls, tableTransformers);
         assertThat(table.getHeaderSeparator(), equalTo(headerSeparator));
         assertThat(table.getValueSeparator(), equalTo(valueSeparator));
         ensureColumnOrderIsPreserved(table);
@@ -326,7 +333,7 @@ public class ExamplesTableBehaviour {
         // When
         String tableAsString = "|Name|Value|\n|name1|<value>|";
         Map<String, String> namedParameters = new HashMap<String, String>();
-        namedParameters.put("<value>", "value1");
+        namedParameters.put("value", "value1");
         ExamplesTable table = factory.createExamplesTable(tableAsString).withNamedParameters(namedParameters);
 
         // Then
@@ -334,7 +341,24 @@ public class ExamplesTableBehaviour {
         Map<String, String> firstRowValues = firstRow.values();
         assertThat(firstRowValues.containsKey("Value"), is(true));
         assertThat(firstRow.<String>valueAs("Value", String.class), is("value1"));
+    }
 
+    @Test
+    public void shouldReplaceNamedParameterValuesInValuePart() throws Exception {
+        // Given
+        ExamplesTableFactory factory = createFactory();
+
+        // When
+        String tableAsString = "|Name|Value|\n|name1|foo-<value>-bar|";
+        Map<String, String> namedParameters = new HashMap<String, String>();
+        namedParameters.put("value", "value1");
+        ExamplesTable table = factory.createExamplesTable(tableAsString).withNamedParameters(namedParameters);
+
+        // Then
+        Parameters firstRow = table.getRowsAsParameters(true).get(0);
+        Map<String, String> firstRowValues = firstRow.values();
+        assertThat(firstRowValues.containsKey("Value"), is(true));
+        assertThat(firstRow.<String>valueAs("Value", String.class), is("foo-value1-bar"));
     }
 
     /**
@@ -351,7 +375,7 @@ public class ExamplesTableBehaviour {
         // When
         String tableAsString = "|Name|Value|\n|name|<value>|";
         Map<String, String> namedParameters = new HashMap<String, String>();
-        namedParameters.put("<value>", problematicNamedParameterValueCharacters);
+        namedParameters.put("value", problematicNamedParameterValueCharacters);
         ExamplesTable table = factory.createExamplesTable(tableAsString).withNamedParameters(namedParameters);
 
         // Then
@@ -536,9 +560,11 @@ public class ExamplesTableBehaviour {
     private ExamplesTableFactory createFactory(ParameterConverter... converters) {
         LoadFromClasspath resourceLoader = new LoadFromClasspath();
         TableTransformers tableTransformers = new TableTransformers();
-        ParameterConverters parameterConverters = new ParameterConverters(resourceLoader, tableTransformers);
+        ParameterControls parameterControls = new ParameterControls();
+        ParameterConverters parameterConverters = new ParameterConverters(resourceLoader, parameterControls,
+                tableTransformers, true);
         parameterConverters.addConverters(converters);
-        return new ExamplesTableFactory(resourceLoader, parameterConverters, tableTransformers);
+        return new ExamplesTableFactory(resourceLoader, parameterConverters, parameterControls, tableTransformers);
     }
 
     private void assertTableAsString(String tableAsString, String expectedTableAsString) {

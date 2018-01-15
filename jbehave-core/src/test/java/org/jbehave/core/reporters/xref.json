@@ -64,10 +64,59 @@
               ]
             },
             "propertiesAsString": "",
-            "namedParameters": []
+            "namedParameters": [],
+            "parameterControls": {
+              "nameDelimiterLeft": "<",
+              "nameDelimiterRight": ">",
+              "delimiterNamedParameters": true
+            }
           }
         },
         "lifecycle": {
+          "examplesTable": {
+            "tableAsString": "",
+            "tableTransformers": {
+              "transformers": [
+                [
+                  "FORMATTING",
+                  {}
+                ],
+                [
+                  "REPLACING",
+                  {}
+                ],
+                [
+                  "FROM_LANDSCAPE",
+                  {}
+                ]
+              ]
+            },
+            "headers": [],
+            "data": [],
+            "properties": {
+              "properties": [
+                {
+                  "@name": "headerSeparator",
+                  "@value": "|"
+                },
+                {
+                  "@name": "valueSeparator",
+                  "@value": "|"
+                },
+                {
+                  "@name": "ignorableSeparator",
+                  "@value": "|--"
+                }
+              ]
+            },
+            "propertiesAsString": "",
+            "namedParameters": [],
+            "parameterControls": {
+              "nameDelimiterLeft": "<",
+              "nameDelimiterRight": ">",
+              "delimiterNamedParameters": true
+            }
+          },
           "before": {
             "scope": "SCENARIO",
             "steps": [
@@ -128,7 +177,12 @@
                   ]
                 },
                 "propertiesAsString": "",
-                "namedParameters": []
+                "namedParameters": [],
+                "parameterControls": {
+                  "nameDelimiterLeft": "<",
+                  "nameDelimiterRight": ">",
+                  "delimiterNamedParameters": true
+                }
               }
             },
             "examplesTable": {
@@ -168,7 +222,12 @@
                 ]
               },
               "propertiesAsString": "",
-              "namedParameters": []
+              "namedParameters": [],
+              "parameterControls": {
+                "nameDelimiterLeft": "<",
+                "nameDelimiterRight": ">",
+                "delimiterNamedParameters": true
+              }
             },
             "steps": [
               [
@@ -240,7 +299,12 @@
                     ]
                   },
                   "propertiesAsString": "",
-                  "namedParameters": []
+                  "namedParameters": [],
+                  "parameterControls": {
+                    "nameDelimiterLeft": "<",
+                    "nameDelimiterRight": ">",
+                    "delimiterNamedParameters": true
+                  }
                 }
               },
               "examplesTable": {
@@ -280,7 +344,12 @@
                   ]
                 },
                 "propertiesAsString": "",
-                "namedParameters": []
+                "namedParameters": [],
+                "parameterControls": {
+                  "nameDelimiterLeft": "<",
+                  "nameDelimiterRight": ">",
+                  "delimiterNamedParameters": true
+                }
               },
               "steps": [
                 [
@@ -349,7 +418,12 @@
               ]
             },
             "propertiesAsString": "",
-            "namedParameters": []
+            "namedParameters": [],
+            "parameterControls": {
+              "nameDelimiterLeft": "<",
+              "nameDelimiterRight": ">",
+              "delimiterNamedParameters": true
+            }
           }
         },
         "examplesTable": {
@@ -389,7 +463,12 @@
             ]
           },
           "propertiesAsString": "",
-          "namedParameters": []
+          "namedParameters": [],
+          "parameterControls": {
+            "nameDelimiterLeft": "<",
+            "nameDelimiterRight": ">",
+            "delimiterNamedParameters": true
+          }
         },
         "steps": [
           [
@@ -461,7 +540,12 @@
                 ]
               },
               "propertiesAsString": "",
-              "namedParameters": []
+              "namedParameters": [],
+              "parameterControls": {
+                "nameDelimiterLeft": "<",
+                "nameDelimiterRight": ">",
+                "delimiterNamedParameters": true
+              }
             }
           },
           "examplesTable": {
@@ -501,7 +585,12 @@
               ]
             },
             "propertiesAsString": "",
-            "namedParameters": []
+            "namedParameters": [],
+            "parameterControls": {
+              "nameDelimiterLeft": "<",
+              "nameDelimiterRight": ">",
+              "delimiterNamedParameters": true
+            }
           },
           "steps": [
             [

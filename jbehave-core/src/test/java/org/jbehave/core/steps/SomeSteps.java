@@ -152,6 +152,13 @@ public class SomeSteps extends Steps {
         this.args = theme;
     }
 
+    public void aMultipleParamMethodWithoutNamedAnnotation(String theme, String variant) {
+        HashMap<String, Object> multipleArgs = new HashMap<String, Object>();
+        multipleArgs.put("theme", theme);
+        multipleArgs.put("variant", variant);
+        this.args = multipleArgs;
+    }
+
     public void aMethodThatExpectsUUIDExceptionWrapper(UUIDExceptionWrapper exception) {
         this.args = exception;
     }

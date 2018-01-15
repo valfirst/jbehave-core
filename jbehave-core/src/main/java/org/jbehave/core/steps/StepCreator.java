@@ -5,7 +5,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -74,7 +77,7 @@ public class StepCreator {
         this.stepMatcher = stepMatcher;
         this.stepMonitor = stepMonitor;
         this.delimitedNamePattern = Pattern.compile(parameterControls.nameDelimiterLeft() + "(\\w+?)"
-                + parameterControls.nameDelimiterRight());
+                + parameterControls.nameDelimiterRight(), Pattern.DOTALL);
     }
 
     public void useStepMonitor(StepMonitor stepMonitor) {
@@ -268,7 +271,7 @@ public class StepCreator {
     }
 
     private String parametrisedStep(String stepAsString, Map<String, String> namedParameters, Type[] types,
-            ParameterName[] names, String[] parameterValues) {
+            String[] parameterValues) {
         String parametrisedStep = stepAsString;
         // mark parameter values that are parsed
         boolean hasTable = hasTable(types);
@@ -295,31 +298,26 @@ public class StepCreator {
     private String markNamedParameterValue(String stepText, Map<String, String> namedParameters, String name) {
         String value = namedParameter(namedParameters, name);
         if (value != null) {
-            stepText = stepText.replace(delimitedName(name), markedValue(value));
+            return parameterControls.replaceAllDelimitedNames(stepText, name, markedValue(value));
         }
         return stepText;
-    }
-
-    private String delimitedName(String name) {
-        return parameterControls.nameDelimiterLeft() + name + parameterControls.nameDelimiterRight();
     }
 
     private String markParsedParameterValue(String stepText, Type type, String value, boolean hasTable) {
         if (value != null) {
             if (isTable(type)) {
-                stepText = stepText.replace(value, markedTable(value));
-            } else {
-                // only mark non-empty string as parameter (JBEHAVE-656)            	
-                if (value.trim().length() != 0) {
-                    String markedValue = markedValue(value);
-                    // identify parameter values to mark as padded by spaces to avoid duplicated replacements of overlapping values (JBEHAVE-837)
-                    String leftPad = SPACE;
-                    String rightPad = ( stepText.endsWith(value) ? NONE : SPACE );
-                    stepText = stepText.replace(pad(value, leftPad, rightPad), pad(markedValue, leftPad, rightPad));
-                }
-                if ( !hasTable ){
-                    stepText = stepText.replace(NEWLINE, PARAMETER_VALUE_NEWLINE);
-                }
+                return stepText.replace(value, markedTable(value));
+            }
+            // only mark non-empty string as parameter (JBEHAVE-656)
+            if (value.trim().length() != 0) {
+                String markedValue = markedValue(value);
+                // identify parameter values to mark as padded by spaces to avoid duplicated replacements of overlapping values (JBEHAVE-837)
+                String leftPad = SPACE;
+                String rightPad = stepText.endsWith(value) ? NONE : SPACE;
+                return stepText.replace(pad(value, leftPad, rightPad), pad(markedValue, leftPad, rightPad));
+            }
+            if (!hasTable){
+                return stepText.replace(NEWLINE, PARAMETER_VALUE_NEWLINE);
             }
         }
         return stepText;
@@ -402,7 +400,7 @@ public class StepCreator {
             if (names[position].fromContext) {
                 parameters[position] = stepsContext.get(valuesAsString[position]);
             } else {
-                parameters[position] = parameterConverters.convert(valuesAsString[position], types[position]);
+                parameters[position] = parameterConverters.convert(valuesAsString[position], types[position], null);
             }
         }
         return parameters;
@@ -417,21 +415,26 @@ public class StepCreator {
             boolean annotated = names[position].annotated;
             boolean fromContext = names[position].fromContext;
 
-            boolean delimitedNamedParameters = false;
+            List<String> delimitedNames = Collections.emptyList();
 
             if (isGroupName(name)) {
                 parameter = matchedParameter(name);
-                String delimitedName = delimitedNameFor(parameter);
+                delimitedNames = delimitedNameFor(parameter);
 
-                if (delimitedName != null) {
-                    name = delimitedName;
-                    delimitedNamedParameters = true;
-                } else {
+                if (delimitedNames.isEmpty()) {
                     monitorUsingNameForParameter(name, position, annotated);
                 }
             }
 
-            if (delimitedNamedParameters || isTableName(namedParameters, name)) {
+            if (!delimitedNames.isEmpty()) {
+                parameter = replaceAllDelimitedNames(delimitedNames, position, annotated, parameter, namedParameters);
+                delimitedNames = delimitedNameFor(parameter);
+                if (!delimitedNames.isEmpty()) {
+                    parameter = replaceAllDelimitedNames(delimitedNames, position, annotated, parameter,
+                            namedParameters);
+                }
+            }
+            else if (parameter == null && isTableName(namedParameters, name)) {
                 parameter = namedParameter(namedParameters, name);
                 if (parameter != null) {
                     monitorUsingTableNameForParameter(name, position, annotated); 
@@ -450,10 +453,15 @@ public class StepCreator {
             position = position - numberOfPreviousFromContext(names, position);
             stepMonitor.usingNaturalOrderForParameter(position);
             parameter = matchedParameter(position);
-            String delimitedName = delimitedNameFor(parameter);
+            List<String> delimitedNames;
 
-            if (delimitedName != null && isTableName(namedParameters, delimitedName)) {
-                parameter = namedParameter(namedParameters, delimitedName);
+            while(!(delimitedNames = delimitedNameFor(parameter)).isEmpty()) {
+                for(String delimitedName : delimitedNames) {
+                    if (isTableName(namedParameters, delimitedName)) {
+                        parameter = parameterControls.replaceAllDelimitedNames(parameter, delimitedName,
+                                namedParameter(namedParameters, delimitedName));
+                    }
+                }
             }
         }
 
@@ -461,7 +469,18 @@ public class StepCreator {
 
         return parameter;
     }
-    
+
+    private String replaceAllDelimitedNames(List<String> delimitedNames, int position, boolean annotated,
+                                            String parameter, Map<String, String> namedParameters) {
+        String parameterWithDelimitedNames = parameter;
+        for(String delimitedName : delimitedNames) {
+            monitorUsingTableNameForParameter(delimitedName, position, annotated);
+            parameterWithDelimitedNames = parameterControls.replaceAllDelimitedNames(parameterWithDelimitedNames,
+                    delimitedName, namedParameter(namedParameters, delimitedName));
+        }
+        return parameterWithDelimitedNames;
+    }
+
     private int numberOfPreviousFromContext(ParameterName[] names, int currentPosition) {
         int number = 0;
         
@@ -490,12 +509,15 @@ public class StepCreator {
         }
     }
 
-    private String delimitedNameFor(String parameter) {
-        if (!parameterControls.delimiterNamedParameters()) {
-            return null;
+    private List<String> delimitedNameFor(String parameter) {
+        List<String> delimitedNames = new ArrayList<String>();
+        if (parameterControls.delimiterNamedParameters()) {
+            Matcher matcher = delimitedNamePattern.matcher(parameter);
+            while(matcher.find()) {
+                delimitedNames.add(matcher.group(1));
+            }
         }
-        Matcher matcher = delimitedNamePattern.matcher(parameter);
-        return matcher.matches() ? matcher.group(1) : null;
+        return delimitedNames;
     }
 
     String matchedParameter(String name) {
@@ -781,7 +803,7 @@ public class StepCreator {
             String[] parameterValues = parameterValuesForStep(namedParameters, types, names);
             convertedParameters = convertParameterValues(parameterValues, types, names);
             addNamedParametersToExamplesTables();
-            parametrisedStep = parametrisedStep(stepAsString, namedParameters, types, names, parameterValues);
+            parametrisedStep = parametrisedStep(stepAsString, namedParameters, types, parameterValues);
         }
 
         private void addNamedParametersToExamplesTables() {
@@ -989,7 +1011,8 @@ public class StepCreator {
         private Object[] parameterValuesFrom(Meta meta) {
             Object[] values = new Object[parameterTypes.length];
             for (Parameter parameter : methodParameters()) {
-                values[parameter.position] = parameterConverters.convert(parameter.valueFrom(meta), parameter.type);
+                values[parameter.position] = parameterConverters.convert(parameter.valueFrom(meta), parameter.type,
+                        null);
             }
             return values;
         }
