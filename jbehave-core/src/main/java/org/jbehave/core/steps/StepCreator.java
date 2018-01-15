@@ -453,12 +453,14 @@ public class StepCreator {
             position = position - numberOfPreviousFromContext(names, position);
             stepMonitor.usingNaturalOrderForParameter(position);
             parameter = matchedParameter(position);
-            List<String> delimitedNames = delimitedNameFor(parameter);
+            List<String> delimitedNames;
 
-            for(String delimitedName : delimitedNames) {
-                if (isTableName(namedParameters, delimitedName)) {
-                    parameter = parameterControls.replaceAllDelimitedNames(parameter, delimitedName,
-                            namedParameter(namedParameters, delimitedName));
+            while(!(delimitedNames = delimitedNameFor(parameter)).isEmpty()) {
+                for(String delimitedName : delimitedNames) {
+                    if (isTableName(namedParameters, delimitedName)) {
+                        parameter = parameterControls.replaceAllDelimitedNames(parameter, delimitedName,
+                                namedParameter(namedParameters, delimitedName));
+                    }
                 }
             }
         }
