@@ -945,6 +945,7 @@ public class PerformableTree {
         		return;
         	}
         	context.stepsContext().resetScenario();
+            context.reporter().beforeScenario(scenario);
         	context.reporter().beforeScenario(scenario.getTitle());
         	context.reporter().scenarioMeta(scenario.getMeta());
             State state = context.state();

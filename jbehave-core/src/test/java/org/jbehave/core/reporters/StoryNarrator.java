@@ -40,7 +40,7 @@ class StoryNarrator {
         reporter.beforeStory(story, givenStory);
         reporter.dryRun();
         reporter.narrative(story.getNarrative());
-        reporter.beforeScenario("I ask for a loan");
+        reporter.beforeScenario(new Scenario("I ask for a loan", Meta.EMPTY));
         reporter.beforeGivenStories();
         reporter.givenStories(asList("/given/story1", "/given/story2"));
         reporter.afterGivenStories();
@@ -76,7 +76,7 @@ class StoryNarrator {
             reporter.failedOutcomes("Then I don't return loan", ((OutcomesFailed) e.getCause()).outcomesTable());
         }
         reporter.afterScenario();
-        reporter.beforeScenario("Parametrised Scenario");
+        reporter.beforeScenario(new Scenario("Parametrised Scenario", Meta.EMPTY));
         ExamplesTable table = new ExamplesTable("|money|to|\n|$30|Mauro|\n|$50|Paul|\n");
         reporter.beforeExamples(asList("Given money <money>", "Then I give it to <to>"), table);
         reporter.example(table.getRow(0));
@@ -139,13 +139,14 @@ class StoryNarrator {
         meta.setProperty("author", "Mauro");
         Story story = new Story("/path/to/story",
                 new Description("An interesting story"), new Meta(meta), new Narrative("renovate my house", "customer", "get a loan"),
-                Arrays.asList(new Scenario("A scenario", new Meta(meta), GivenStories.EMPTY, ExamplesTable.EMPTY, new ArrayList<String>())));
+                Arrays.asList(new Scenario("A scenario", Meta.EMPTY, GivenStories.EMPTY, ExamplesTable.EMPTY, new ArrayList<String>())));
         reporter.beforeStory(story, false);
         if (storyNotAllowed) {
             reporter.storyNotAllowed(story, "-theme testing");
         } else  {
-            reporter.beforeScenario(story.getScenarios().get(0).getTitle());
-            reporter.scenarioNotAllowed(story.getScenarios().get(0), "-theme testing");
+            Scenario scenario = story.getScenarios().get(0);
+            reporter.beforeScenario(scenario);
+            reporter.scenarioNotAllowed(scenario, "-theme testing");
             reporter.afterScenario();
         }
         reporter.afterStory(false);

@@ -87,7 +87,7 @@ import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_START;
  * 
  * </p>
  */
-public abstract class PrintStreamOutput implements StoryReporter {
+public abstract class PrintStreamOutput extends NullStoryReporter {
 
     private static final String EMPTY = "";
 
@@ -253,10 +253,7 @@ public abstract class PrintStreamOutput implements StoryReporter {
     @Override
     public void beforeStory(Story story, boolean givenStory) {
         print(format("beforeStory", "{0}\n({1})\n", story.getDescription().asString(), story.getPath()));
-        if (!story.getMeta().isEmpty()) {
-            Meta meta = story.getMeta();
-            print(meta);
-        }
+        print(story.getMeta());
     }
 
     @Override
@@ -314,11 +311,13 @@ public abstract class PrintStreamOutput implements StoryReporter {
     }
 
     private void print(Meta meta) {
-        print(format("metaStart", "{0}\n", keywords.meta()));
-        for (String name : meta.getPropertyNames()) {
-            print(format("metaProperty", "{0}{1} {2}", keywords.metaProperty(), name, meta.getProperty(name)));
+        if (!meta.isEmpty()) {
+            print(format("metaStart", "{0}\n", keywords.meta()));
+            for (String name : meta.getPropertyNames()) {
+                print(format("metaProperty", "{0}{1} {2}", keywords.metaProperty(), name, meta.getProperty(name)));
+            }
+            print(format("metaEnd", "\n"));
         }
-        print(format("metaEnd", "\n"));
     }
 
     @Override
@@ -362,16 +361,10 @@ public abstract class PrintStreamOutput implements StoryReporter {
     }
 
     @Override
-    public void beforeScenario(String title) {
+    public void beforeScenario(Scenario scenario) {
         cause.set(null);
-        print(format("beforeScenario", "{0} {1}\n", keywords.scenario(), title));
-    }
-
-    @Override
-    public void scenarioMeta(Meta meta) {
-        if (!meta.isEmpty()) {
-            print(meta);
-        }
+        print(format("beforeScenario", "{0} {1}\n", keywords.scenario(), scenario.getTitle()));
+        print(scenario.getMeta());
     }
 
     @Override

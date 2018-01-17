@@ -21,15 +21,20 @@ public class FailedStory extends Story {
         return cause;
     }
 
+    /**
+     * @deprecated use {@link #getScenarioStage()}
+     * @return Scenario title
+     */
+    @Deprecated
     public String getStage() {
-        return getScenario().getTitle();
+        return getScenarioStage().getTitle();
     }
 
     public String getSubStage() {
-        return getScenario().getSteps().get(0);
+        return getScenarioStage().getSteps().get(0);
     }
 
-    private Scenario getScenario() {
+    public Scenario getScenarioStage() {
         return getScenarios().get(0);
     }
 }

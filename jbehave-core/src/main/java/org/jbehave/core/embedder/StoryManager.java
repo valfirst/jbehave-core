@@ -157,6 +157,7 @@ public class StoryManager {
 	private void reportFailedStory(FailedStory story) {
 		StoryReporter reporter = context.reporter();
 		reporter.beforeStory(story, false);
+		reporter.beforeScenario(story.getScenarioStage());
 		reporter.beforeScenario(story.getStage());
 		String subStage = story.getSubStage();
 		reporter.beforeStep(subStage);
