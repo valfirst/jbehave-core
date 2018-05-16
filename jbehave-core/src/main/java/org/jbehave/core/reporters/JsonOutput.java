@@ -11,10 +11,12 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jbehave.core.configuration.Keywords;
+import org.jbehave.core.model.OutcomesTable;
 
 /**
  * <p>
@@ -44,6 +46,7 @@ public class JsonOutput extends PrintStreamOutput {
 
     private int givenStoriesLevel = 0;
     private int storyPublishingLevel = 0;
+    private AtomicInteger subStepsLevel = new AtomicInteger();
     private final Map<Integer, Boolean> scenarioPublishingPerLevels = new HashMap<>();
     private boolean scenarioCompleted = false;
     private boolean stepPublishing = false;
@@ -64,6 +67,60 @@ public class JsonOutput extends PrintStreamOutput {
             super.print(output, doNotAddComma ? text : "," + text);
             lastChar = text.charAt(text.length() - 1);
         }
+    }
+
+    @Override
+    public void beforeStep(String step) {
+        printSubSteps();
+        super.beforeStep(step);
+    }
+
+    @Override
+    public void successful(String step) {
+        printSubStepsBeforeStepOutcome();
+        super.successful(step);
+    }
+
+    @Override
+    public void pending(String step) {
+        printSubStepsBeforeStepOutcome();
+        super.pending(step);
+    }
+
+    @Override
+    public void failed(String step, Throwable storyFailure) {
+        printSubStepsBeforeStepOutcome();
+        super.failed(step, storyFailure);
+    }
+
+    @Override
+    public void failedOutcomes(String step, OutcomesTable table) {
+        printSubStepsBeforeStepOutcome();
+        super.failedOutcomes(step, table);
+    }
+
+    @Override
+    public void ignorable(String step) {
+        printSubStepsBeforeStepOutcome();
+        super.ignorable(step);
+    }
+
+    @Override
+    public void comment(String step) {
+        printSubStepsBeforeStepOutcome();
+        super.comment(step);
+    }
+
+    @Override
+    public void notPerformed(String step) {
+        printSubStepsBeforeStepOutcome();
+        super.notPerformed(step);
+    }
+
+    @Override
+    public void restarted(String step, Throwable cause) {
+        printSubStepsBeforeStepOutcome();
+        super.restarted(step, cause);
     }
 
     @Override
@@ -94,17 +151,33 @@ public class JsonOutput extends PrintStreamOutput {
                 print("]}");
                 stepPublishing = false;
             }
-            if ("afterScenario".equals(key) || "afterScenarioWithFailure".equals(key)) {
-                // Closing "steps"
+            if ("pendingMethodsStart".equals(key)){
+                // Closing "steps" for scenario
+                print("]");
+                stepPublishing = false;
+            }
+            if ( "afterScenario".equals(key) || "afterScenarioWithFailure".equals(key)) {
+                // Closing "steps" for scenario
                 print("]");
                 stepPublishing = false;
                 scenarioCompleted = true;
             }
-        } else if (ArrayUtils.contains(STEP_KEYS, key)) {
+            if ("subSteps".equals(key)) {
+                subStepsLevel.incrementAndGet();
+            }
+            if (ArrayUtils.contains(STEP_KEYS, key)) {
+                // Closing "steps" for step
+                print("]");
+                subStepsLevel.decrementAndGet();
+            }
+        }
+        else if ("subSteps".equals(key)) {
             // Starting "steps"
             print("\"steps\": [");
+            subStepsLevel.incrementAndGet();
             stepPublishing = true;
-        } else if ("beforeScenario".equals(key)) {
+        }
+        else if ("beforeScenario".equals(key)) {
             scenarioCompleted = false;
             if (scenarioPublishingPerLevels.get(storyPublishingLevel) != Boolean.TRUE) {
                 // Starting "scenarios"
@@ -163,13 +236,14 @@ public class JsonOutput extends PrintStreamOutput {
         patterns.setProperty("givenStory", "'{'\"parameters\": \"{1}\", \"path\": \"{0}\"}");
         patterns.setProperty("givenStoriesEnd", "]");
         patterns.setProperty("afterGivenStories", "}");
-        patterns.setProperty("successful", "'{'\"outcome\": \"successful\", \"value\": \"{0}\"}");
-        patterns.setProperty("ignorable", "'{'\"outcome\": \"ignorable\", \"value\": \"{0}\"}");
-        patterns.setProperty("comment", "'{'\"comment\": \"ignorable\", \"value\": \"{0}\"}");
-        patterns.setProperty("pending", "'{'\"outcome\": \"pending\", \"keyword\": \"{1}\", \"value\": \"{0}\"}");
-        patterns.setProperty("notPerformed", "'{'\"outcome\": \"notPerformed\", \"keyword\": \"{1}\", \"value\": \"{0}\"}");
-        patterns.setProperty("failed", "'{'\"outcome\": \"failed\", \"keyword\": \"{1}\", \"value\": \"{0}\", \"failure\": \"{2}\"}");
-        patterns.setProperty("restarted", "'{'\"outcome\": \"restarted\", \"value\": \"{0}\", \"reason\": \"{1}\"}");
+        patterns.setProperty("subSteps", "'{'\"steps\": [");
+        patterns.setProperty("successful", "\"outcome\": \"successful\", \"value\": \"{0}\"}");
+        patterns.setProperty("ignorable", "\"outcome\": \"ignorable\", \"value\": \"{0}\"}");
+        patterns.setProperty("comment", "\"comment\": \"ignorable\", \"value\": \"{0}\"}");
+        patterns.setProperty("pending", "\"outcome\": \"pending\", \"keyword\": \"{1}\", \"value\": \"{0}\"}");
+        patterns.setProperty("notPerformed", "\"outcome\": \"notPerformed\", \"keyword\": \"{1}\", \"value\": \"{0}\"}");
+        patterns.setProperty("failed", "\"outcome\": \"failed\", \"keyword\": \"{1}\", \"value\": \"{0}\", \"failure\": \"{2}\"}");
+        patterns.setProperty("restarted", "\"outcome\": \"restarted\", \"value\": \"{0}\", \"reason\": \"{1}\"}");
         patterns.setProperty("restartedStory", "'{'\"story\": '{'\"outcome\": \"restartedStory\", \"value\": \"{0}\", \"reason\": \"{1}\"}}");
         patterns.setProperty("outcomesTableStart", "'{'\"outcomes\": '{'");
         patterns.setProperty("outcomesTableHeadStart", "\"fields\": [");
@@ -201,5 +275,15 @@ public class JsonOutput extends PrintStreamOutput {
         patterns.setProperty("parameterValueEnd", "))");
         patterns.setProperty("parameterValueNewline", "\\n");
         return patterns;
+    }
+
+    private void printSubSteps() {
+        print(format("subSteps", ""));
+    }
+
+    private void printSubStepsBeforeStepOutcome() {
+        if (subStepsLevel.get() == 0) {
+            printSubSteps();
+        }
     }
 }
