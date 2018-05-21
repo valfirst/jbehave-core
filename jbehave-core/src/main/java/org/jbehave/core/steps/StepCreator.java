@@ -812,7 +812,6 @@ public class StepCreator {
             storyReporter.beforeStep(stepAsString);
         }
 
-        @Override
         public List<Step> getComposedSteps() {
             return composedSteps;
         }

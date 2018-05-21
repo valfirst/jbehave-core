@@ -509,7 +509,7 @@ public class StepCreatorBehaviour {
         // When
         Step step = stepCreator.createParametrisedStep(SomeSteps.methodFor("aMultipleParamMethodWithoutNamedAnnotation"),
                 "When a parameter <combinedParameter> is set to <singleParameter>",
-                "a parameter <combinedParameter> is set to <singleParameter>", params);
+                "a parameter <combinedParameter> is set to <singleParameter>", params, Collections.<Step>emptyList());
         step.perform(null);
 
         // Then
@@ -537,7 +537,7 @@ public class StepCreatorBehaviour {
         // When
         Step step = stepCreator.createParametrisedStep(SomeSteps.methodFor("aMultipleParamMethodWithoutNamedAnnotation"),
                 "When a parameter <combinedParameter> is set to <singleParameter>",
-                "a parameter <combinedParameter> is set to <singleParameter>", params);
+                "a parameter <combinedParameter> is set to <singleParameter>", params, Collections.<Step>emptyList());
         step.perform(null);
 
         // Then
@@ -596,7 +596,7 @@ public class StepCreatorBehaviour {
 
         // When
         Step step = stepCreator.createParametrisedStep(SomeSteps.methodFor("aMethodWithANamedParameter"),
-                "When I use parameters <t> and <v>", "I use parameters <t> and <v>", params);
+                "When I use parameters <t> and <v>", "I use parameters <t> and <v>", params, Collections.<Step>emptyList());
         step.perform(null);
 
         // Then
