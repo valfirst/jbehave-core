@@ -265,13 +265,16 @@ public class StepCreator {
     }
 
     public Step createParametrisedStep(final Method method, final String stepAsString,
-            final String stepWithoutStartingWord, final Map<String, String> namedParameters) {
-        return new ParametrisedStep(stepAsString, method, stepWithoutStartingWord, namedParameters);
+            final String stepWithoutStartingWord, final Map<String, String> namedParameters,
+            final List<Step> composedSteps) {
+        return new ParametrisedStep(stepAsString, method, stepWithoutStartingWord, namedParameters, composedSteps);
     }
 
     public Step createParametrisedStepUponOutcome(final Method method, final String stepAsString,
-            final String stepWithoutStartingWord, final Map<String, String> namedParameters, Outcome outcome) {
-        Step parametrisedStep = createParametrisedStep(method, stepAsString, stepWithoutStartingWord, namedParameters);
+            final String stepWithoutStartingWord, final Map<String, String> namedParameters,
+            final List<Step> composedSteps, Outcome outcome) {
+        Step parametrisedStep = createParametrisedStep(method, stepAsString, stepWithoutStartingWord, namedParameters,
+                composedSteps);
         return wrapStepUponOutcome(outcome, parametrisedStep);
     }
 
@@ -779,17 +782,23 @@ public class StepCreator {
         private final Method method;
         private final String stepWithoutStartingWord;
         private final Map<String, String> namedParameters;
+        private final List<Step> composedSteps;
 
         public ParametrisedStep(String stepAsString, Method method, String stepWithoutStartingWord,
-                Map<String, String> namedParameters) {
+                Map<String, String> namedParameters, List<Step> composedSteps) {
             this.stepAsString = stepAsString;
             this.method = method;
             this.stepWithoutStartingWord = stepWithoutStartingWord;
             this.namedParameters = namedParameters;
+            this.composedSteps = composedSteps;
         }
 
         public void describeTo(StoryReporter storyReporter) {
             storyReporter.beforeStep(stepAsString);
+        }
+
+        public List<Step> getComposedSteps() {
+            return composedSteps;
         }
 
         public StepResult perform(UUIDExceptionWrapper storyFailureIfItHappened) {
