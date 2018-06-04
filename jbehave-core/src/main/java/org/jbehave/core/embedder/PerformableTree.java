@@ -376,17 +376,13 @@ public class PerformableTree {
 
         @Override
         public State run(Step step, List<StepResult> results, StoryReporter reporter) {
-            boolean parametrisedStep = step instanceof ParametrisedStep;
-            if (parametrisedStep) {
-                ((ParametrisedStep) step).describeTo(reporter);
-            }
-            StepResult result = step.perform(getFailure());
+            StepResult result = step.perform(reporter, getFailure());
             results.add(result);
 
             UUIDExceptionWrapper stepFailure = result.getFailure();
             State state = stepFailure == null ? this : new SomethingHappened(stepFailure);
 
-            if (parametrisedStep) {
+            if (step instanceof ParametrisedStep) {
                 List<Step> composedSteps = ((ParametrisedStep) step).getComposedSteps();
                 for (Step composedStep : composedSteps) {
                     state = state.run(composedStep, results, reporter);
@@ -413,7 +409,7 @@ public class PerformableTree {
 
         @Override
         public State run(Step step, List<StepResult> results, StoryReporter reporter) {
-            StepResult result = step.doNotPerform(getFailure());
+            StepResult result = step.doNotPerform(reporter, getFailure());
             results.add(result);
             result.describeTo(reporter);
             return this;
