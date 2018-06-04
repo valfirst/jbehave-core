@@ -3,6 +3,7 @@ package org.jbehave.core.steps;
 import com.thoughtworks.paranamer.BytecodeReadingParanamer;
 import org.jbehave.core.annotations.*;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
+import org.jbehave.core.reporters.StoryReporter;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -17,6 +18,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.jbehave.core.steps.StepCandidateBehaviour.candidateMatchingStep;
+import static org.mockito.Mockito.mock;
 
 public class CompositeCandidateStepsBehaviour {
 
@@ -46,7 +48,7 @@ public class CompositeCandidateStepsBehaviour {
         candidate.addComposedSteps(composedSteps, "Given Mr Jones has previously bought a ticket", namedParameters, candidates);
         assertThat(composedSteps.size(), equalTo(2));
         for (Step step : composedSteps) {
-            step.perform(null);
+            step.perform(mock(StoryReporter.class), null);
         }
         assertThat(steps.loggedIn, equalTo("Mr Jones"));
         assertThat(steps.added, equalTo("ticket"));
@@ -93,7 +95,7 @@ public class CompositeCandidateStepsBehaviour {
         candidate.addComposedSteps(composedSteps, "Given <customer> has previously bought a <product>", namedParameters, candidates);
         assertThat(composedSteps.size(), equalTo(2));
         for (Step step : composedSteps) {
-            step.perform(null);
+            step.perform(mock(StoryReporter.class), null);
         }
         assertThat(steps.loggedIn, equalTo("Mr Jones"));
         assertThat(steps.added, equalTo("ticket"));
@@ -137,7 +139,7 @@ public class CompositeCandidateStepsBehaviour {
         candidate.addComposedSteps(composedSteps, "Given <customer> has previously bought a <product>", namedParameters, candidates);
         assertThat(composedSteps.size(), equalTo(2));
         for (Step step : composedSteps) {
-            step.perform(null);
+            step.perform(mock(StoryReporter.class), null);
         }
         assertThat(steps.loggedIn, equalTo("Mr Jones"));
         assertThat(steps.added, equalTo("ticket"));
@@ -185,11 +187,11 @@ public class CompositeCandidateStepsBehaviour {
         candidate.addComposedSteps(composedSteps, "Then all buttons are enabled", noNamedParameters, candidates);
         assertThat(composedSteps.size(), equalTo(2));
         for (Step step : composedSteps) {
-            step.perform(null);
+            step.perform(mock(StoryReporter.class), null);
             List<Step> nestedComposedSteps = ((StepCreator.ParametrisedStep) step).getComposedSteps();
             assertThat(nestedComposedSteps.size(), equalTo(2));
             for (Step nestedComposedStep : nestedComposedSteps) {
-                nestedComposedStep.perform(null);
+                nestedComposedStep.perform(mock(StoryReporter.class), null);
             }
         }
         assertThat(steps.trail.toString(), equalTo("left>left_first>left_second>top>top_first>top_second>"));
@@ -234,7 +236,7 @@ public class CompositeCandidateStepsBehaviour {
         candidate.addComposedSteps(composedSteps, "When I login", noNamedParameters, candidates);
         assertThat(composedSteps.size(), equalTo(1));
         for (Step step : composedSteps) {
-            step.perform(null);
+            step.perform(mock(StoryReporter.class), null);
         }
         assertThat(steps.button, equalTo("Login"));
     }
@@ -265,7 +267,7 @@ public class CompositeCandidateStepsBehaviour {
         List<Step> composedSteps = new ArrayList<>();
         candidate.addComposedSteps(composedSteps, "Given I am logged in as someUserName", noNamedParameters, candidates);
         for (Step step : composedSteps) {
-            step.perform(null);
+            step.perform(mock(StoryReporter.class), null);
         }
         assertThat("Was unable to set the username", steps.username, equalTo(userName));
         assertThat("Didn't reach the login step", steps.isLoggedIn, is(true));
