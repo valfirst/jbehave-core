@@ -8,14 +8,17 @@ import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_NEWLINE;
 import static org.jbehave.core.steps.StepCreator.PARAMETER_VALUE_START;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jbehave.core.configuration.Keywords;
-import org.jbehave.core.model.OutcomesTable;
+import org.jbehave.core.model.StepWithOutcome;
 
 /**
  * <p>
@@ -45,10 +48,13 @@ public class JsonOutput extends PrintStreamOutput {
 
     private int givenStoriesLevel = 0;
     private int storyPublishingLevel = 0;
-    private int subStepsLevel = 0;
     private final Map<Integer, Boolean> scenarioPublishingPerLevels = new HashMap<>();
     private boolean scenarioCompleted = false;
     private boolean stepPublishing = false;
+    private String mainStepUuid;
+
+    private final Map<String, StepWithOutcome> storage = new ConcurrentHashMap<>();
+
 
     public JsonOutput(PrintStream output, Keywords keywords) {
         this(output, new Properties(), keywords);
@@ -70,56 +76,68 @@ public class JsonOutput extends PrintStreamOutput {
 
     @Override
     public void beforeStep(String step) {
-        printSubSteps();
-        super.beforeStep(step);
+        final String uuid = UUID.randomUUID().toString();
+        StepWithOutcome currentStepWithOutcome = new StepWithOutcome();
+        currentStepWithOutcome.setUuid(uuid);
+        currentStepWithOutcome.setTitle(step);
+        currentStepWithOutcome.setSteps(new ArrayList<StepWithOutcome>());
+        if (storage.isEmpty())
+        {
+            mainStepUuid = UUID.randomUUID().toString();
+        }
+        else
+        {
+            currentStepWithOutcome.setParentUuid(mainStepUuid);
+            getMainStep().addStep(currentStepWithOutcome);
+        }
+        storage.put(step, currentStepWithOutcome);
     }
 
     @Override
-    public void successful(String step) {
-        printSubStepsBeforeStepOutcome();
-        super.successful(step);
+    public void successful(String step)
+    {
+        StepWithOutcome stepWithOutcome = getCurrentStep(step, "successful");
+
+        // for parametrized steps
+        stepWithOutcome.setTitle(step);
+        printSteps(stepWithOutcome);
     }
 
     @Override
     public void pending(String step) {
-        printSubStepsBeforeStepOutcome();
-        super.pending(step);
+        printSteps(getCurrentStep(step, "pending"));
     }
 
     @Override
     public void failed(String step, Throwable storyFailure) {
-        printSubStepsBeforeStepOutcome();
-        super.failed(step, storyFailure);
-    }
+        StepWithOutcome stepWithOutcome = getCurrentStep(step, "failed");
+        stepWithOutcome.setStoryFailure(storyFailure);
 
-    @Override
-    public void failedOutcomes(String step, OutcomesTable table) {
-        printSubStepsBeforeStepOutcome();
-        super.failedOutcomes(step, table);
+        // for parametrized steps
+        stepWithOutcome.setTitle(step);
+        printSteps(stepWithOutcome);
     }
 
     @Override
     public void ignorable(String step) {
-        printSubStepsBeforeStepOutcome();
-        super.ignorable(step);
+        printSteps(getCurrentStep(step, "ignorable"));
     }
 
     @Override
     public void comment(String step) {
-        printSubStepsBeforeStepOutcome();
-        super.comment(step);
+        printSteps(getCurrentStep(step, "comment"));
     }
 
     @Override
     public void notPerformed(String step) {
-        printSubStepsBeforeStepOutcome();
-        super.notPerformed(step);
+        printSteps(getCurrentStep(step, "notPerformed"));
     }
 
     @Override
     public void restarted(String step, Throwable cause) {
-        printSubStepsBeforeStepOutcome();
-        super.restarted(step, cause);
+        StepWithOutcome stepWithOutcome = getCurrentStep(step, "restarted");
+        stepWithOutcome.setCause(cause);
+        printSteps(stepWithOutcome);
     }
 
     @Override
@@ -161,19 +179,14 @@ public class JsonOutput extends PrintStreamOutput {
                 stepPublishing = false;
                 scenarioCompleted = true;
             }
-            if ("subSteps".equals(key)) {
-                subStepsLevel++;
-            }
             if (ArrayUtils.contains(STEP_KEYS, key)) {
                 // Closing "steps" for step
                 print("]");
-                subStepsLevel--;
             }
         }
         else if ("subSteps".equals(key)) {
             // Starting "steps"
             print("\"steps\": [");
-            subStepsLevel++;
             stepPublishing = true;
         }
         else if ("beforeScenario".equals(key)) {
@@ -280,9 +293,114 @@ public class JsonOutput extends PrintStreamOutput {
         print(format("subSteps", ""));
     }
 
-    private void printSubStepsBeforeStepOutcome() {
-        if (subStepsLevel == 0) {
+    private StepWithOutcome getMainStep() {
+        for (StepWithOutcome stepWithOutcome : storage.values()) {
+            if (stepWithOutcome.getParentUuid() == null) {
+                return stepWithOutcome;
+            }
+        }
+        return null;
+    }
+
+    private StepWithOutcome getCurrentStep(String step, String outcome) {
+        StepWithOutcome stepWithOutcome = getStepFromStorage(step);
+        if (stepWithOutcome == null) {
+            stepWithOutcome = createNewStepWithOutCome(step, outcome);
+            addToMainSteps(stepWithOutcome);
+        }
+        stepWithOutcome.setOutcome(outcome);
+        return stepWithOutcome;
+    }
+
+    private StepWithOutcome getStepFromStorage(String stepTitle){
+        for(StepWithOutcome step: storage.values()) {
+            if(areStepsEqual(step.getTitle(), getStepWithParameters(stepTitle))) {
+                return step;
+            }
+        }
+        return null;
+    }
+
+    private StepWithOutcome createNewStepWithOutCome(String step, String outcome) {
+        StepWithOutcome stepWithOutcome = new StepWithOutcome();
+        final String uuid = UUID.randomUUID().toString();
+        stepWithOutcome.setParentUuid(mainStepUuid);
+        stepWithOutcome.setUuid(uuid);
+        stepWithOutcome.setTitle(step);
+        stepWithOutcome.setOutcome(outcome);
+        stepWithOutcome.setSteps(new ArrayList<StepWithOutcome>());
+
+        return stepWithOutcome;
+    }
+
+    private void printOutcome(StepWithOutcome stepWithOutcome) {
+        switch (stepWithOutcome.getOutcome()) {
+            case "successful":
+                super.successful(stepWithOutcome.getTitle());
+                break;
+            case "pending":
+                super.pending(stepWithOutcome.getTitle());
+                break;
+            case "failed":
+                super.failed(stepWithOutcome.getTitle(), stepWithOutcome.getStoryFailure());
+                break;
+            case "ignorable":
+                super.ignorable(stepWithOutcome.getTitle());
+                break;
+            case "comment":
+                super.comment(stepWithOutcome.getTitle());
+                break;
+            case "notPerformed":
+                super.notPerformed(stepWithOutcome.getTitle());
+                break;
+            case "restarted":
+                super.restarted(stepWithOutcome.getTitle(), stepWithOutcome.getCause());
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void printSteps(StepWithOutcome stepWithOutcome)
+    {
+        if (stepWithOutcome.getParentUuid() == null)
+        {
             printSubSteps();
+            for (StepWithOutcome step : stepWithOutcome.getSteps())
+            {
+                if (step.getOutcome() != null)
+                {
+                    printSubSteps();
+                    printOutcome(step);
+                }
+            }
+            printOutcome(stepWithOutcome);
+            storage.clear();
+            mainStepUuid = null;
+        }
+    }
+
+    private String getStepWithParameters(String step)
+    {
+        String finalStep = step;
+        for (String PARAMETER_KEY : PARAMETER_KEYS) {
+            if(!PARAMETER_KEY.equals(PARAMETER_VALUE_START) && !PARAMETER_KEY.equals(PARAMETER_VALUE_END)) {
+                finalStep = finalStep.replaceAll(PARAMETER_KEY, StringUtils.EMPTY);
+            }
+        }
+        return finalStep;
+    }
+
+    private boolean areStepsEqual(String originalStep, String parametrizedStep) {
+        return originalStep.replaceAll("[<'\uFF5F].*?['>\uFF60]", StringUtils.EMPTY)
+                .equals(parametrizedStep.replaceAll("[<'\uFF5F].*?['>\uFF60]", StringUtils.EMPTY));
+    }
+
+    private void addToMainSteps(StepWithOutcome stepWithOutcome){
+        StepWithOutcome mainStep = getMainStep();
+        if (mainStep != null)
+        {
+            mainStep.addStep(stepWithOutcome);
         }
     }
 }
