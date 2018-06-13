@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -45,7 +46,7 @@ public class JsonOutput extends PrintStreamOutput {
 
     private int givenStoriesLevel = 0;
     private int storyPublishingLevel = 0;
-    private int subStepsLevel = 0;
+    private AtomicInteger subStepsLevel = new AtomicInteger();
     private final Map<Integer, Boolean> scenarioPublishingPerLevels = new HashMap<>();
     private boolean scenarioCompleted = false;
     private boolean stepPublishing = false;
@@ -162,18 +163,18 @@ public class JsonOutput extends PrintStreamOutput {
                 scenarioCompleted = true;
             }
             if ("subSteps".equals(key)) {
-                subStepsLevel++;
+                subStepsLevel.incrementAndGet();
             }
             if (ArrayUtils.contains(STEP_KEYS, key)) {
                 // Closing "steps" for step
                 print("]");
-                subStepsLevel--;
+                subStepsLevel.decrementAndGet();
             }
         }
         else if ("subSteps".equals(key)) {
             // Starting "steps"
             print("\"steps\": [");
-            subStepsLevel++;
+            subStepsLevel.incrementAndGet();
             stepPublishing = true;
         }
         else if ("beforeScenario".equals(key)) {
@@ -281,7 +282,7 @@ public class JsonOutput extends PrintStreamOutput {
     }
 
     private void printSubStepsBeforeStepOutcome() {
-        if (subStepsLevel == 0) {
+        if (subStepsLevel.get() == 0) {
             printSubSteps();
         }
     }
