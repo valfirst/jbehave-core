@@ -608,10 +608,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Nested steps\","
                 + "\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"Nested steps "
                 + "scenario\",\"steps\": [{\"steps\": [],\"outcome\": \"successful\", "
-                + "\"value\": \"Given I am on the main application page\"},{\"steps\": [{\"steps\": "
-                + "[],\"outcome\": \"successful\", \"value\": \"When I click on an element by the xpath"
-                + " '.\\/\\/button'\"},{\"steps\": [],\"outcome\": \"successful\", \"value\": "
-                + "\"When I click on an element by the xpath '.\\/\\/button'\"}],\"outcome\": "
+                + "\"value\": \"Given I am on the main application page\"},{\"steps\": [],\"outcome\": "
                 + "\"successful\", \"value\": \"When I find ((=)) ((2)) elements by ((By.xpath"
                 + "(\\/\\/div[@id='disappear-element' or @id='disappear-frame']))) and for each element do\\n"
                 + "\\uFF3B|step                                                                    |\\n"
@@ -648,9 +645,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.beforeStep(regularStep);
         reporter.successful(regularStep);
         reporter.beforeStep(mainStep);
-        reporter.beforeStep(pendingStep);
         reporter.pending(pendingStep);
-        reporter.beforeStep(pendingStep);
         reporter.pending(pendingStep);
         reporter.successful(parametrizedMainStep);
         reporter.pending(pendingStep);
@@ -663,9 +658,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Pending steps\",\"scenarios\": "
                 + "[{\"keyword\": \"Scenario:\", \"title\": \"Pending steps scenario\",\"steps\": [{\"steps\": [],"
                 + "\"outcome\": \"successful\", \"value\": \"Given I am on the main application page\"},{\"steps\": "
-                + "[{\"steps\": [],\"outcome\": \"pending\", \"keyword\": \"PENDING\", \"value\": \"When I do "
-                + "something new\"},{\"steps\": [],\"outcome\": \"pending\", \"keyword\": \"PENDING\", \"value\": "
-                + "\"When I do something new\"}],\"outcome\": \"successful\", \"value\": \"When I find ((=)) ((2)) "
+                + "[],\"outcome\": \"successful\", \"value\": \"When I find ((=)) ((2)) "
                 + "elements by ((By.xpath(\\/\\/div[@id='disappear-element' or @id='disappear-frame']))) and for each"
                 + " element do\\r\\n\\uFF3B|step"
                 + "|\\r\\n|When I do something new|\\uFF3D\"},{\"steps\": [],\"outcome\": \"pending\", \"keyword\": "
