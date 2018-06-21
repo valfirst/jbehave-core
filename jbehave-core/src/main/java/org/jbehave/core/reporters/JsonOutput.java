@@ -71,56 +71,88 @@ public class JsonOutput extends PrintStreamOutput {
 
     @Override
     public void beforeStep(String step) {
-        printSubSteps();
+        if (isTopLevelStep(false)) {
+            printSubSteps();
+        } else {
+            subStepsLevel.incrementAndGet();
+        }
         super.beforeStep(step);
     }
 
     @Override
     public void successful(String step) {
         printSubStepsBeforeStepOutcome();
-        super.successful(step);
+        if (isTopLevelStep(true)) {
+            super.successful(step);
+            return;
+        }
+        subStepsLevel.decrementAndGet();
     }
 
     @Override
     public void pending(String step) {
+        boolean topLevelStep = isTopLevelStep(false);
         printSubStepsBeforeStepOutcome();
-        super.pending(step);
+        if (topLevelStep) {
+            super.pending(step);
+        }
     }
 
     @Override
     public void failed(String step, Throwable storyFailure) {
         printSubStepsBeforeStepOutcome();
-        super.failed(step, storyFailure);
+        if (isTopLevelStep(true)) {
+            super.failed(step, storyFailure);
+            return;
+        }
+        subStepsLevel.decrementAndGet();
     }
 
     @Override
     public void failedOutcomes(String step, OutcomesTable table) {
         printSubStepsBeforeStepOutcome();
-        super.failedOutcomes(step, table);
+        if (isTopLevelStep(true)) {
+            super.failedOutcomes(step, table);
+            return;
+        }
+        subStepsLevel.decrementAndGet();
     }
 
     @Override
     public void ignorable(String step) {
+        boolean topLevelStep = isTopLevelStep(false);
         printSubStepsBeforeStepOutcome();
-        super.ignorable(step);
+        if (topLevelStep) {
+            super.ignorable(step);
+        }
     }
 
     @Override
     public void comment(String step) {
+        boolean topLevelStep = isTopLevelStep(false);
         printSubStepsBeforeStepOutcome();
-        super.comment(step);
+        if (topLevelStep) {
+            super.comment(step);
+        }
     }
 
     @Override
     public void notPerformed(String step) {
+        boolean topLevelStep = isTopLevelStep(false);
         printSubStepsBeforeStepOutcome();
-        super.notPerformed(step);
+        if (topLevelStep) {
+            super.notPerformed(step);
+        }
     }
 
     @Override
     public void restarted(String step, Throwable cause) {
         printSubStepsBeforeStepOutcome();
-        super.restarted(step, cause);
+        if (isTopLevelStep(true)) {
+            super.restarted(step, cause);
+            return;
+        }
+        subStepsLevel.decrementAndGet();
     }
 
     @Override
@@ -275,6 +307,11 @@ public class JsonOutput extends PrintStreamOutput {
         patterns.setProperty("parameterValueEnd", "))");
         patterns.setProperty("parameterValueNewline", "\\n");
         return patterns;
+    }
+
+    private boolean isTopLevelStep(boolean stepWithBeforeAction) {
+         int expectedLevel = stepWithBeforeAction ? 1 : 0;
+         return subStepsLevel.get() <= expectedLevel;
     }
 
     private void printSubSteps() {
