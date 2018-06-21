@@ -43,6 +43,7 @@ class StoryNarrator {
         reporter.beforeGivenStories();
         reporter.givenStories(asList("/given/story1", "/given/story2"));
         reporter.afterGivenStories();
+        reporter.beforeStep("Given I have a balance of $50");
         reporter.successful("Given I have a balance of $50");
         reporter.ignorable("!-- Then ignore me");
         reporter.comment("!-- A comment");
