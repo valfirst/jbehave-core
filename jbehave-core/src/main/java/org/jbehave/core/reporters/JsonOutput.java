@@ -1,5 +1,9 @@
 package org.jbehave.core.reporters;
 
+import static org.jbehave.core.model.ExamplesTableProperties.getDefaultHeaderSeparator;
+import static org.jbehave.core.model.ExamplesTableProperties.getDefaultValueSeparator;
+import static org.jbehave.core.model.ExamplesTableProperties.getHeaderSeparatorKey;
+import static org.jbehave.core.model.ExamplesTableProperties.getValueSeparatorKey;
 import static org.jbehave.core.reporters.PrintStreamOutput.Format.JSON;
 import static org.jbehave.core.steps.StepCreator.PARAMETER_TABLE_END;
 import static org.jbehave.core.steps.StepCreator.PARAMETER_TABLE_START;
@@ -12,6 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,6 +36,13 @@ import org.jbehave.core.model.OutcomesTable;
  */
 public class JsonOutput extends PrintStreamOutput {
 
+    private static final String STEP_EXAMPLES_TABLE_REGEX = String.format(".*%s\\{(.*(?<=%s|%s).*)\\}\\n(.+)%s$",
+            PARAMETER_TABLE_START, getHeaderSeparatorKey(), getValueSeparatorKey(), PARAMETER_TABLE_END);
+    private static final Pattern STEP_EXAMPLES_TABLE_PATTERN = Pattern.compile(STEP_EXAMPLES_TABLE_REGEX,
+            Pattern.DOTALL);
+    private static final int INLINE_PROPERTIES_GROUP = 1;
+    private static final int EXAMPLES_TABLE_GROUP = 2;
+
     private static final char JSON_DOCUMENT_START = 0;
     private static final char JSON_OBJECT_START = '{';
     private static final char JSON_ARRAY_START = '[';
@@ -43,6 +56,7 @@ public class JsonOutput extends PrintStreamOutput {
             "parameterValueNewline" };
 
     private char lastChar = JSON_DOCUMENT_START;
+    private char newLine = '\n';
 
     private int givenStoriesLevel = 0;
     private int storyPublishingLevel = 0;
@@ -83,7 +97,7 @@ public class JsonOutput extends PrintStreamOutput {
     public void successful(String step) {
         printSubStepsBeforeStepOutcome();
         if (isTopLevelStep(true)) {
-            super.successful(step);
+            super.successful(processStepExamplesTable(step));
             return;
         }
         subStepsLevel.decrementAndGet();
@@ -322,5 +336,81 @@ public class JsonOutput extends PrintStreamOutput {
         if (subStepsLevel.get() == 0) {
             printSubSteps();
         }
+    }
+
+    private String processStepExamplesTable(String stepAsString) {
+        Matcher stepExampleTableMatcher = STEP_EXAMPLES_TABLE_PATTERN.matcher(stepAsString);
+        if(stepExampleTableMatcher.matches()) {
+            String examplesTableProperties = stepExampleTableMatcher.group(INLINE_PROPERTIES_GROUP);
+            String headerSeparator = getPropertyValue(examplesTableProperties, getHeaderSeparatorKey());
+            String valueSeparator = getPropertyValue(examplesTableProperties, getValueSeparatorKey());
+
+            String examplesTable = stepExampleTableMatcher.group(EXAMPLES_TABLE_GROUP);
+
+            return stepAsString.substring(0, stepExampleTableMatcher.start(1) - 2)
+                    .concat(transformExamplesTable(examplesTable, headerSeparator, valueSeparator));
+        }
+        return stepAsString;
+    }
+
+    private String getPropertyValue(String examplesTableProperties, String key) {
+        String [] properties = examplesTableProperties.split(",");
+        for(String property : properties) {
+            property = property.replaceAll("\\s", "");
+            String[] splittedProperty = property.split("=");
+            if(splittedProperty[0].equals(key)) {
+                return splittedProperty[1].trim();
+            }
+        }
+        return null;
+    }
+
+    private String transformExamplesTable(String examplesTable, String headerSeparator, String valueSeparator) {
+        StringBuilder examplesTableBuilder = new StringBuilder();
+        String defaultValueSeparator = getDefaultValueSeparator();
+
+        String [] rows = examplesTable.split(createRowSeparatorRegex(headerSeparator, valueSeparator));
+        for(int index = 0; index < rows.length; index++) {
+            String row = rows[index];
+            String rowToAdd;
+            if(index == 0) {
+                String defaultHeaderSeparator = getDefaultHeaderSeparator();
+                rowToAdd = isAdjustingReuired(headerSeparator, defaultHeaderSeparator) ?
+                        adjustSeparators(row, headerSeparator, defaultHeaderSeparator) : row;
+            } else {
+                rowToAdd = isAdjustingReuired(valueSeparator, defaultValueSeparator) ?
+                        adjustSeparators(row, valueSeparator, defaultValueSeparator) : row;
+            }
+            examplesTableBuilder.append(rowToAdd);
+            if(index != rows.length - 1) {
+                examplesTableBuilder.append(newLine);
+            }
+        }
+
+        return examplesTableBuilder.toString();
+    }
+
+    private boolean isAdjustingReuired(String separator, String defaultSeparator)
+    {
+        return separator != null && !separator.equals(defaultSeparator);
+    }
+
+    private String adjustSeparators(String row, String currentSeparator, String defaultSeparator) {
+        return row.replaceAll(escape(defaultSeparator), "\\\\" + defaultSeparator)
+                .replaceAll(escape(currentSeparator) , defaultSeparator);
+    }
+
+    private String createRowSeparatorRegex(String headerSeparator, String valueSeparator) {
+        return new StringBuilder("(?<=")
+                .append(escape(headerSeparator != null ? headerSeparator : getDefaultHeaderSeparator()))
+                .append("|")
+                .append(escape(valueSeparator != null ? valueSeparator : getDefaultValueSeparator()))
+                .append(")")
+                .append(newLine)
+                .toString();
+    }
+
+    private String escape(String value) {
+        return "\\".concat(value);
     }
 }
