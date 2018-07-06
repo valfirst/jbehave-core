@@ -103,4 +103,20 @@ public final class ExamplesTableProperties {
     public String getPropertiesAsString() {
         return propertiesAsString;
     }
+
+    public static String getHeaderSeparatorKey() {
+        return HEADER_SEPARATOR_KEY;
+    }
+
+    public static String getValueSeparatorKey() {
+        return VALUE_SEPARATOR_KEY;
+    }
+
+    public static String getDefaultHeaderSeparator() {
+        return HEADER_SEPARATOR;
+    }
+
+    public static String getDefaultValueSeparator() {
+        return VALUE_SEPARATOR;
+    }
 }

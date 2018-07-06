@@ -666,6 +666,82 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         assertThat(dos2unix(out.toString()), equalTo(expected));
     }
 
+    @Test
+    public void shouldModifyStepExamplesTableThatContainsInlinedProperties()
+    {
+        // Given
+        OutputStream out = new ByteArrayOutputStream();
+        StoryReporter reporter = new JsonOutput(new PrintStream(out), new Properties(), new LocalizedKeywords());
+
+        // When
+        Story story = new Story("/path/to/story", new Description("Steps with examples table"), null,
+                null, null, new ArrayList<Scenario>());
+        String beforeStep = "beforeStep";
+        String stepWithHeaderSeparator = buildStepWithExamplesTable("!", null);
+        String stepWithValueSeparator = buildStepWithExamplesTable(null, "!");
+        String stepWithBothSeparatorSpecified = buildStepWithExamplesTable("!", "!");
+        String stepWithNewLineSeparator = buildStepWithExamplesTable("!", "|", "new\nline", "some \ntest \nmessage");
+        String stepWithDefaultSeparatorInside  = buildStepWithExamplesTable("|", "!", "new|line", "some |test |nmessage");
+
+        reporter.beforeStory(story, false);
+        reporter.beforeScenario(new Scenario("Steps with examples table", Meta.EMPTY));
+        reporter.beforeStep(beforeStep);
+        reporter.successful(stepWithHeaderSeparator);
+        reporter.beforeStep(beforeStep);
+        reporter.successful(stepWithValueSeparator);
+        reporter.beforeStep(beforeStep);
+        reporter.successful(stepWithBothSeparatorSpecified);
+        reporter.beforeStep(beforeStep);
+        reporter.successful(stepWithNewLineSeparator);
+        reporter.beforeStep(beforeStep);
+        reporter.successful(stepWithDefaultSeparatorInside);
+        reporter.afterScenario();
+        reporter.afterStory(false);
+
+        // Then
+        String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Steps with examples table\",\"scenarios\": "
+                + "[{\"keyword\": \"Scenario:\", \"title\": \"Steps with examples table\",\"steps\": "
+                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": "
+                    + "\"When I do anything:\\n|header1|header2|\\n|value1.1|value1.2|\\n|value2.1|value2.2|\"}," 
+                + "{\"steps\": [],\"outcome\": \"successful\", \"value\": "
+                    +"\"When I do anything:\\n|header1|header2|\\n|value1.1|value1.2|\\n|value2.1|value2.2|\"},"
+                +"{\"steps\": [],\"outcome\": \"successful\", \"value\": "
+                    + "\"When I do anything:\\n|header1|header2|\\n|value1.1|value1.2|\\n|value2.1|value2.2|\"},"
+                + "{\"steps\": [],\"outcome\": \"successful\", \"value\": "
+                    + "\"When I do anything:\\n|header1|header2|\\n|value1.1|value1.2|\\n|value2.1|value2.2|\\n|new\\nline|some \\ntest \\nmessage|\"},"
+                + "{\"steps\": [],\"outcome\": \"successful\", \"value\": "
+                    + "\"When I do anything:\\n|header1|header2|\\n|value1.1|value1.2|\\n|value2.1|value2.2|\\n|new\\\\|line|some \\\\|test \\\\|nmessage|\"}"
+                + "]}]}";
+
+        assertThat(dos2unix(out.toString()), equalTo(expected));
+    }
+
+    private String buildStepWithExamplesTable(String headerSeparator, String valueSeparator, String ... additionalValues) {
+        String valueProperty = valueSeparator == null ? "" : "valueSeparator=" + valueSeparator + ",";
+        String headerProperty = headerSeparator == null ? "" : "headerSeparator=" + headerSeparator + ",";
+        String valueReplacement = valueSeparator == null ? "|" : valueSeparator;
+        String headerReplacement = headerSeparator == null ? "|" : headerSeparator;
+
+        StringBuilder additionalRowBuilder = new StringBuilder();
+        if(additionalValues.length != 0) {
+            for(int index = 0; index < additionalValues.length; index ++) {
+                if(index == 0) {
+                    additionalRowBuilder.append("\n").append(valueReplacement);
+                }
+                additionalRowBuilder.append(additionalValues[index]).append(valueReplacement);
+            }
+        }
+        
+        String stepFormat = "When I do anything:\n"
+                + "［{ignorableSeparator=dummy,%1$s %2$s commentSeparator=dummy}\n"
+                + "%3$sheader1%3$sheader2%3$s\n" 
+                + "%4$svalue1.1%4$svalue1.2%4$s\n"
+                + "%4$svalue2.1%4$svalue2.2%4$s%5$s］";
+
+        return String.format(stepFormat, valueProperty, headerProperty, headerReplacement, valueReplacement,
+                additionalRowBuilder.toString());
+    }
+
     @SuppressWarnings("serial")
     private static class MyKnownFailure extends KnownFailure {
     }
