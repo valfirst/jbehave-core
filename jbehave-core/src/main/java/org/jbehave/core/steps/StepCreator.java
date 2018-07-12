@@ -265,13 +265,16 @@ public class StepCreator {
     }
 
     public Step createParametrisedStep(final Method method, final String stepAsString,
-            final String stepWithoutStartingWord, final Map<String, String> namedParameters) {
-        return new ParametrisedStep(stepAsString, method, stepWithoutStartingWord, namedParameters);
+            final String stepWithoutStartingWord, final Map<String, String> namedParameters,
+            final List<Step> composedSteps) {
+        return new ParametrisedStep(stepAsString, method, stepWithoutStartingWord, namedParameters, composedSteps);
     }
 
     public Step createParametrisedStepUponOutcome(final Method method, final String stepAsString,
-            final String stepWithoutStartingWord, final Map<String, String> namedParameters, Outcome outcome) {
-        Step parametrisedStep = createParametrisedStep(method, stepAsString, stepWithoutStartingWord, namedParameters);
+            final String stepWithoutStartingWord, final Map<String, String> namedParameters,
+            final List<Step> composedSteps, Outcome outcome) {
+        Step parametrisedStep = createParametrisedStep(method, stepAsString, stepWithoutStartingWord, namedParameters,
+                composedSteps);
         return wrapStepUponOutcome(outcome, parametrisedStep);
     }
 
@@ -418,7 +421,7 @@ public class StepCreator {
             if (names[position].fromContext) {
                 parameters[position] = stepsContext.get(valuesAsString[position]);
             } else {
-                parameters[position] = parameterConverters.convert(valuesAsString[position], types[position]);
+                parameters[position] = parameterConverters.convert(valuesAsString[position], types[position], null);
             }
         }
         return parameters;
@@ -445,13 +448,14 @@ public class StepCreator {
             }
 
             if (!delimitedNames.isEmpty()) {
-                for(String delimitedName : delimitedNames) {
-                    monitorUsingTableNameForParameter(delimitedName, position, annotated);
-                    parameter = parameterControls.replaceAllDelimitedNames(parameter, delimitedName,
-                            namedParameter(namedParameters, delimitedName));
+                parameter = replaceAllDelimitedNames(delimitedNames, position, annotated, parameter, namedParameters);
+                delimitedNames = delimitedNameFor(parameter);
+                if (!delimitedNames.isEmpty()) {
+                    parameter = replaceAllDelimitedNames(delimitedNames, position, annotated, parameter,
+                            namedParameters);
                 }
             }
-            else if (isTableName(namedParameters, name)) {
+            else if (parameter == null && isTableName(namedParameters, name)) {
                 parameter = namedParameter(namedParameters, name);
                 if (parameter != null) {
                     monitorUsingTableNameForParameter(name, position, annotated); 
@@ -470,12 +474,19 @@ public class StepCreator {
             position = position - numberOfPreviousFromContext(names, position);
             stepMonitor.usingNaturalOrderForParameter(position);
             parameter = matchedParameter(position);
-            List<String> delimitedNames = delimitedNameFor(parameter);
+            List<String> delimitedNames;
 
-            for(String delimitedName : delimitedNames) {
-                if (isTableName(namedParameters, delimitedName)) {
-                    parameter = parameterControls.replaceAllDelimitedNames(parameter, delimitedName,
-                            namedParameter(namedParameters, delimitedName));
+            
+            while(!(delimitedNames = delimitedNameFor(parameter)).isEmpty()) {
+                String parameterWithDelimitedNames = parameter;
+                for(String delimitedName : delimitedNames) {
+                    if (isTableName(namedParameters, delimitedName)) {
+                        parameter = parameterControls.replaceAllDelimitedNames(parameter, delimitedName,
+                                namedParameter(namedParameters, delimitedName));
+                    }
+                }
+                if(parameterWithDelimitedNames.equals(parameter)) {
+                    break;
                 }
             }
         }
@@ -484,7 +495,18 @@ public class StepCreator {
 
         return parameter;
     }
-    
+
+    private String replaceAllDelimitedNames(List<String> delimitedNames, int position, boolean annotated,
+                                            String parameter, Map<String, String> namedParameters) {
+        String parameterWithDelimitedNames = parameter;
+        for(String delimitedName : delimitedNames) {
+            monitorUsingTableNameForParameter(delimitedName, position, annotated);
+            parameterWithDelimitedNames = parameterControls.replaceAllDelimitedNames(parameterWithDelimitedNames,
+                    delimitedName, namedParameter(namedParameters, delimitedName));
+        }
+        return parameterWithDelimitedNames;
+    }
+
     private int numberOfPreviousFromContext(ParameterName[] names, int currentPosition) {
         int number = 0;
         
@@ -640,13 +662,13 @@ public class StepCreator {
         }
 
         @Override
-        public StepResult perform(UUIDExceptionWrapper storyFailureIfItHappened) {
-            return step.perform(storyFailureIfItHappened);
+        public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
+            return step.perform(storyReporter, storyFailureIfItHappened);
         }
 
         @Override
-        public StepResult doNotPerform(UUIDExceptionWrapper storyFailureIfItHappened) {
-            return step.doNotPerform(storyFailureIfItHappened);
+        public StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
+            return step.doNotPerform(storyReporter, storyFailureIfItHappened);
         }
 
         @Override
@@ -664,7 +686,8 @@ public class StepCreator {
             this.meta = meta;
         }
 
-        public StepResult perform(UUIDExceptionWrapper storyFailureIfItHappened) {
+        @Override
+        public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             ParameterConverters paramConvertersWithExceptionInjector = paramConvertersWithExceptionInjector(storyFailureIfItHappened);
             MethodInvoker methodInvoker = new MethodInvoker(method, paramConvertersWithExceptionInjector, paranamer,
                     meta);
@@ -686,8 +709,9 @@ public class StepCreator {
             return parameterConverters.newInstanceAdding(new UUIDExceptionWrapperInjector(storyFailureIfItHappened));
         }
 
-        public StepResult doNotPerform(UUIDExceptionWrapper storyFailureIfItHappened) {
-            return perform(storyFailureIfItHappened);
+        @Override
+        public StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
+            return perform(storyReporter, storyFailureIfItHappened);
         }
 
         private class UUIDExceptionWrapperInjector implements ParameterConverter<UUIDExceptionWrapper>
@@ -719,8 +743,8 @@ public class StepCreator {
         }
 
         @Override
-        public StepResult doNotPerform(UUIDExceptionWrapper storyFailureIfItHappened) {
-            return perform(storyFailureIfItHappened);
+        public StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
+            return perform(storyReporter, storyFailureIfItHappened);
         }
     }
 
@@ -731,7 +755,7 @@ public class StepCreator {
         }
 
         @Override
-        public StepResult doNotPerform(UUIDExceptionWrapper storyFailureIfItHappened) {
+        public StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             return skipped();
         }
     }
@@ -743,12 +767,12 @@ public class StepCreator {
         }
 
         @Override
-        public StepResult doNotPerform(UUIDExceptionWrapper storyFailureIfItHappened) {
-            return super.perform(storyFailureIfItHappened);
+        public StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
+            return super.perform(storyReporter, storyFailureIfItHappened);
         }
 
         @Override
-        public StepResult perform(UUIDExceptionWrapper storyFailureIfItHappened) {
+        public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             return skipped();
         }
     }
@@ -760,20 +784,24 @@ public class StepCreator {
         private final Method method;
         private final String stepWithoutStartingWord;
         private final Map<String, String> namedParameters;
+        private final List<Step> composedSteps;
 
         public ParametrisedStep(String stepAsString, Method method, String stepWithoutStartingWord,
-                Map<String, String> namedParameters) {
+                Map<String, String> namedParameters, List<Step> composedSteps) {
             this.stepAsString = stepAsString;
             this.method = method;
             this.stepWithoutStartingWord = stepWithoutStartingWord;
             this.namedParameters = namedParameters;
+            this.composedSteps = composedSteps;
         }
 
-        public void describeTo(StoryReporter storyReporter) {
+        public List<Step> getComposedSteps() {
+            return composedSteps;
+        }
+
+        @Override
+        public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             storyReporter.beforeStep(stepAsString);
-        }
-
-        public StepResult perform(UUIDExceptionWrapper storyFailureIfItHappened) {
             Timer timer = new Timer().start();
             try {
                 parametriseStep();
@@ -806,7 +834,8 @@ public class StepCreator {
             }
         }
 
-        public StepResult doNotPerform(UUIDExceptionWrapper storyFailureIfItHappened) {
+        @Override
+        public StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             try {
                 parametriseStep();
             } catch (Throwable t) {
@@ -852,11 +881,13 @@ public class StepCreator {
             this.previousNonAndStep = previousNonAndStep;
         }
 
-        public StepResult perform(UUIDExceptionWrapper storyFailureIfItHappened) {
+        @Override
+        public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             return pending(stepAsString);
         }
 
-        public StepResult doNotPerform(UUIDExceptionWrapper storyFailureIfItHappened) {
+        @Override
+        public StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             return pending(stepAsString);
         }
 
@@ -889,11 +920,13 @@ public class StepCreator {
             this.stepAsString = stepAsString;
         }
 
-        public StepResult perform(UUIDExceptionWrapper storyFailureIfItHappened) {
+        @Override
+        public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             return ignorable(stepAsString);
         }
 
-        public StepResult doNotPerform(UUIDExceptionWrapper storyFailureIfItHappened) {
+        @Override
+        public StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             return ignorable(stepAsString);
         }
         
@@ -909,11 +942,13 @@ public class StepCreator {
             this.stepAsString = stepAsString;
         }
 
-        public StepResult perform(UUIDExceptionWrapper storyFailureIfItHappened) {
+        @Override
+        public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             return comment(stepAsString);
         }
 
-        public StepResult doNotPerform(UUIDExceptionWrapper storyFailureIfItHappened) {
+        @Override
+        public StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             return comment(stepAsString);
         }
 
@@ -972,7 +1007,8 @@ public class StepCreator {
         private Object[] parameterValuesFrom(Meta meta) {
             Object[] values = new Object[parameterTypes.length];
             for (Parameter parameter : methodParameters()) {
-                values[parameter.position] = parameterConverters.convert(parameter.valueFrom(meta), parameter.type);
+                values[parameter.position] = parameterConverters.convert(parameter.valueFrom(meta), parameter.type,
+                        null);
             }
             return values;
         }

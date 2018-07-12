@@ -64,7 +64,7 @@ public final class ExamplesTableProperties {
         return result;
     }
 
-    public String getRowSeparator() {
+    public static String getRowSeparator() {
         return ROW_SEPARATOR;
     }
 
