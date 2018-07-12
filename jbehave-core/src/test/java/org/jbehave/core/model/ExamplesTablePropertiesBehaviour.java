@@ -19,7 +19,7 @@ public class ExamplesTablePropertiesBehaviour {
         ExamplesTableProperties properties = new ExamplesTableProperties("ignorableSeparator=!--,headerSeparator=!,valueSeparator=!,"
                 + "commentSeparator=#,trim=false,metaByRow=true,transformer=CUSTOM_TRANSFORMER", "|", "|",
                 "|--");
-        assertThat(properties.getRowSeparator(), equalTo("\n"));
+        assertThat(ExamplesTableProperties.getRowSeparator(), equalTo("\n"));
         assertThat(properties.getHeaderSeparator(), equalTo("!"));
         assertThat(properties.getValueSeparator(), equalTo("!"));
         assertThat(properties.getIgnorableSeparator(), equalTo("!--"));
