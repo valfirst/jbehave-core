@@ -33,6 +33,14 @@ public interface StoryReporter {
 
     void lifecyle(Lifecycle lifecycle);
 
+    void beforeBeforeStorySteps();
+
+    void afterBeforeStorySteps();
+
+    void beforeAfterStorySteps();
+
+    void afterAfterStorySteps();
+
     void scenarioNotAllowed(Scenario scenario, String filter);
 
     void beforeScenario(Scenario scenario);
