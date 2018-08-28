@@ -79,6 +79,22 @@ public class NullStoryReporter implements StoryReporter {
     }
 
     @Override
+    public void beforeBeforeStorySteps() {
+    }
+
+    @Override
+    public void afterBeforeStorySteps() {
+    }
+
+    @Override
+    public void beforeAfterStorySteps() {
+    }
+
+    @Override
+    public void afterAfterStorySteps() {
+    }
+
+    @Override
     public void beforeGivenStories(){
     }
 
