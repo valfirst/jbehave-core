@@ -908,16 +908,20 @@ public class PerformableTree {
                 context.reporter().narrative(story.getNarrative());
                 context.reporter().lifecyle(story.getLifecycle());
                 State state = context.state();
+                context.reporter().beforeBeforeStorySteps();
                 for ( PerformableSteps steps : beforeSteps ) {
                     steps.perform(context);
                 }
+                context.reporter().afterBeforeStorySteps();
                 performGivenStories(context, givenStories, story.getGivenStories());
                 if (!context.failureOccurred() || !context.configuration().storyControls().skipStoryIfGivenStoryFailed()) {
                     performScenarios(context);
                 }
+                context.reporter().beforeAfterStorySteps();
                 for ( PerformableSteps steps : afterSteps ) {
                     steps.perform(context);
                 }
+                context.reporter().afterAfterStorySteps();
                 if (context.restartStory()) {
                     context.reporter().afterStory(true);
                 } else {
