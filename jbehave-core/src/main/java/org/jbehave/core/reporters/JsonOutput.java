@@ -190,6 +190,9 @@ public class JsonOutput extends PrintStreamOutput {
                 stepPublishing = false;
                 scenarioCompleted = true;
             }
+            else if ("afterBeforeStorySteps".equals(key) || "afterAfterStorySteps".equals(key)){
+                stepPublishing = false;
+            }
             if ("subSteps".equals(key)) {
                 subStepsLevel.incrementAndGet();
             }
@@ -219,6 +222,9 @@ public class JsonOutput extends PrintStreamOutput {
             // Closing "scenarios"
             scenarioPublishingPerLevels.put(storyPublishingLevel, Boolean.FALSE);
             print("]");
+        }
+        if ("beforeBeforeStorySteps".equals(key) || "beforeAfterStorySteps".equals(key)) {
+            stepPublishing = true;
         }
         return super.format(key, defaultPattern, args);
     }
@@ -254,6 +260,10 @@ public class JsonOutput extends PrintStreamOutput {
         patterns.setProperty("lifecycleOutcomeEnd", "}");
         patterns.setProperty("lifecycleMetaFilter", "\"metaFilter\": \"{0} {1}\"");
         patterns.setProperty("lifecycleStep", "\"step\": \"{0}\"");
+        patterns.setProperty("beforeBeforeStorySteps", "\"beforeStorySteps\": [");
+        patterns.setProperty("afterBeforeStorySteps", "]");
+        patterns.setProperty("beforeAfterStorySteps", "\"afterStorySteps\": [");
+        patterns.setProperty("afterAfterStorySteps", "]");
         patterns.setProperty("beforeScenario","'{'\"keyword\": \"{0}\", \"title\": \"{1}\"");
         patterns.setProperty("scenarioNotAllowed", "\"notAllowed\": '{'\"pattern\": \"{0}\"}");
         patterns.setProperty("afterScenario", "}");

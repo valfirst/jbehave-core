@@ -24,6 +24,7 @@ import org.jbehave.core.failures.KnownFailure;
 import org.jbehave.core.failures.UUIDExceptionWrapper;
 import org.jbehave.core.model.*;
 import org.jbehave.core.model.OutcomesTable.Outcome;
+import org.jbehave.core.steps.StepCollector.Stage;
 
 import static org.apache.commons.lang3.StringUtils.substringBetween;
 import static org.jbehave.core.steps.StepCreator.*;
@@ -330,6 +331,24 @@ public abstract class PrintStreamOutput extends NullStoryReporter {
                 print(format("metaProperty", "{0}{1} {2}", keywords.metaProperty(), name, meta.getProperty(name)));
             }
             print(format("metaEnd", NL));
+        }
+    }
+
+    @Override
+    public void beforeStorySteps(Stage stage) {
+        if (stage == Stage.BEFORE) {
+            print(format("beforeBeforeStorySteps", ""));
+        } else if (stage == Stage.AFTER) {
+            print(format("beforeAfterStorySteps", ""));
+        }
+    }
+
+    @Override
+    public void afterStorySteps(Stage stage) {
+        if (stage == Stage.BEFORE) {
+            print(format("afterBeforeStorySteps", ""));
+        } else if (stage == Stage.AFTER) {
+            print(format("afterAfterStorySteps", ""));
         }
     }
 
