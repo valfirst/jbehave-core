@@ -27,10 +27,12 @@ class StoryNarrator {
         Properties meta = new Properties();
         meta.setProperty("theme", "testing");
         meta.setProperty("author", "Mauro");
+        String beforeStoryStep = "Given a story step";
+        String afterStoryStep = "Given a story step";
         Lifecycle.Steps beforeScenarioSteps = new Lifecycle.Steps(Scope.SCENARIO, asList("Given a scenario step"));
-        Lifecycle.Steps beforeStorySteps = new Lifecycle.Steps(Scope.STORY, asList("Given a story step"));
+        Lifecycle.Steps beforeStorySteps = new Lifecycle.Steps(Scope.STORY, asList(beforeStoryStep));
         Lifecycle.Steps afterScenarioSteps = new Lifecycle.Steps(Scope.SCENARIO, asList("Given a scenario step"));
-        Lifecycle.Steps afterStorySteps = new Lifecycle.Steps(Scope.STORY, asList("Given a story step"));
+        Lifecycle.Steps afterStorySteps = new Lifecycle.Steps(Scope.STORY, asList(afterStoryStep));
         Lifecycle lifecycle = new Lifecycle(asList(beforeScenarioSteps, beforeStorySteps), asList(afterScenarioSteps, afterStorySteps));
         Story story = new Story("/path/to/story", new Description("An interesting story & special chars"), new Meta(meta),
                 new Narrative("renovate my house", "customer", "get a loan"), GivenStories.EMPTY, lifecycle, new ArrayList<Scenario>());
@@ -39,6 +41,12 @@ class StoryNarrator {
         reporter.dryRun();
         reporter.narrative(story.getNarrative());
         reporter.lifecyle(lifecycle);
+
+        reporter.beforeBeforeStorySteps();
+        reporter.beforeStep(beforeStoryStep);
+        reporter.successful(beforeStoryStep);
+        reporter.afterBeforeStorySteps();
+
         reporter.beforeScenario(new Scenario("I ask for a loan", Meta.EMPTY));
         reporter.beforeGivenStories();
         reporter.givenStories(asList("/given/story1", "/given/story2"));
@@ -92,6 +100,12 @@ class StoryNarrator {
         }
         reporter.afterExamples();
         reporter.afterScenario();
+
+        reporter.beforeAfterStorySteps();
+        reporter.beforeStep(afterStoryStep);
+        reporter.successful(afterStoryStep);
+        reporter.afterAfterStorySteps();
+
         String method1="@When(\"something \\\"$param\\\"\")\n"
                 + "@Pending\n"
                 + "public void whenSomething() {\n"
