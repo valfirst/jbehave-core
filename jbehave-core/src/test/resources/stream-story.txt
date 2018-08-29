@@ -31,6 +31,7 @@ Given a story step
 
 
 
+Given a story step
 Scenario: I ask for a loan
 GivenStories:
 /given/story1
@@ -77,6 +78,7 @@ Then I should have a balance of $30 (FAILED)
 (java.lang.Exception: Expected <30> got <25>)
 
 
+Given a story step
 @When("something \"$param\"")
 @Pending
 public void whenSomething() {

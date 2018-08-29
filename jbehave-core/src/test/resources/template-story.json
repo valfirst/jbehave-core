@@ -42,6 +42,11 @@
 }
 }
 
+,"before": {"keyword": "Before:",
+[
+{"outcome": "successful", "step": "Given a story step"}
+
+]}
 ,"scenarios": [
 {"keyword": "Scenario:", "title": "I ask for a loan"
 
@@ -76,11 +81,11 @@
 ,
 {"outcome": "Restarted Story", "step": "\/path\/to\/story"}
 ,
-{"outcome": "failed", "step": "Then I should have a balance of $30", "failure": "java.lang.Exception: Expected <30> got <25>\n\tat org.jbehave.core.reporters.StoryNarrator.narrateAnInterestingStory(StoryNarrator.java:63)\n\tat org.jbehave.core.reporters.TemplateOutputBehaviour.shouldOutputStoryToJson(TemplateOutputBehaviour.java:36)\n\t(reflection-invoke)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n..."}
+{"outcome": "failed", "step": "Then I should have a balance of $30", "failure": "java.lang.Exception: Expected <30> got <25>\n\tat org.jbehave.core.reporters.StoryNarrator.narrateAnInterestingStory(StoryNarrator.java:71)\n\tat org.jbehave.core.reporters.TemplateOutputBehaviour.shouldOutputStoryToJson(TemplateOutputBehaviour.java:36)\n\t(reflection-invoke)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n..."}
 ,
 {"outcome": "notPerformed", "step": "Then I should have $20"}
 ,
-{"outcome": "failed", "step": "Then I don't return loan", "failure": "org.jbehave.core.model.OutcomesTable$OutcomesFailed\n\tat org.jbehave.core.model.OutcomesTable.verify(OutcomesTable.java:55)\n\tat org.jbehave.core.reporters.StoryNarrator.narrateAnInterestingStory(StoryNarrator.java:74)\n\tat org.jbehave.core.reporters.TemplateOutputBehaviour.shouldOutputStoryToJson(TemplateOutputBehaviour.java:36)\n\t(reflection-invoke)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n...","outcomes": {
+{"outcome": "failed", "step": "Then I don't return loan", "failure": "org.jbehave.core.model.OutcomesTable$OutcomesFailed\n\tat org.jbehave.core.model.OutcomesTable.verify(OutcomesTable.java:55)\n\tat org.jbehave.core.reporters.StoryNarrator.narrateAnInterestingStory(StoryNarrator.java:82)\n\tat org.jbehave.core.reporters.TemplateOutputBehaviour.shouldOutputStoryToJson(TemplateOutputBehaviour.java:36)\n\t(reflection-invoke)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n...","outcomes": {
 "fields":
 [
 "Description",
@@ -134,13 +139,17 @@
 ,
 {"outcome": "successful", "step": "Then I give it to Paul"}
 ,
-{"outcome": "failed", "step": "Then I should have a balance of $30", "failure": "java.lang.Exception: Expected <30> got <25>\n\tat org.jbehave.core.reporters.StoryNarrator.narrateAnInterestingStory(StoryNarrator.java:89)\n\tat org.jbehave.core.reporters.TemplateOutputBehaviour.shouldOutputStoryToJson(TemplateOutputBehaviour.java:36)\n\t(reflection-invoke)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n..."}
+{"outcome": "failed", "step": "Then I should have a balance of $30", "failure": "java.lang.Exception: Expected <30> got <25>\n\tat org.jbehave.core.reporters.StoryNarrator.narrateAnInterestingStory(StoryNarrator.java:97)\n\tat org.jbehave.core.reporters.TemplateOutputBehaviour.shouldOutputStoryToJson(TemplateOutputBehaviour.java:36)\n\t(reflection-invoke)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n..."}
 
 ]
 }
 ]
 }
 ]
+,"after": {"keyword": "After:",
+{"outcome": "successful", "step": "Given a story step"}
+
+}
 ,"cancelled": {"keyword": "STORY CANCELLED", "durationKeyword": "DURATION", "durationInSecs": "2"}
 ,"pendingMethods": [
 "@When(\"something \\\"$param\\\"\")\n@Pending\npublic void whenSomething() {\n  // PENDING\n}\n",
