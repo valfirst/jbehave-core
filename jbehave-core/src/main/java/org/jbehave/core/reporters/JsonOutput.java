@@ -47,8 +47,7 @@ public class JsonOutput extends PrintStreamOutput {
     private int givenStoriesLevel = 0;
     private int storyPublishingLevel = 0;
     private AtomicInteger subStepsLevel = new AtomicInteger();
-    private final Map<Integer, Boolean> scenarioPublishingPerLevels = new HashMap<>();
-    private boolean scenarioCompleted = false;
+    private final Map<Integer, ScenarioStatus> scenariosStatusPerLevels = new HashMap<>();
     private boolean stepPublishing = false;
 
     public JsonOutput(PrintStream output, Keywords keywords) {
@@ -159,7 +158,7 @@ public class JsonOutput extends PrintStreamOutput {
     protected String format(String key, String defaultPattern, Object... args) {
         if ("beforeGivenStories".equals(key)) {
             givenStoriesLevel++;
-            scenarioCompleted = false;
+            getCurrentScenarioStatus().setCompleted(false);
         } else if ("afterGivenStories".equals(key)) {
             if (storyPublishingLevel == givenStoriesLevel) {
                 // Closing given "stories"
@@ -192,7 +191,7 @@ public class JsonOutput extends PrintStreamOutput {
                 // Closing "steps" for scenario
                 print("]");
                 stepPublishing = false;
-                scenarioCompleted = true;
+                getCurrentScenarioStatus().setCompleted(true);
             }
             else if ("afterBeforeStorySteps".equals(key) || "afterAfterStorySteps".equals(key)){
                 stepPublishing = false;
@@ -213,18 +212,18 @@ public class JsonOutput extends PrintStreamOutput {
             stepPublishing = true;
         }
         else if ("beforeScenario".equals(key)) {
-            scenarioCompleted = false;
-            if (scenarioPublishingPerLevels.get(storyPublishingLevel) != Boolean.TRUE) {
+            getCurrentScenarioStatus().setCompleted(false);
+            if (!getCurrentScenarioStatus().isPublishing()) {
                 // Starting "scenarios"
                 print("\"scenarios\": [");
-                scenarioPublishingPerLevels.put(storyPublishingLevel, Boolean.TRUE);
+                getCurrentScenarioStatus().setPublishing(true);
             }
         } else if ("afterScenario".equals(key) || "afterScenarioWithFailure".equals(key)) {
             // Need to complete scenario with examples
-            scenarioCompleted = true;
-        } else if (scenarioPublishingPerLevels.get(storyPublishingLevel) == Boolean.TRUE && scenarioCompleted && !ArrayUtils.contains(PARAMETER_KEYS, key)) {
+            getCurrentScenarioStatus().setCompleted(true);
+        } else if (getCurrentScenarioStatus().isPublishing() && getCurrentScenarioStatus().isCompleted() && !ArrayUtils.contains(PARAMETER_KEYS, key)) {
             // Closing "scenarios"
-            scenarioPublishingPerLevels.put(storyPublishingLevel, Boolean.FALSE);
+            getCurrentScenarioStatus().setPublishing(false);
             print("]");
         }
         if ("beforeBeforeStorySteps".equals(key) || "beforeAfterStorySteps".equals(key)) {
@@ -331,6 +330,37 @@ public class JsonOutput extends PrintStreamOutput {
     private void printSubStepsBeforeStepOutcome() {
         if (subStepsLevel.get() == 0) {
             printSubSteps();
+        }
+    }
+
+    private ScenarioStatus getCurrentScenarioStatus() {
+        ScenarioStatus scenarioStatus = scenariosStatusPerLevels.get(storyPublishingLevel);
+        if(scenarioStatus == null) {
+            scenarioStatus = new ScenarioStatus();
+            scenariosStatusPerLevels.put(storyPublishingLevel, scenarioStatus);
+        }
+        return scenarioStatus;
+    }
+
+    private class ScenarioStatus {
+
+        private boolean completed = false;
+        private boolean publishing = false;
+
+        public boolean isCompleted() {
+            return completed;
+        }
+
+        public void setCompleted(boolean completed) {
+            this.completed = completed;
+        }
+
+        public boolean isPublishing() {
+            return publishing;
+        }
+
+        public void setPublishing(boolean publishing) {
+            this.publishing = publishing;
         }
     }
 }
