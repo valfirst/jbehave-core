@@ -468,7 +468,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         String firstStep = "Given money $30";
         String secondStep = "Given money $50";
         reporter.beforeStory(story, false);
-        reporter.beforeScenario(new Scenario("I ask for a loan", Meta.EMPTY));
+        reporter.beforeScenario(new Scenario("I ask for a loan", Meta.EMPTY, null, table, Collections.<String>emptyList()));
         reporter.beforeExamples(Collections.singletonList("Given money <money>"), table);
         reporter.example(table.getRow(0), 0);
         reporter.beforeGivenStories();
@@ -504,14 +504,14 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
                 + "ask for a loan\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"Given" 
                 + " money <money>\"],\"parameters\": {\"names\": [\"money\"],\"values\": " 
                 + "[[\"$30\"],[\"$50\"]]}, \"examples\": [{\"keyword\": \"Example:\", " 
-                + "\"value\": \"{money=$30}\",\"givenStories\": {\"keyword\": \"GivenStories:\", " 
+                + "\"parameters\": {\"money\":\"$30\"},\"givenStories\": {\"keyword\": \"GivenStories:\", " 
                 + "\"givenStories\":[{\"parameters\": \"\", \"path\": \"\\/given\\/story1\"}]," 
                 + "\"stories\": [{\"path\": \"\\/given\\/story1\", \"title\": \"An interesting " 
                 + "story & special chars\",\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": " 
                 + "\"Commute to bank\",\"steps\": [{\"steps\": [],\"outcome\": \"successful\", " 
                 + "\"value\": \"I take a taxi to the bank\"}]}]}]},\"steps\": [{\"steps\": []," 
                 + "\"outcome\": \"successful\", \"value\": \"Given money $30\"}]},{\"keyword\": " 
-                + "\"Example:\", \"value\": \"{money=$50}\",\"givenStories\": {\"keyword\": " 
+                + "\"Example:\", \"parameters\": {\"money\":\"$50\"},\"givenStories\": {\"keyword\": " 
                 + "\"GivenStories:\", \"givenStories\":[{\"parameters\": \"\", \"path\": " 
                 + "\"\\/given\\/story1\"}],\"stories\": [{\"path\": \"\\/given\\/story1\", " 
                 + "\"title\": \"An interesting story & special chars\",\"scenarios\": [{\"keyword\": " 
@@ -558,11 +558,11 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
                 + "{\"keyword\": \"Lifecycle:\"},\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"Normal "
                 + "scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"Then '<expected>' is equal to "
                 + "'<actual>'\"],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": [{\"keyword\": "
-                + "\"Example:\", \"value\": \"{actual=some data, expected=some data}\",\"steps\": [{\"steps\": [],\"outcome\": "
+                + "\"Example:\", \"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"},\"steps\": [{\"steps\": [],\"outcome\": "
                 + "\"successful\", \"value\": \"Then '((some data))' is ((equal to)) '((some data))'\"}]}]}},"
                 + "{\"keyword\": \"Scenario:\", \"title\": \"Some empty scenario\",\"examples\": {\"keyword\": "
                 + "\"Examples:\",\"steps\": [],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": "
-                + "[{\"keyword\": \"Example:\", \"value\": \"{actual=some data, expected=some data}\"}]}}]}";
+                + "[{\"keyword\": \"Example:\", \"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"}}]}}]}";
 
         assertThat(dos2unix(out.toString()), equalTo(expected));
     }
