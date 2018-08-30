@@ -296,6 +296,9 @@ public class JsonOutput extends PrintStreamOutput {
         patterns.setProperty("outcomesTableRowEnd", "]");
         patterns.setProperty("outcomesTableBodyEnd", "]");
         patterns.setProperty("outcomesTableEnd", "}}");
+        patterns.setProperty("beforeExampleParameters", " \"parameters\": '{'");
+        patterns.setProperty("afterExampleParameters", "}");
+        patterns.setProperty("exampleParameter", "\"{0}\":\"{1}\"");
         patterns.setProperty("beforeExamples", "\"examples\": '{'\"keyword\": \"{0}\"");
         patterns.setProperty("examplesStepsStart", "\"steps\": [");
         patterns.setProperty("examplesStep", "\"{0}\"");
@@ -311,7 +314,7 @@ public class JsonOutput extends PrintStreamOutput {
         patterns.setProperty("examplesTableRowEnd", "]");
         patterns.setProperty("examplesTableBodyEnd", "]");
         patterns.setProperty("examplesTableEnd", "}, \"examples\": [");
-        patterns.setProperty("example", "'{'\"keyword\": \"{0}\", \"value\": \"{1}\"");
+        patterns.setProperty("example", "'{'\"keyword\": \"{0}\"");
         patterns.setProperty("parameterValueStart", "((");
         patterns.setProperty("parameterValueEnd", "))");
         patterns.setProperty("parameterValueNewline", "\\n");
