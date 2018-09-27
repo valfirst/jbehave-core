@@ -361,7 +361,7 @@ public class StepCreator {
     }
 
     private boolean isExamplesTable(Type type) {
-        return type instanceof Class && ((Class<?>) type).isAssignableFrom(ExamplesTable.class);
+        return type instanceof Class && type != Object.class && ((Class<?>) type).isAssignableFrom(ExamplesTable.class);
     }
 
     private boolean isExamplesTableParameters(Type type) {
