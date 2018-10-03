@@ -22,7 +22,9 @@ import org.xml.sax.SAXException;
 
 import java.io.*;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Properties;
 
 import static java.util.Arrays.asList;
@@ -524,6 +526,158 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
     }
 
     @Test
+    public void shouldReportEventsToJsonOutputScenarioNestedGivenStoriesWithMultipleExamplesAndLifecycles()
+    {
+        ExamplesTable examplesTable = new ExamplesTable("|key|row|\n|key1|row1|\n|key2|row2|");
+        Lifecycle lifecycle = new Lifecycle(new ExamplesTable("|key|row|\n|key1|row1|\n|key2|row2|"));
+        Map<String, String> example = new HashMap<>();
+        example.put("key1", "value1");
+        example.put("key2", "value2");
+
+        // Given
+        OutputStream out = new ByteArrayOutputStream();
+        StoryReporter reporter = new JsonOutput(new PrintStream(out), new Properties(), new LocalizedKeywords());
+
+        // When
+        Story givenStory = new Story("/path/to/story", new Description("Given story"),
+                new Narrative("renovate my house", "customer", "get a loan"), new ArrayList<Scenario>());
+        Story rootStory = new Story("/path/to/story", new Description("Root story"),
+                new Narrative("renovate my house", "customer", "get a loan"), new ArrayList<Scenario>());
+
+        String step = "My step";
+        Scenario scenario = new Scenario("My scenario", Meta.EMPTY, null, examplesTable, Collections.<String>emptyList());
+
+        reporter.beforeStory(rootStory, false);
+        reporter.lifecyle(lifecycle);
+        reporter.beforeBeforeStorySteps();
+        reporter.afterBeforeStorySteps();
+        reporter.beforeScenario(scenario);
+        reporter.beforeExamples(Collections.singletonList(step), examplesTable);
+        reporter.example(example, 0);
+        reporter.beforeGivenStories();
+        reporter.givenStories(Collections.singletonList(givenStory.getPath()));
+        reporter.beforeStory(givenStory, true);
+        reporter.lifecyle(lifecycle);
+        reporter.beforeBeforeStorySteps();
+        reporter.afterBeforeStorySteps();
+        reporter.beforeScenario(scenario);
+        reporter.beforeExamples(Collections.singletonList(step), examplesTable);
+        reporter.example(example, 0);
+        reporter.beforeGivenStories();
+        reporter.givenStories(Collections.singletonList(givenStory.getPath()));
+        reporter.beforeStory(givenStory, true);
+        reporter.lifecyle(lifecycle);
+        reporter.beforeBeforeStorySteps();
+        reporter.afterBeforeStorySteps();
+        reporter.beforeScenario(scenario);
+        reporter.beforeExamples(Collections.singletonList(step), examplesTable);
+        reporter.example(example, 0);
+        reporter.successful(step);
+        reporter.afterExamples();
+        reporter.afterScenario();
+        reporter.beforeAfterStorySteps();
+        reporter.afterAfterStorySteps();
+        reporter.afterStory(true);
+        reporter.afterGivenStories();
+        reporter.successful(step);
+        reporter.afterExamples();
+        reporter.afterScenario();
+        reporter.beforeAfterStorySteps();
+        reporter.afterAfterStorySteps();
+        reporter.afterStory(true);
+        reporter.afterGivenStories();
+        reporter.successful(step);
+        reporter.afterExamples();
+        reporter.afterScenario();
+        reporter.beforeScenario(scenario);
+        reporter.beforeExamples(Collections.singletonList(step), examplesTable);
+        reporter.example(example, 0);
+        reporter.beforeGivenStories();
+        reporter.givenStories(Collections.singletonList(givenStory.getPath()));
+        reporter.beforeStory(givenStory, true);
+        reporter.lifecyle(lifecycle);
+        reporter.beforeBeforeStorySteps();
+        reporter.afterBeforeStorySteps();
+        reporter.beforeScenario(scenario);
+        reporter.beforeExamples(Collections.singletonList(step), examplesTable);
+        reporter.example(example, 0);
+        reporter.beforeGivenStories();
+        reporter.givenStories(Collections.singletonList(givenStory.getPath()));
+        reporter.beforeStory(givenStory, true);
+        reporter.lifecyle(lifecycle);
+        reporter.beforeBeforeStorySteps();
+        reporter.afterBeforeStorySteps();
+        reporter.beforeScenario(scenario);
+        reporter.beforeExamples(Collections.singletonList(step), examplesTable);
+        reporter.example(example, 0);
+        reporter.successful(step);
+        reporter.afterExamples();
+        reporter.afterScenario();
+        reporter.beforeAfterStorySteps();
+        reporter.afterAfterStorySteps();
+        reporter.afterStory(true);
+        reporter.afterGivenStories();
+        reporter.successful(step);
+        reporter.afterExamples();
+        reporter.afterScenario();
+        reporter.beforeAfterStorySteps();
+        reporter.afterAfterStorySteps();
+        reporter.afterStory(true);
+        reporter.afterGivenStories();
+        reporter.successful(step);
+        reporter.afterExamples();
+        reporter.afterScenario();
+        reporter.beforeAfterStorySteps();
+        reporter.afterAfterStorySteps();
+        reporter.afterStory(false);
+        
+        // Then
+        String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Root story\",\"lifecycle\": {\"keyword\": "
+                + "\"Lifecycle:\",\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\""
+                + ",\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": "
+                + "\"My scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],\"parameters\": "
+                + "{\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}, \"examples\": "
+                + "[{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"givenStories\":"
+                + " {\"keyword\": \"GivenStories:\", \"givenStories\":[{\"parameters\": \"\", \"path\": \"\\/path\\/to\\/story\"}]"
+                + ",\"stories\": [{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Given story\",\"lifecycle\": {\"keyword\":"
+                + " \"Lifecycle:\",\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\","
+                + "\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"My scenario\","
+                + "\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],\"parameters\": {\"names\": [\"key\",\"row\"],"
+                + "\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}, \"examples\": [{\"keyword\": \"Example:\", \"parameters\":"
+                + " {\"key1\":\"value1\",\"key2\":\"value2\"},\"givenStories\": {\"keyword\": \"GivenStories:\", \"givenStories\":"
+                + "[{\"parameters\": \"\", \"path\": \"\\/path\\/to\\/story\"}],\"stories\": [{\"path\": \"\\/path\\/to\\/story\","
+                + " \"title\": \"Given story\",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": [\"key\","
+                + "\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": "
+                + "[{\"keyword\": \"Scenario:\", \"title\": \"My scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\":"
+                + " [\"My step\"],\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]},"
+                + " \"examples\": [{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"steps\": "
+                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}}],\"afterStorySteps\": []}]},\"steps\": "
+                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}}],\"afterStorySteps\": []}]},\"steps\": "
+                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}},{\"keyword\": \"Scenario:\", \"title\": "
+                + "\"My scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],\"parameters\": {\"names\": "
+                + "[\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}, \"examples\": [{\"keyword\": \"Example:\", "
+                + "\"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"givenStories\": {\"keyword\": \"GivenStories:\", "
+                + "\"givenStories\":[{\"parameters\": \"\", \"path\": \"\\/path\\/to\\/story\"}],\"stories\": [{\"path\": "
+                + "\"\\/path\\/to\\/story\", \"title\": \"Given story\",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\":"
+                + " {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}},\"beforeStorySteps\": "
+                + "[],\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"My scenario\",\"examples\": {\"keyword\": \"Examples:\""
+                + ",\"steps\": [\"My step\"],\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\","
+                + "\"row2\"]]}, \"examples\": [{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},"
+                + "\"givenStories\": {\"keyword\": \"GivenStories:\", \"givenStories\":[{\"parameters\": \"\", \"path\": "
+                + "\"\\/path\\/to\\/story\"}],\"stories\": [{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Given story\""
+                + ",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": "
+                + "[[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": [{\"keyword\": "
+                + "\"Scenario:\", \"title\": \"My scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],"
+                + "\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}, \"examples\":"
+                + " [{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"steps\": [{\"steps\":"
+                + " [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}}],\"afterStorySteps\": []}]},\"steps\": [{\"steps\":"
+                + " [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}}],\"afterStorySteps\": []}]},\"steps\": [{\"steps\":"
+                + " [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}}],\"afterStorySteps\": []}";
+
+        assertThat(dos2unix(out.toString()), equalTo(expected));
+    }
+
+    @Test
     public void shouldReportEventsToJsonOutputEmptyScenarioLifecycle()
     {
         // Given
@@ -555,11 +709,11 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
 
         // Then
         String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Story with lifecycle and empty scenario\",\"lifecycle\": "
-                + "{\"keyword\": \"Lifecycle:\"},\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"Normal "
-                + "scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"Then '<expected>' is equal to "
-                + "'<actual>'\"],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": [{\"keyword\": "
-                + "\"Example:\", \"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"},\"steps\": [{\"steps\": [],\"outcome\": "
-                + "\"successful\", \"value\": \"Then '((some data))' is ((equal to)) '((some data))'\"}]}]}},"
+                + "{\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": [\"actual\",\"expected\"],\"values\": [[\"some data\",\"some "
+                + "data\"]]}},\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"Normal scenario\",\"examples\": {\"keyword\": \"Examples:\""
+                + ",\"steps\": [\"Then '<expected>' is equal to '<actual>'\"],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": "
+                + "[{\"keyword\": \"Example:\", \"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"},\"steps\": [{\"steps\": "
+                + "[],\"outcome\": \"successful\", \"value\": \"Then '((some data))' is ((equal to)) '((some data))'\"}]}]}},"
                 + "{\"keyword\": \"Scenario:\", \"title\": \"Some empty scenario\",\"examples\": {\"keyword\": "
                 + "\"Examples:\",\"steps\": [],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": "
                 + "[{\"keyword\": \"Example:\", \"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"}}]}}]}";
