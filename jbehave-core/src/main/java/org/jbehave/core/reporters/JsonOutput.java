@@ -43,7 +43,7 @@ public class JsonOutput extends PrintStreamOutput {
     private int givenStoriesLevel = 0;
     private int storyPublishingLevel = 0;
     private AtomicInteger subStepsLevel = new AtomicInteger();
-    private final Map<Integer, ScenarioStatus> scenariosStatusPerLevels = new HashMap<>();
+    private final Map<Integer, State> statePerLevels = new HashMap<>();
     private boolean stepPublishing = false;
 
     public JsonOutput(PrintStream output, Keywords keywords) {
@@ -58,7 +58,7 @@ public class JsonOutput extends PrintStreamOutput {
     protected void print(PrintStream output, String text) {
         if (!text.isEmpty()) {
             boolean doNotAddComma =
-                    ArrayUtils.contains(JSON_START_CHARS, lastChar) || StringUtils.startsWithAny(text, "}", "]");
+                    ArrayUtils.contains(JSON_START_CHARS, lastChar) || StringUtils.startsWithAny(text, "}", "]", ",");
             super.print(output, doNotAddComma ? text : "," + text);
             lastChar = text.charAt(text.length() - 1);
         }
@@ -154,7 +154,7 @@ public class JsonOutput extends PrintStreamOutput {
     protected String format(String key, String defaultPattern, Object... args) {
         if ("beforeGivenStories".equals(key)) {
             givenStoriesLevel++;
-            getCurrentScenarioStatus().setCompleted(false);
+            getCurrentState().startScenario();
         } else if ("afterGivenStories".equals(key)) {
             if (storyPublishingLevel == givenStoriesLevel) {
                 // Closing given "stories"
@@ -169,8 +169,15 @@ public class JsonOutput extends PrintStreamOutput {
             storyPublishingLevel ++;
         }
         //Closing "examples" if "steps" are empty
-        if ("afterExamples".equals(key) && !stepPublishing) {
-            print("}");
+        if ("afterExamples".equals(key)) {
+            getCurrentState().completeExamples();
+            if (!stepPublishing) {
+                print("}");
+            }
+        }
+        if ("example".equals(key) && !getCurrentState().isExamplesCompleted()) {
+            print(" \"examples\": [");
+            getCurrentState().startExamples();
         }
         if (stepPublishing) {
             if ("example".equals(key) || "afterExamples".equals(key)) {
@@ -187,7 +194,7 @@ public class JsonOutput extends PrintStreamOutput {
                 // Closing "steps" for scenario
                 print("]");
                 stepPublishing = false;
-                getCurrentScenarioStatus().setCompleted(true);
+                getCurrentState().completeScenario();
             }
             else if ("afterBeforeStorySteps".equals(key) || "afterAfterStorySteps".equals(key)){
                 stepPublishing = false;
@@ -208,18 +215,18 @@ public class JsonOutput extends PrintStreamOutput {
             stepPublishing = true;
         }
         else if ("beforeScenario".equals(key)) {
-            getCurrentScenarioStatus().setCompleted(false);
-            if (!getCurrentScenarioStatus().isPublishing()) {
+            getCurrentState().startScenario();
+            if (!getCurrentState().isScenarioPublishing()) {
                 // Starting "scenarios"
                 print("\"scenarios\": [");
-                getCurrentScenarioStatus().setPublishing(true);
+                getCurrentState().startScenarioPublishing();
             }
         } else if ("afterScenario".equals(key) || "afterScenarioWithFailure".equals(key)) {
             // Need to complete scenario with examples
-            getCurrentScenarioStatus().setCompleted(true);
-        } else if (getCurrentScenarioStatus().isPublishing() && getCurrentScenarioStatus().isCompleted() && !ArrayUtils.contains(PARAMETER_KEYS, key)) {
+            getCurrentState().completeScenario();
+        } else if (getCurrentState().isScenarioPublishing() && getCurrentState().isScenarioCompleted() && !ArrayUtils.contains(PARAMETER_KEYS, key)) {
             // Closing "scenarios"
-            getCurrentScenarioStatus().setPublishing(false);
+            getCurrentState().completeScenarioPublishing();
             print("]");
         }
         if ("beforeBeforeStorySteps".equals(key) || "beforeAfterStorySteps".equals(key)) {
@@ -311,7 +318,7 @@ public class JsonOutput extends PrintStreamOutput {
         patterns.setProperty("examplesTableCell", "\"{0}\"");
         patterns.setProperty("examplesTableRowEnd", "]");
         patterns.setProperty("examplesTableBodyEnd", "]");
-        patterns.setProperty("examplesTableEnd", "}, \"examples\": [");
+        patterns.setProperty("examplesTableEnd", "}");
         patterns.setProperty("example", "'{'\"keyword\": \"{0}\"");
         patterns.setProperty("parameterVerbatimStart", "[[");
         patterns.setProperty("parameterVerbatimEnd", "]]");
@@ -336,34 +343,55 @@ public class JsonOutput extends PrintStreamOutput {
         }
     }
 
-    private ScenarioStatus getCurrentScenarioStatus() {
-        ScenarioStatus scenarioStatus = scenariosStatusPerLevels.get(storyPublishingLevel);
-        if(scenarioStatus == null) {
-            scenarioStatus = new ScenarioStatus();
-            scenariosStatusPerLevels.put(storyPublishingLevel, scenarioStatus);
+    private State getCurrentState() {
+        State state = statePerLevels.get(storyPublishingLevel);
+        if(state == null) {
+            state = new State();
+            statePerLevels.put(storyPublishingLevel, state);
         }
-        return scenarioStatus;
+        return state;
     }
 
-    private class ScenarioStatus {
+    private class State {
 
-        private boolean completed = false;
-        private boolean publishing = false;
+        private boolean scenarioCompleted = false;
+        private boolean scenarioPublishing = false;
+        private boolean examplesCompleted = false;
 
-        public boolean isCompleted() {
-            return completed;
+        public boolean isScenarioCompleted() {
+            return scenarioCompleted;
         }
 
-        public void setCompleted(boolean completed) {
-            this.completed = completed;
+        public void startScenario() {
+            this.scenarioCompleted = false;
+        }
+        
+        public void completeScenario() {
+            this.scenarioCompleted = true;
         }
 
-        public boolean isPublishing() {
-            return publishing;
+        public boolean isScenarioPublishing() {
+            return scenarioPublishing;
         }
 
-        public void setPublishing(boolean publishing) {
-            this.publishing = publishing;
+        public void startScenarioPublishing() {
+            this.scenarioPublishing = true;
+        }
+
+        public void completeScenarioPublishing() {
+            this.scenarioPublishing = false;
+        }
+
+        public boolean isExamplesCompleted() {
+            return examplesCompleted;
+        }
+
+        public void startExamples() {
+            this.examplesCompleted = true;
+        }
+
+        public void completeExamples() {
+            this.examplesCompleted = false;
         }
     }
 }
