@@ -49,6 +49,7 @@ public class JsonOutput extends PrintStreamOutput {
     private AtomicInteger subStepsLevel = new AtomicInteger();
     private final Map<Integer, ScenarioStatus> scenariosStatusPerLevels = new HashMap<>();
     private boolean stepPublishing = false;
+    private boolean examplesPublishing = false;
 
     public JsonOutput(PrintStream output, Keywords keywords) {
         this(output, new Properties(), keywords);
@@ -62,7 +63,7 @@ public class JsonOutput extends PrintStreamOutput {
     protected void print(PrintStream output, String text) {
         if (!text.isEmpty()) {
             boolean doNotAddComma =
-                    ArrayUtils.contains(JSON_START_CHARS, lastChar) || StringUtils.startsWithAny(text, "}", "]");
+                    ArrayUtils.contains(JSON_START_CHARS, lastChar) || StringUtils.startsWithAny(text, "}", "]", ",");
             super.print(output, doNotAddComma ? text : "," + text);
             lastChar = text.charAt(text.length() - 1);
         }
@@ -173,8 +174,15 @@ public class JsonOutput extends PrintStreamOutput {
             storyPublishingLevel ++;
         }
         //Closing "examples" if "steps" are empty
-        if ("afterExamples".equals(key) && !stepPublishing) {
-            print("}");
+        if ("afterExamples".equals(key)) {
+            examplesPublishing = false;
+            if (!stepPublishing) {
+                print("}");
+            }
+        }
+        if ("example".equals(key) && !examplesPublishing) {
+            print(" \"examples\": [");
+            examplesPublishing = true;
         }
         if (stepPublishing) {
             if ("example".equals(key) || "afterExamples".equals(key)) {
@@ -313,7 +321,7 @@ public class JsonOutput extends PrintStreamOutput {
         patterns.setProperty("examplesTableCell", "\"{0}\"");
         patterns.setProperty("examplesTableRowEnd", "]");
         patterns.setProperty("examplesTableBodyEnd", "]");
-        patterns.setProperty("examplesTableEnd", "}, \"examples\": [");
+        patterns.setProperty("examplesTableEnd", "}");
         patterns.setProperty("example", "'{'\"keyword\": \"{0}\"");
         patterns.setProperty("parameterValueStart", "((");
         patterns.setProperty("parameterValueEnd", "))");

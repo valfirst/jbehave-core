@@ -553,11 +553,11 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
 
         // Then
         String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Story with lifecycle and empty scenario\",\"lifecycle\": "
-                + "{\"keyword\": \"Lifecycle:\"},\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"Normal "
-                + "scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"Then '<expected>' is equal to "
-                + "'<actual>'\"],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": [{\"keyword\": "
-                + "\"Example:\", \"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"},\"steps\": [{\"steps\": [],\"outcome\": "
-                + "\"successful\", \"value\": \"Then '((some data))' is ((equal to)) '((some data))'\"}]}]}},"
+                + "{\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": [\"actual\",\"expected\"],\"values\": [[\"some data\",\"some "
+                + "data\"]]}},\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"Normal scenario\",\"examples\": {\"keyword\": \"Examples:\""
+                + ",\"steps\": [\"Then '<expected>' is equal to '<actual>'\"],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": "
+                + "[{\"keyword\": \"Example:\", \"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"},\"steps\": [{\"steps\": "
+                + "[],\"outcome\": \"successful\", \"value\": \"Then '((some data))' is ((equal to)) '((some data))'\"}]}]}},"
                 + "{\"keyword\": \"Scenario:\", \"title\": \"Some empty scenario\",\"examples\": {\"keyword\": "
                 + "\"Examples:\",\"steps\": [],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": "
                 + "[{\"keyword\": \"Example:\", \"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"}}]}}]}";
