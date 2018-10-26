@@ -166,7 +166,7 @@ public class MarkUnmatchedStepsAsPending implements StepCollector {
                     } else {
                         List<Step> composedSteps = new ArrayList<>();
                         if ( candidate.isComposite() ){
-                            candidate.addComposedSteps(composedSteps, stepAsString, namedParameters, allCandidates);
+                            candidate.addComposedSteps(composedSteps, stepAsString, namedParameters, prioritisedCandidates);
                         }
                         if ( outcome != null ){
                             step = candidate.createMatchedStepUponOutcome(stepAsString, namedParameters, composedSteps,
