@@ -27,19 +27,25 @@ public class StorySplitter {
     private static List<Story> splitStory(Story story) {
         List<Story> splitStories = new ArrayList<Story>();
         List<Map<String, String>> rows = story.getLifecycle().getExamplesTable().getRows();
+        int maxIndexDigits = getAmountOfDigits(rows.size() - 1);
         for (int i = 0; i < rows.size(); i++){
             ExamplesTable examplesTable = new ExamplesTable("").withRows(Collections.singletonList(rows.get(i)));
             Lifecycle originLifecycle = story.getLifecycle();
             Lifecycle lifecycle = new Lifecycle(examplesTable, originLifecycle.getBefore(), originLifecycle.getAfter());
             String originPath = story.getPath();
-            Story splitStory = new Story(story, indexStory(originPath, i), lifecycle);
-            splitStory.namedAs(indexStory(story.getName(), i));
+            String computedIndex = new String(new char[maxIndexDigits - getAmountOfDigits(i)]).replace('\0', '0') + i;
+            Story splitStory = new Story(story, indexStory(originPath, computedIndex), lifecycle);
+            splitStory.namedAs(indexStory(story.getName(), computedIndex));
             splitStories.add(splitStory);
         }
         return splitStories;
     }
 
-    private static String indexStory(String story, int index) {
-        return story.replace(".story", String.format(" [%d].story", index));
+    private static String indexStory(String story, String index) {
+        return story.replace(".story", String.format(" [%s].story", index));
+    }
+
+    private static int getAmountOfDigits(int number) {
+        return String.valueOf(number).length();
     }
 }
