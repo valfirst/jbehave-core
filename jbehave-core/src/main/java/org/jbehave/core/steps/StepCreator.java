@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jbehave.core.annotations.AfterScenario.Outcome;
@@ -56,6 +57,7 @@ public class StepCreator {
     private static final String NEWLINE = "\n";
     private static final String SPACE = " ";
     private static final String NONE = "";
+    private static final int CONVERTED_VALUE_LENGTH_THRESHOLD = 50;
     private final Class<?> stepsType;
     private final InjectableStepsFactory stepsFactory;
     private final ParameterConverters parameterConverters;
@@ -292,7 +294,7 @@ public class StepCreator {
     }
 
     private String parametrisedStep(String stepAsString, Map<String, String> namedParameters, Type[] types,
-            String[] parameterValues) {
+            String[] parameterValues, Object[] convertedParameters) {
         String parametrisedStep = stepAsString;
         // mark parameter values that are parsed
         boolean hasTable = hasTable(types);
@@ -302,6 +304,11 @@ public class StepCreator {
         // mark parameter values that are named
         for (String name : namedParameters.keySet()) {
             parametrisedStep = markNamedParameterValue(parametrisedStep, namedParameters, name);
+        }
+        // mark parameter values that are converted
+        for (int position = 0; position < types.length; position++) {
+            parametrisedStep = markConvertedParameterValue(parametrisedStep, parameterValues[position],
+                    convertedParameters[position]);
         }
 
         return parametrisedStep;
@@ -339,6 +346,24 @@ public class StepCreator {
             }
             if (!hasTable){
                 return stepText.replace(NEWLINE, PARAMETER_VALUE_NEWLINE);
+            }
+        }
+        return stepText;
+    }
+
+    private String markConvertedParameterValue(String stepText, String value, Object convertedValue)
+    {
+        if (convertedValue instanceof String || convertedValue instanceof Enum<?>) {
+            String convertedValueStr = String.valueOf(convertedValue);
+            if (!value.equals(convertedValueStr)
+                    && !value.replaceAll("\\W", "_").toUpperCase().equals(convertedValueStr)) {
+                String replacement = StringUtils.abbreviate(convertedValueStr, CONVERTED_VALUE_LENGTH_THRESHOLD);
+                String newStepText = stepText.replace(markedValue(value), markedValue(replacement));
+                if (newStepText.equals(stepText))
+                {
+                    newStepText = stepText.replace(value, markedValue(replacement));
+                }
+                return newStepText;
             }
         }
         return stepText;
@@ -877,7 +902,8 @@ public class StepCreator {
             String[] parameterValues = parameterValuesForStep(namedParameters, types, names);
             convertedParameters = convertParameterValues(parameterValues, types, names);
             addNamedParametersToExamplesTables();
-            parametrisedStep = parametrisedStep(stepAsString, namedParameters, types, parameterValues);
+            parametrisedStep = parametrisedStep(stepAsString, namedParameters, types, parameterValues,
+                    convertedParameters);
         }
 
         private void addNamedParametersToExamplesTables() {
