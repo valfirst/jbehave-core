@@ -43,6 +43,25 @@ public class StorySplitterBehaviour {
     }
 
     @Test
+    public void testSplitStoriesWithStoryTable2() {
+        int storiesSize = 11;
+        StringBuilder table = new StringBuilder(EXAMPLE_TABLE_HEADER);
+        for (int i = 0; i < storiesSize; i++)
+        {
+            table.append(EXAMPLE_TABLE_FIRST_LINE);
+        }
+        List<Story> originStories = getOriginStories(table.toString());
+        List<Story> splitStories = StorySplitter.splitStories(originStories);
+        assertEquals(storiesSize, splitStories.size());
+        Story storyFirst = splitStories.get(0);
+        Story storySecond = splitStories.get(1);
+        Story storyLast = splitStories.get(storiesSize - 1);
+        assertEquals(String.format(STORY_NAME_TEMPLATE, " [00]"), storyFirst.getName());
+        assertEquals(String.format(STORY_NAME_TEMPLATE, " [01]"), storySecond.getName());
+        assertEquals(String.format(STORY_NAME_TEMPLATE, " [10]"), storyLast.getName());
+    }
+
+    @Test
     public void testSplitStoriesWithSingleStoryTable() {
         List<Story> originStories = getOriginStories(EXAMPLE_TABLE_HEADER + EXAMPLE_TABLE_SECOND_LINE);
         List<Story> splitStories = StorySplitter.splitStories(originStories);
