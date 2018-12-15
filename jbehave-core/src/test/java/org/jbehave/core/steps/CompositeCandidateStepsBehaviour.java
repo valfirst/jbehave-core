@@ -31,7 +31,7 @@ public class CompositeCandidateStepsBehaviour {
     @Test
     public void shouldMatchCompositesFromFileAndCreateComposedStepsUsingMatchedParameters() {
         CandidateSteps compositeSteps = new CompositeCandidateSteps(new MostUsefulConfiguration(),
-                Collections.singletonList("composite.steps"));
+                Collections.singleton("composite.steps"));
         shouldMatchCompositesAndCreateComposedStepsUsingMatchedParameters(compositeSteps);
     }
 
