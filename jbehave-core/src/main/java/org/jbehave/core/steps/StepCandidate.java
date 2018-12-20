@@ -74,7 +74,7 @@ public class StepCandidate {
     public Class<?> getStepsType() {
         return stepsType;
     }
-    
+
     public StepType getStepType() {
         return stepType;
     }
@@ -180,11 +180,6 @@ public class StepCandidate {
 
     public void addComposedSteps(List<Step> steps, String stepAsString, Map<String, String> namedParameters,
             List<StepCandidate> allCandidates) {
-        addComposedStepsRecursively(steps, stepAsString, namedParameters, allCandidates, composedSteps);
-    }
-
-    private void addComposedStepsRecursively(List<Step> steps, String stepAsString,
-            Map<String, String> namedParameters, List<StepCandidate> allCandidates, String[] composedSteps) {
         Map<String, String> matchedParameters = stepCreator.matchedParameters(method,
                 keywords.stepWithoutStartingWord(stepAsString), namedParameters);
         matchedParameters.putAll(namedParameters);
@@ -205,8 +200,7 @@ public class StepCandidate {
             List<Step> composedSteps = new ArrayList<>();
             if (candidate.isComposite()) {
                 // candidate is itself composite: recursively add composed steps
-                addComposedStepsRecursively(composedSteps, composedStep, matchedParameters, allCandidates,
-                        candidate.composedSteps());
+                candidate.addComposedSteps(composedSteps, composedStep, matchedParameters, allCandidates);
             }
             steps.add(candidate.createMatchedStep(composedStep, matchedParameters, composedSteps));
         } else {
