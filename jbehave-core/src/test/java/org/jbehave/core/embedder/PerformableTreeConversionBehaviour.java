@@ -21,6 +21,7 @@ import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Narrative;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
+import org.jbehave.core.steps.ParameterControls;
 import org.jbehave.core.steps.ParameterConverters;
 import org.jbehave.core.steps.StepCollector;
 import org.junit.Test;
@@ -34,6 +35,7 @@ public class PerformableTreeConversionBehaviour {
     @Test
     public void shouldConvertParameters(){
         SharpParameterConverters sharpParameterConverters = new SharpParameterConverters();
+        ParameterControls parameterControls = new ParameterControls();
         PerformableTree performableTree = new PerformableTree();
         PerformableTree.RunContext context = mock(PerformableTree.RunContext.class);
         Configuration configuration = mock(Configuration.class);
@@ -63,6 +65,7 @@ public class PerformableTreeConversionBehaviour {
         when(configuration.storyControls()).thenReturn(storyControls);
         when(storyControls.skipBeforeAndAfterScenarioStepsIfGivenStory()).thenReturn(false);
         when(configuration.parameterConverters()).thenReturn(sharpParameterConverters);
+        when(configuration.parameterControls()).thenReturn(parameterControls);
 
         Scenario scenario = mock(Scenario.class);
         when(story.getScenarios()).thenReturn(Collections.singletonList(scenario));
@@ -75,9 +78,9 @@ public class PerformableTreeConversionBehaviour {
 
         HashMap<String,String> scenarioExample = new HashMap<String, String>();
         scenarioExample.put("var1","#E");
-        scenarioExample.put("var3","#F");
+        scenarioExample.put("var3","<var2>#F");
         HashMap<String,String> scenarioExampleSecond = new HashMap<String, String>();
-        scenarioExampleSecond.put("var1","#G");
+        scenarioExampleSecond.put("var1","#G<var2>");
         scenarioExampleSecond.put("var3","#H");
 
         ExamplesTable scenarioExamplesTable = mock(ExamplesTable.class);
@@ -122,9 +125,9 @@ public class PerformableTreeConversionBehaviour {
         assertEquals(scenarioExample.size(), examplePerformableScenarios.size());
         assertEquals("eE", examplePerformableScenarios.get(0).getParameters().get("var1"));
         assertEquals("bB", examplePerformableScenarios.get(0).getParameters().get("var2"));
-        assertEquals("fF", examplePerformableScenarios.get(0).getParameters().get("var3"));
+        assertEquals("bBb#fF", examplePerformableScenarios.get(0).getParameters().get("var3"));
 
-        assertEquals("gG", examplePerformableScenarios.get(1).getParameters().get("var1"));
+        assertEquals("gbbGbB", examplePerformableScenarios.get(1).getParameters().get("var1"));
         assertEquals("bB", examplePerformableScenarios.get(1).getParameters().get("var2"));
         assertEquals("hH", examplePerformableScenarios.get(1).getParameters().get("var3"));
 
@@ -132,9 +135,9 @@ public class PerformableTreeConversionBehaviour {
         assertEquals(scenarioExample.size(), examplePerformableScenarios.size());
         assertEquals("eE", examplePerformableScenarios.get(0).getParameters().get("var1"));
         assertEquals("dD", examplePerformableScenarios.get(0).getParameters().get("var2"));
-        assertEquals("fF", examplePerformableScenarios.get(0).getParameters().get("var3"));
+        assertEquals("dDd#fF", examplePerformableScenarios.get(0).getParameters().get("var3"));
 
-        assertEquals("gG", examplePerformableScenarios.get(1).getParameters().get("var1"));
+        assertEquals("gddGdD", examplePerformableScenarios.get(1).getParameters().get("var1"));
         assertEquals("dD", examplePerformableScenarios.get(1).getParameters().get("var2"));
         assertEquals("hH", examplePerformableScenarios.get(1).getParameters().get("var3"));
     }
