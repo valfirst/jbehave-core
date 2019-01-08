@@ -880,7 +880,9 @@ public class PerformableTree {
                 }
                 context.reporter().afterBeforeStorySteps();
                 performGivenStories(context, givenStories, story.getGivenStories());
-                performScenarios(context);
+                if (!context.failureOccurred() || !context.configuration().storyControls().skipStoryIfGivenStoryFailed()) {
+                    performScenarios(context);
+                }
                 context.reporter().beforeAfterStorySteps();
                 for ( PerformableSteps steps : afterSteps ) {
                     steps.perform(context);
