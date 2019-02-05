@@ -1101,7 +1101,6 @@ public class PerformableTree {
                 context.resetState();
             }
             context.stepsContext().resetExample();
-            context.reporter().example(parameters);
             context.reporter().example(parameters, exampleIndex);
             beforeSteps.perform(context);
             performGivenStories(context, givenStories, scenario.getGivenStories());
