@@ -80,7 +80,7 @@ abstract class AbstractRegexParser {
             startAt = matcher.start(4);
             if (stepSkipPattern!=null) {
                 Matcher stepSkipMatcher = stepSkipPattern.matcher(step);
-                if (stepSkipMatcher.find()) {
+                if (stepSkipMatcher.matches()) {
                     continue;
                 }
             }
