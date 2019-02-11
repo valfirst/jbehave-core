@@ -1431,7 +1431,7 @@ public class RegexStoryParserBehaviour {
                 "|key|" + NL +
                 "|value 1|";
         RegexStoryParser parser = new RegexStoryParser();
-        parser.setStepSkipPattern(Pattern.compile("\\d[stndr]{2}"));
+        parser.setStepSkipPattern(Pattern.compile(".*\\d[stndr]{2}(.*\n)*.*"));
         Story story = parser.parseStory(wholeStory);
         assertThat(story.getScenarios().get(0).getSteps(), equalTo(Collections.singletonList(
                 "Then I perform the last step with table" + NL +
