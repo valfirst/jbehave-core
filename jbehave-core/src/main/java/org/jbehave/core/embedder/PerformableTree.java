@@ -459,6 +459,10 @@ public class PerformableTree {
             context.currentPath(story.getPath());
         }
 
+        if(context.configuration.dryRun()){
+            context.reporter().dryRun();
+        }
+
         root.get(story).perform(context);
         if (context.failureOccurred()) {
             context.addFailure();
