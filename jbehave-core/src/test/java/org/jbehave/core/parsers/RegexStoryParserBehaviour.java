@@ -115,7 +115,7 @@ public class RegexStoryParserBehaviour {
         assertThat(storyMeta.getProperty("skip"), equalTo(EMPTY));
         assertThat(storyMeta.getProperty("unknown"), equalTo(EMPTY));
         Lifecycle lifecycle = story.getLifecycle();
-        assertThat(lifecycle.getBeforeSteps().size(), equalTo(2));
+        assertThat(lifecycle.getBeforeSteps(Scope.SCENARIO).size(), equalTo(2));
         List<Scenario> scenarios = story.getScenarios();
         assertThat(scenarios.get(0).getTitle(), equalTo("A scenario"));
         assertThat(scenarios.get(0).getMeta().getProperty("author"), equalTo("Mauro"));
@@ -337,10 +337,10 @@ public class RegexStoryParserBehaviour {
                 "Scenario:"+ NL +        
                 "Given a scenario";
         Story story = parser.parseStory(wholeStory, storyPath);
-        List<String> beforeSteps = story.getLifecycle().getBeforeSteps();
+        List<String> beforeSteps = story.getLifecycle().getBeforeSteps(Scope.SCENARIO);
         assertThat(beforeSteps.get(0), equalTo("Given a step before each scenario"));
         assertThat(beforeSteps.get(1), equalTo("And another before step"));
-        List<String> afterSteps = story.getLifecycle().getAfterSteps();
+        List<String> afterSteps = story.getLifecycle().getAfterSteps(Scope.SCENARIO);
         assertThat(afterSteps.get(0), equalTo("Given a step after each scenario"));
         assertThat(afterSteps.get(1), equalTo("And another after step"));
         Scenario scenario = story.getScenarios().get(0);
@@ -381,6 +381,9 @@ public class RegexStoryParserBehaviour {
     public void shouldParseStoryWithLifecycleAndMultipleScopes() {
         String wholeStory = "Lifecycle: " + NL +
                 "Before:" + NL + NL +
+                "Scope: STEP" + NL +
+                "Given a step before each scenario step" + NL +
+                "And another before scenario step" + NL +
                 "Scope: SCENARIO" + NL +
                 "Given a step before each scenario" + NL +
                 "And another before scenario" + NL +
@@ -394,26 +397,29 @@ public class RegexStoryParserBehaviour {
                 "Scope: SCENARIO" + NL +
                 "Given a step after each scenario" + NL +
                 "And another after scenario" + NL +
+                "Scope: STEP" + NL +
+                "Given a step after each scenario step" + NL +
+                "And another after scenario step" + NL +
                 "Scenario:"+ NL +
                 "Given a scenario";
         Story story = parser.parseStory(wholeStory, storyPath);
-        assertThat(story.getLifecycle().hasBeforeSteps(), is(true));
-        List<String> beforeStorySteps = story.getLifecycle().getBeforeSteps(Scope.STORY);
-        assertThat(beforeStorySteps.get(0), equalTo("Given a step before each story"));
-        assertThat(beforeStorySteps.get(1), equalTo("And another before story"));
-        List<String> beforeScenarioSteps = story.getLifecycle().getBeforeSteps(Scope.SCENARIO);
-        assertThat(beforeScenarioSteps.get(0), equalTo("Given a step before each scenario"));
-        assertThat(beforeScenarioSteps.get(1), equalTo("And another before scenario"));
-        assertThat(story.getLifecycle().hasAfterSteps(), is(true));
-        List<String> afterStorySteps = story.getLifecycle().getAfterSteps(Scope.STORY);
-        assertThat(afterStorySteps.get(0), equalTo("Given a step after each story"));
-        assertThat(afterStorySteps.get(1), equalTo("And another after story"));
-        List<String> afterScenarioSteps = story.getLifecycle().getAfterSteps(Scope.SCENARIO);
-        assertThat(afterScenarioSteps.get(0), equalTo("Given a step after each scenario"));
-        assertThat(afterScenarioSteps.get(1), equalTo("And another after scenario"));
+        Lifecycle lifecycle = story.getLifecycle();
+        assertThat(lifecycle.hasBeforeSteps(), is(true));
+        assertThat(lifecycle.getBeforeSteps(Scope.STORY),
+                equalTo(asList("Given a step before each story", "And another before story")));
+        assertThat(lifecycle.getBeforeSteps(Scope.SCENARIO),
+                equalTo(asList("Given a step before each scenario", "And another before scenario")));
+        assertThat(lifecycle.getBeforeSteps(Scope.STEP),
+                equalTo(asList("Given a step before each scenario step", "And another before scenario step")));
+        assertThat(lifecycle.hasAfterSteps(), is(true));
+        assertThat(lifecycle.getAfterSteps(Scope.STORY),
+                equalTo(asList("Given a step after each story", "And another after story")));
+        assertThat(lifecycle.getAfterSteps(Scope.SCENARIO),
+                equalTo(asList("Given a step after each scenario", "And another after scenario")));
+        assertThat(lifecycle.getAfterSteps(Scope.STEP),
+                equalTo(asList("Given a step after each scenario step", "And another after scenario step")));
         Scenario scenario = story.getScenarios().get(0);
-        List<String> steps = scenario.getSteps();
-        assertThat(steps.get(0), equalTo("Given a scenario"));
+        assertThat(scenario.getSteps(), equalTo(asList("Given a scenario")));
     }
 
     @Test
@@ -425,10 +431,10 @@ public class RegexStoryParserBehaviour {
                 "Scenario:"+ NL +        
                 "Given a scenario";
         Story story = parser.parseStory(wholeStory, storyPath);
-        List<String> beforeSteps = story.getLifecycle().getBeforeSteps();
+        List<String> beforeSteps = story.getLifecycle().getBeforeSteps(Scope.SCENARIO);
         assertThat(beforeSteps.get(0), equalTo("Given a step before each scenario"));
         assertThat(beforeSteps.get(1), equalTo("And another before step"));
-        List<String> afterSteps = story.getLifecycle().getAfterSteps();
+        List<String> afterSteps = story.getLifecycle().getAfterSteps(Scope.SCENARIO);
         assertThat(afterSteps.isEmpty(), equalTo(true));
         Scenario scenario = story.getScenarios().get(0);
         List<String> steps = scenario.getSteps();
@@ -444,9 +450,9 @@ public class RegexStoryParserBehaviour {
                 "Scenario:"+ NL +        
                 "Given a scenario";
         Story story = parser.parseStory(wholeStory, storyPath);
-        List<String> beforeSteps = story.getLifecycle().getBeforeSteps();
+        List<String> beforeSteps = story.getLifecycle().getBeforeSteps(Scope.SCENARIO);
         assertThat(beforeSteps.isEmpty(), equalTo(true));
-        List<String> afterSteps = story.getLifecycle().getAfterSteps();
+        List<String> afterSteps = story.getLifecycle().getAfterSteps(Scope.SCENARIO);
         assertThat(afterSteps.get(0), equalTo("Given a step after each scenario"));
         assertThat(afterSteps.get(1), equalTo("And another after step"));
         Scenario scenario = story.getScenarios().get(0);
@@ -467,10 +473,10 @@ public class RegexStoryParserBehaviour {
                 "Scenario:"+ NL +        
                 "Given a scenario";
         Story story = parser.parseStory(wholeStory, storyPath);
-        List<String> beforeSteps = story.getLifecycle().getBeforeSteps();
+        List<String> beforeSteps = story.getLifecycle().getBeforeSteps(Scope.SCENARIO);
         assertThat(beforeSteps.isEmpty(), equalTo(true));
         Lifecycle lifecycle = story.getLifecycle();
-        List<String> afterSteps = lifecycle.getAfterSteps();
+        List<String> afterSteps = lifecycle.getAfterSteps(Scope.SCENARIO);
         assertThat(afterSteps.get(0), equalTo("Given a step after any scenario"));
         assertThat(afterSteps.get(1), equalTo("Given a step after successful scenario"));
         assertThat(afterSteps.get(2), equalTo("Given a step after failed scenario"));
@@ -502,10 +508,10 @@ public class RegexStoryParserBehaviour {
                 "Scenario:"+ NL +        
                 "Given a scenario";
         Story story = parser.parseStory(wholeStory, storyPath);
-        List<String> beforeSteps = story.getLifecycle().getBeforeSteps();
+        List<String> beforeSteps = story.getLifecycle().getBeforeSteps(Scope.SCENARIO);
         assertThat(beforeSteps.isEmpty(), equalTo(true));
         Lifecycle lifecycle = story.getLifecycle();
-        List<String> afterSteps = lifecycle.getAfterSteps();
+        List<String> afterSteps = lifecycle.getAfterSteps(Scope.SCENARIO);
         assertThat(afterSteps.get(0), equalTo("Given a step after any scenario"));
         assertThat(afterSteps.get(1), equalTo("Given a step after successful scenario"));
         assertThat(afterSteps.get(2), equalTo("Given a step after failed scenario"));
@@ -828,10 +834,10 @@ public class RegexStoryParserBehaviour {
         parser = new RegexStoryParser(new LocalizedKeywords(Locale.GERMAN), new LoadFromClasspath(),
                 new TableTransformers());
         Story story = parser.parseStory(wholeStory, storyPath);
-        List<String> beforeSteps = story.getLifecycle().getBeforeSteps();
+        List<String> beforeSteps = story.getLifecycle().getBeforeSteps(Scope.SCENARIO);
         assertThat(beforeSteps.isEmpty(), equalTo(true));
         Lifecycle lifecycle = story.getLifecycle();
-        List<String> afterSteps = lifecycle.getAfterSteps();
+        List<String> afterSteps = lifecycle.getAfterSteps(Scope.SCENARIO);
         assertThat(afterSteps.get(0), equalTo("Gegeben im Lager sind 200 T-Shirts"));
         assertThat(afterSteps.get(1), equalTo("Gegeben im Lager sind 300 T-Shirts"));
         assertThat(afterSteps.get(2), equalTo("Gegeben im Lager sind 400 T-Shirts"));
@@ -1027,10 +1033,10 @@ public class RegexStoryParserBehaviour {
         assertThat(story.getGivenStories().getPaths(), hasItem("path2"));
 
         assertThat(story.toString(), containsString("Lifecycle"));
-        assertThat(story.getLifecycle().getBeforeSteps().size(), equalTo(1));
-        assertThat(story.getLifecycle().getBeforeSteps(), hasItem("Given a setup step"));
-        assertThat(story.getLifecycle().getAfterSteps().size(), equalTo(1));
-        assertThat(story.getLifecycle().getAfterSteps(), hasItem("Then a teardown step"));
+        assertThat(story.getLifecycle().getBeforeSteps(Scope.SCENARIO).size(), equalTo(1));
+        assertThat(story.getLifecycle().getBeforeSteps(Scope.SCENARIO), hasItem("Given a setup step"));
+        assertThat(story.getLifecycle().getAfterSteps(Scope.SCENARIO).size(), equalTo(1));
+        assertThat(story.getLifecycle().getAfterSteps(Scope.SCENARIO), hasItem("Then a teardown step"));
 
         Meta storyAsMeta = story.asMeta("story_");
         assertThat(storyAsMeta.getProperty("story_path"), equalTo(story.getPath()));

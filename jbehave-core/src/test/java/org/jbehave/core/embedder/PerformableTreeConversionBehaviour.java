@@ -1,19 +1,24 @@
 package org.jbehave.core.embedder;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jbehave.core.annotations.ScenarioType;
+import org.jbehave.core.annotations.Scope;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.Keywords;
+import org.jbehave.core.failures.BatchFailures;
 import org.jbehave.core.model.ExamplesTable;
 import org.jbehave.core.model.GivenStories;
 import org.jbehave.core.model.Lifecycle;
@@ -21,11 +26,15 @@ import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Narrative;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
+import org.jbehave.core.steps.CandidateSteps;
 import org.jbehave.core.steps.ParameterControls;
 import org.jbehave.core.steps.ParameterConverters;
+import org.jbehave.core.steps.Step;
 import org.jbehave.core.steps.StepCollector;
+import org.jbehave.core.steps.StepCollector.Stage;
+import org.jbehave.core.steps.StepMonitor;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.mockito.ArgumentMatcher;
 
 /**
  * @author Aliaksandr_Tsymbal.
@@ -37,84 +46,64 @@ public class PerformableTreeConversionBehaviour {
         SharpParameterConverters sharpParameterConverters = new SharpParameterConverters();
         ParameterControls parameterControls = new ParameterControls();
         PerformableTree performableTree = new PerformableTree();
-        PerformableTree.RunContext context = mock(PerformableTree.RunContext.class);
         Configuration configuration = mock(Configuration.class);
-        Story story = mock(Story.class);
-        when(context.configuration()).thenReturn(configuration);
-        Narrative narrative = mock(Narrative.class);
-        when(story.getNarrative()).thenReturn(narrative);
-        FilteredStory filteredStory = mock(FilteredStory.class);
-        when(context.filter(story)).thenReturn(filteredStory);
-        when(filteredStory.allowed()).thenReturn(true);
+        when(configuration.storyControls()).thenReturn(new StoryControls());
+        List<CandidateSteps> candidateSteps = Collections.emptyList();
+        EmbedderMonitor embedderMonitor = mock(EmbedderMonitor.class);
+        BatchFailures failures = mock(BatchFailures.class);
+        PerformableTree.RunContext context = spy(performableTree.newRunContext(configuration, candidateSteps,
+                embedderMonitor, new MetaFilter(), failures));
 
-        Lifecycle lifecycle = mock(Lifecycle.class);
-        when(story.getLifecycle()).thenReturn(lifecycle);
-        ExamplesTable storyExamplesTable = mock(ExamplesTable.class);
-        when(lifecycle.getExamplesTable()).thenReturn(storyExamplesTable);
-
-        HashMap<String,String> storyExampleFirstRow = new HashMap<String, String>();
-        storyExampleFirstRow.put("var1","#A");
-        storyExampleFirstRow.put("var2","#B");
-        HashMap<String,String> storyExampleSecondRow = new HashMap<String, String>();
-        storyExampleSecondRow.put("var1","#C");
-        storyExampleSecondRow.put("var2","#D");
-
-        when(storyExamplesTable.getRows())
-                .thenReturn(Arrays.<Map<String, String>> asList(storyExampleFirstRow, storyExampleSecondRow));
         StoryControls storyControls = mock(StoryControls.class);
         when(configuration.storyControls()).thenReturn(storyControls);
         when(storyControls.skipBeforeAndAfterScenarioStepsIfGivenStory()).thenReturn(false);
         when(configuration.parameterConverters()).thenReturn(sharpParameterConverters);
         when(configuration.parameterControls()).thenReturn(parameterControls);
 
-        Scenario scenario = mock(Scenario.class);
-        when(story.getScenarios()).thenReturn(Collections.singletonList(scenario));
-        when(context.failureOccurred()).thenReturn(false);
-        when(filteredStory.allowed(scenario)).thenReturn(true);
-        Meta meta = mock(Meta.class);
-        when(scenario.getMeta()).thenReturn(meta);
-        when(story.getMeta()).thenReturn(meta);
-        when(meta.inheritFrom(meta)).thenReturn(meta);
+        GivenStories givenStories = new GivenStories("");
 
-        HashMap<String,String> scenarioExample = new HashMap<String, String>();
+        Map<String,String> scenarioExample = new HashMap<>();
         scenarioExample.put("var1","#E");
         scenarioExample.put("var3","<var2>#F");
-        HashMap<String,String> scenarioExampleSecond = new HashMap<String, String>();
+        Map<String,String> scenarioExampleSecond = new HashMap<>();
         scenarioExampleSecond.put("var1","#G<var2>");
         scenarioExampleSecond.put("var3","#H");
+        ExamplesTable scenarioExamplesTable = new ExamplesTable("").withRows(
+                Arrays.asList(scenarioExample, scenarioExampleSecond));
 
-        ExamplesTable scenarioExamplesTable = mock(ExamplesTable.class);
-        when(scenario.getExamplesTable()).thenReturn(scenarioExamplesTable);
-        when(scenarioExamplesTable.isEmpty()).thenReturn(false);
-        when(scenarioExamplesTable.getRows()).
-                thenReturn(Arrays.<Map<String, String>> asList(scenarioExample, scenarioExampleSecond));
-        GivenStories givenStories = mock(GivenStories.class);
-        when(scenario.getGivenStories()).thenReturn(givenStories);
-        when(givenStories.requireParameters()).thenReturn(false);
+        Scenario scenario = new Scenario("scenario title", new Meta(), givenStories, scenarioExamplesTable, null);
+
+        Narrative narrative = mock(Narrative.class);
+        Lifecycle lifecycle = mock(Lifecycle.class);
+        Story story = new Story(null, null, new Meta(), narrative, givenStories, lifecycle,
+                Collections.singletonList(scenario));
+
+        ExamplesTable storyExamplesTable = mock(ExamplesTable.class);
+        when(lifecycle.getExamplesTable()).thenReturn(storyExamplesTable);
+        Map<String,String> storyExampleFirstRow = new HashMap<>();
+        storyExampleFirstRow.put("var1","#A");
+        storyExampleFirstRow.put("var2","#B");
+        Map<String,String> storyExampleSecondRow = new HashMap<>();
+        storyExampleSecondRow.put("var1","#C");
+        storyExampleSecondRow.put("var2","#D");
+
+        when(storyExamplesTable.getRows()).thenReturn(Arrays.asList(storyExampleFirstRow, storyExampleSecondRow));
+
         Keywords keywords = mock(Keywords.class);
         when(configuration.keywords()).thenReturn(keywords);
-        MetaFilter metaFilter = mock(MetaFilter.class);
-        when(context.filter()).thenReturn(metaFilter);
-        when(metaFilter.allow(Mockito.<Meta>anyObject())).thenReturn(true);
 
-        when(context.beforeOrAfterScenarioSteps(meta, StepCollector.Stage.BEFORE, ScenarioType.EXAMPLE))
-                .thenReturn(new PerformableTree.PerformableSteps());
-        when(context.beforeOrAfterScenarioSteps(meta, StepCollector.Stage.AFTER, ScenarioType.EXAMPLE))
-                .thenReturn(new PerformableTree.PerformableSteps());
-        when(context.beforeOrAfterScenarioSteps(meta, StepCollector.Stage.BEFORE, ScenarioType.ANY))
-                .thenReturn(new PerformableTree.PerformableSteps());
-        when(context.beforeOrAfterScenarioSteps(meta, StepCollector.Stage.AFTER, ScenarioType.ANY))
-                .thenReturn(new PerformableTree.PerformableSteps());
-        when(context.lifecycleSteps(lifecycle, meta, StepCollector.Stage.BEFORE))
-                .thenReturn(new PerformableTree.PerformableSteps());
-        when(context.lifecycleSteps(lifecycle, meta, StepCollector.Stage.AFTER))
-                .thenReturn(new PerformableTree.PerformableSteps());
+        StepMonitor stepMonitor = mock(StepMonitor.class);
+        when(configuration.stepMonitor()).thenReturn(stepMonitor);
+        StepCollector stepCollector = mock(StepCollector.class);
+        when(configuration.stepCollector()).thenReturn(stepCollector);
+        Map<Stage, List<Step>> lifecycleSteps = new EnumMap<>(Stage.class);
+        lifecycleSteps.put(Stage.BEFORE, Collections.<Step>emptyList());
+        lifecycleSteps.put(Stage.AFTER, Collections.<Step>emptyList());
+        when(stepCollector.collectLifecycleSteps(eq(candidateSteps), eq(lifecycle), isEmptyMeta(), eq(Scope.STORY)))
+                .thenReturn(lifecycleSteps);
+        when(stepCollector.collectLifecycleSteps(eq(candidateSteps), eq(lifecycle), isEmptyMeta(), eq(Scope.SCENARIO)))
+                .thenReturn(lifecycleSteps);
 
-        when(context.scenarioSteps(Mockito.eq(scenario), Mockito.anyMap()))
-                .thenReturn(new PerformableTree.PerformableSteps());
-        when(scenario.getGivenStories()).thenReturn(givenStories);
-        when(givenStories.getPaths()).thenReturn(Collections.EMPTY_LIST);
-        when(story.getGivenStories()).thenReturn(givenStories);
         performableTree.addStories(context, Collections.singletonList(story));
         List<PerformableTree.PerformableScenario> performableScenarios = performableTree.getRoot().getStories().get(0)
                 .getScenarios();
@@ -140,6 +129,16 @@ public class PerformableTreeConversionBehaviour {
         assertEquals("gddGdD", examplePerformableScenarios.get(1).getParameters().get("var1"));
         assertEquals("dD", examplePerformableScenarios.get(1).getParameters().get("var2"));
         assertEquals("hH", examplePerformableScenarios.get(1).getParameters().get("var3"));
+    }
+
+    private Meta isEmptyMeta() {
+        return argThat(new ArgumentMatcher<Meta>() {
+            @Override
+            public boolean matches(Object argument) {
+                Meta meta = (Meta) argument;
+                return meta.getPropertyNames().isEmpty();
+            }
+        });
     }
 
     private class SharpParameterConverters extends ParameterConverters{

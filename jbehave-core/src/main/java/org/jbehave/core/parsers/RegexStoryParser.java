@@ -276,7 +276,9 @@ public class RegexStoryParser extends AbstractRegexParser implements StoryParser
     }
 
     private Scope parseScope(String scopeAsText) {
-        if (scopeAsText.trim().equals(keywords().scopeScenario())) {
+        if ( scopeAsText.trim().equals(keywords().scopeStep()) ){
+            return Scope.STEP;
+        } else if ( scopeAsText.trim().equals(keywords().scopeScenario()) ){
             return Scope.SCENARIO;
         }
         else if (scopeAsText.trim().equals(keywords().scopeStory())) {

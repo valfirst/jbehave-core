@@ -3,6 +3,7 @@ package org.jbehave.core.embedder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.inOrder;
@@ -12,7 +13,10 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jbehave.core.annotations.Scope;
 import org.jbehave.core.configuration.Configuration;
@@ -22,14 +26,18 @@ import org.jbehave.core.embedder.PerformableTree.RunContext;
 import org.jbehave.core.failures.BatchFailures;
 import org.jbehave.core.io.StoryLoader;
 import org.jbehave.core.model.GivenStories;
+import org.jbehave.core.model.Lifecycle;
 import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
 import org.jbehave.core.reporters.StoryReporter;
 import org.jbehave.core.steps.CandidateSteps;
+import org.jbehave.core.steps.Step;
 import org.jbehave.core.steps.StepCollector;
+import org.jbehave.core.steps.StepCollector.Stage;
 import org.jbehave.core.steps.context.StepsContext;
 import org.junit.Test;
+import org.mockito.ArgumentMatcher;
 import org.mockito.InOrder;
 
 /**
@@ -63,16 +71,14 @@ public class PerformableTreeBehaviour {
         assertThat(performableTree.getRoot().getStories().get(0).getScenarios().size(), equalTo(1));
 
         InOrder ordered = inOrder(stepCollector);
-        ordered.verify(stepCollector).collectBeforeOrAfterStoriesSteps(candidateSteps, StepCollector.Stage.BEFORE);
-        ordered.verify(stepCollector).collectBeforeOrAfterStorySteps(candidateSteps, story, StepCollector.Stage.BEFORE,
-                false);
+        ordered.verify(stepCollector).collectBeforeOrAfterStoriesSteps(candidateSteps, Stage.BEFORE);
         ordered.verify(stepCollector).collectLifecycleSteps(eq(candidateSteps), eq(story.getLifecycle()),
-                any(Meta.class), eq(StepCollector.Stage.BEFORE), eq(Scope.STORY));
-        ordered.verify(stepCollector).collectLifecycleSteps(eq(candidateSteps), eq(story.getLifecycle()),
-                any(Meta.class), eq(StepCollector.Stage.AFTER), eq(Scope.STORY));
-        ordered.verify(stepCollector).collectBeforeOrAfterStorySteps(candidateSteps, story, StepCollector.Stage.AFTER,
+                any(Meta.class), eq(Scope.STORY));
+        ordered.verify(stepCollector).collectBeforeOrAfterStorySteps(candidateSteps, story, Stage.BEFORE,
                 false);
-        ordered.verify(stepCollector).collectBeforeOrAfterStoriesSteps(candidateSteps, StepCollector.Stage.AFTER);
+        ordered.verify(stepCollector).collectBeforeOrAfterStorySteps(candidateSteps, story, Stage.AFTER,
+                false);
+        ordered.verify(stepCollector).collectBeforeOrAfterStoriesSteps(candidateSteps, Stage.AFTER);
         verifyNoMoreInteractions(stepCollector);
     }
 
@@ -123,7 +129,8 @@ public class PerformableTreeBehaviour {
     @Test
     public void performStoryIfDryRunTrue() {
         Scenario scenario = new Scenario("scenario title", Meta.EMPTY);
-        Story story = new Story(STORY_PATH, null, null, null, null,
+        Lifecycle lifecycle = Lifecycle.EMPTY;
+        Story story = new Story(STORY_PATH, null, Meta.EMPTY, null, null, lifecycle,
                 Collections.singletonList(scenario));
         StepCollector stepCollector = mock(StepCollector.class);
         Configuration configuration = mock(Configuration.class);
@@ -142,9 +149,26 @@ public class PerformableTreeBehaviour {
         PerformableTree performableTree = new PerformableTree();
         RunContext runContext = performableTree.newRunContext(configuration, candidateSteps,
                 embedderMonitor, new MetaFilter(), failures);
+        Map<Stage, List<Step>> lifecycleSteps = new EnumMap<>(Stage.class);
+        lifecycleSteps.put(Stage.BEFORE, Collections.<Step>emptyList());
+        lifecycleSteps.put(Stage.AFTER, Collections.<Step>emptyList());
+        when(stepCollector.collectLifecycleSteps(eq(candidateSteps), eq(lifecycle), isEmptyMeta(), eq(Scope.STORY)))
+                .thenReturn(lifecycleSteps);
+        when(stepCollector.collectLifecycleSteps(eq(candidateSteps), eq(lifecycle), isEmptyMeta(), eq(Scope.SCENARIO)))
+                .thenReturn(lifecycleSteps);
         performableTree.addStories(runContext, Collections.singletonList(story));
         performableTree.perform(runContext, story);
 
         verify(storyReporter).dryRun();
+    }
+
+    private Meta isEmptyMeta() {
+        return argThat(new ArgumentMatcher<Meta>() {
+            @Override
+            public boolean matches(Object argument) {
+                Meta meta = (Meta) argument;
+                return meta.getPropertyNames().isEmpty();
+            }
+        });
     }
 }

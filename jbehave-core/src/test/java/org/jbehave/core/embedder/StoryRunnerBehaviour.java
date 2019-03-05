@@ -21,6 +21,7 @@ import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -926,15 +927,13 @@ public class StoryRunnerBehaviour {
         when(collector.collectBeforeOrAfterStorySteps(asList(mySteps), story, Stage.AFTER, givenStory)).thenReturn(steps);
     }
 
-
     private void givenLifecycleSteps(StoryReporter reporter, StepCollector collector, CandidateSteps mySteps) {
-        givenLifecycleStep(reporter, Stage.BEFORE, collector, mySteps);
-        givenLifecycleStep(reporter, Stage.AFTER, collector, mySteps);
-    }
-
-    private void givenLifecycleStep(StoryReporter reporter, Stage stage, StepCollector collector, CandidateSteps mySteps) {
-        Step beforeStep = mockSuccessfulStep(reporter, lifecycleStepNameFor(stage));
-        when(collector.collectLifecycleSteps(eq(asList(mySteps)), eq(Lifecycle.EMPTY), any(Meta.class), eq(stage), eq(Scope.SCENARIO))).thenReturn(asList(beforeStep));
+        Map<Stage, List<Step>> lifecycleSteps = new EnumMap<>(Stage.class);
+        lifecycleSteps.put(Stage.BEFORE, asList(mockSuccessfulStep(reporter, lifecycleStepNameFor(Stage.BEFORE))));
+        lifecycleSteps.put(Stage.AFTER, asList(mockSuccessfulStep(reporter, lifecycleStepNameFor(Stage.AFTER))));
+        when(collector
+                .collectLifecycleSteps(eq(asList(mySteps)), eq(Lifecycle.EMPTY), any(Meta.class), eq(Scope.SCENARIO)))
+                .thenReturn(lifecycleSteps);
     }
 
     private String lifecycleStepNameFor(Stage stage) {
