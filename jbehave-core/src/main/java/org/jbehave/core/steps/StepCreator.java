@@ -678,6 +678,10 @@ public class StepCreator {
             return ToStringBuilder.reflectionToString(this, ToStringStyle.SIMPLE_STYLE);
         }
 
+        @Override
+        public List<Step> getComposedSteps() {
+            return Collections.emptyList();
+        }
     }
 
     static class DelegatingStep extends AbstractStep {
@@ -700,6 +704,11 @@ public class StepCreator {
         @Override
         public String asString(Keywords keywords) {
             return step.asString(keywords);
+        }
+
+        @Override
+        public List<Step> getComposedSteps() {
+            return step.getComposedSteps();
         }
     }
 
@@ -824,6 +833,7 @@ public class StepCreator {
             this.composedSteps = composedSteps;
         }
 
+        @Override
         public List<Step> getComposedSteps() {
             return composedSteps;
         }
