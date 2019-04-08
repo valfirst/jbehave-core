@@ -342,15 +342,27 @@ public class RegexStoryParser extends AbstractRegexParser implements StoryParser
         String scenarioWithoutTitle = removeStart(scenarioWithoutKeyword, title);
         scenarioWithoutTitle = startingWithNL(scenarioWithoutTitle);
         Meta meta = findScenarioMeta(scenarioWithoutTitle);
-        ExamplesTable examplesTable = findExamplesTable(scenarioWithoutTitle, storyExamples);
+        String examplesTableAsString = findExamplesTable(scenarioWithoutTitle);
+        ExamplesTable examplesTable = parseExamplesTable(examplesTableAsString, storyExamples);
         if(examplesTable == null) {
             examplesTable = ExamplesTable.EMPTY;
             meta = meta.inheritFrom(skipMeta);
         }
         GivenStories givenStories = findScenarioGivenStories(scenarioWithoutTitle);
         useExamplesTableForGivenStories(givenStories, examplesTable);
-        List<String> steps = findSteps(scenarioWithoutTitle);
+        List<String> steps = new ArrayList<>();
+        if(examplesTableAsString.trim().isEmpty()) {
+            steps.addAll(findSteps(scenarioWithoutTitle));
+        } else {
+            int afterExampleIndex = scenarioWithoutTitle.indexOf(examplesTableAsString) + examplesTableAsString.length();
+            steps.addAll(findSteps(scenarioWithoutTitle.substring(0, afterExampleIndex)));
+        }
         return new Scenario(title, meta, givenStories, examplesTable, steps);
+    }
+
+    private String findExamplesTable(String scenarioAsText) {
+        Matcher findingTable = findingExamplesTable().matcher(scenarioAsText);
+        return findingTable.find() ? findingTable.group(1).trim() : NONE;
     }
 
     private void useExamplesTableForGivenStories(GivenStories givenStories, ExamplesTable examplesTable) {
@@ -374,8 +386,10 @@ public class RegexStoryParser extends AbstractRegexParser implements StoryParser
     }
 
     private ExamplesTable findExamplesTable(String scenarioAsText, ExamplesTable storyExamples) {
-        Matcher findingTable = findingExamplesTable().matcher(scenarioAsText);
-        String tableInput = findingTable.find() ? findingTable.group(1).trim() : NONE;
+        return parseExamplesTable(findExamplesTable(scenarioAsText), storyExamples);
+    }
+
+    private ExamplesTable parseExamplesTable(String tableInput, ExamplesTable storyExamples) {
         Matcher findingTableWithParams = compile("table:\\s*(.*)\\nparameters:\\s*([^\\n]*)(\\ntop_rows:\\s*(\\d+))?",
                 DOTALL).matcher(tableInput);
         List<String> examplesParameters = new ArrayList<String>();
@@ -585,7 +599,7 @@ public class RegexStoryParser extends AbstractRegexParser implements StoryParser
     }
 
     private Pattern findingExamplesTable() {
-        return compile("\\n" + keywords().examplesTable() + "\\s*(.*)", DOTALL);
+        return compile("\\n" + keywords().examplesTable() + "\\s*(.*?)(?:\\n" + keywords().ignorable() + ".*)?$", DOTALL);
     }
 
     public void setSkipMeta(Meta skipMeta) {
