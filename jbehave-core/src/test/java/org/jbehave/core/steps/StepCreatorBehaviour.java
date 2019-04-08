@@ -533,7 +533,7 @@ public class StepCreatorBehaviour {
         String stepAsString = "When I set parameter <p1> value to <p2>";
         Map<String, String> params = new HashMap<>();
         params.put("p1", stepAsString);
-        params.put("p2", "");
+        params.put("p2", "value");
         when(stepMatcher.parameterNames()).thenReturn(new String[] {"stepParam1", "stepParam2"});
         when(stepMatcher.parameter(1)).thenReturn("<p1>");
         when(stepMatcher.parameter(2)).thenReturn("<p2>");
@@ -548,8 +548,8 @@ public class StepCreatorBehaviour {
         // Then
         @SuppressWarnings("unchecked")
         Map<String, String> methodArgs = (Map<String, String>) stepsInstance.args;
-        assertThat(methodArgs.get("theme"), is("When I set parameter <p1> value to "));
-        assertThat(methodArgs.get("variant"), is(""));
+        assertThat(methodArgs.get("theme"), is("When I set parameter <p1> value to value"));
+        assertThat(methodArgs.get("variant"), is("value"));
         verify(storyReporter).beforeStep(stepAsString);
     }
 
