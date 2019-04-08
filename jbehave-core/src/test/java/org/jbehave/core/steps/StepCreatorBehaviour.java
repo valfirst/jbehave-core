@@ -523,6 +523,37 @@ public class StepCreatorBehaviour {
     }
 
     @Test
+    public void shouldNotTryToResolveEqualParametersTwice() throws Exception {
+        // Given
+        SomeSteps stepsInstance = new SomeSteps();
+        parameterConverters = new ParameterConverters(new LoadFromClasspath(), new TableTransformers());
+        StepMatcher stepMatcher = mock(StepMatcher.class);
+        ParameterControls parameterControls = new ParameterControls().useDelimiterNamedParameters(true);
+        StepCreator stepCreator = stepCreatorUsing(stepsInstance, stepMatcher, parameterControls);
+        String stepAsString = "When I set parameter <p1> value to <p2>";
+        Map<String, String> params = new HashMap<>();
+        params.put("p1", stepAsString);
+        params.put("p2", "");
+        when(stepMatcher.parameterNames()).thenReturn(new String[] {"stepParam1", "stepParam2"});
+        when(stepMatcher.parameter(1)).thenReturn("<p1>");
+        when(stepMatcher.parameter(2)).thenReturn("<p2>");
+        StoryReporter storyReporter = mock(StoryReporter.class);
+
+        // When
+        Step step = stepCreator.createParametrisedStep(
+                SomeSteps.methodFor("aMultipleParamMethodWithoutNamedAnnotation"), stepAsString,
+                "I set parameter <p1> value to <p2>", params, Collections.<Step> emptyList());
+        step.perform(storyReporter, null);
+
+        // Then
+        @SuppressWarnings("unchecked")
+        Map<String, String> methodArgs = (Map<String, String>) stepsInstance.args;
+        assertThat(methodArgs.get("theme"), is("When I set parameter <p1> value to "));
+        assertThat(methodArgs.get("variant"), is(""));
+        verify(storyReporter).beforeStep(stepAsString);
+    }
+
+    @Test
     public void shouldMatchParametersByAbsentNestedDelimitedNameWithNoNamedAnnotations() throws Exception {
         // Given
         SomeSteps stepsInstance = new SomeSteps();
