@@ -189,8 +189,7 @@ public class StepCandidateBehaviour {
         namedParameters.put("zipCode", "NW1 6XE");
         performStep(candidate, "Then I live at" + System.lineSeparator() + "<houseNumber> Baker St,"
                 + System.lineSeparator() + "Marylebone, London <zipCode>, UK");
-        assertThat((String) someSteps.args, equalTo(
-                System.lineSeparator() + "221b Baker St," + System.lineSeparator() + "Marylebone, London NW1 6XE, UK"));
+        assertThat((String) someSteps.args, equalTo("221b Baker St," + System.lineSeparator() + "Marylebone, London NW1 6XE, UK"));
     }
 
     @Test
@@ -217,7 +216,7 @@ public class StepCandidateBehaviour {
         Method method = SomeSteps.class.getMethod("aMethodWith", String.class);
         StepCandidate candidate = candidateWith("the grid should look like $grid", THEN, method, someSteps);
         performStep(candidate, "Then the grid should look like" + windowsNewline + ".." + unixNewline + ".." + windowsNewline);
-        assertThat((String) someSteps.args, equalTo(".." + systemNewline + ".." + systemNewline));
+        assertThat((String) someSteps.args, equalTo(".." + systemNewline + ".."));
     }
 
     @Test

@@ -60,7 +60,7 @@ public abstract class PrintingStepMonitor implements StepMonitor {
 
     @Override
     public void beforePerforming(String step, boolean dryRun, Method method) {
-        print(PERFORMING, step, dryRun ? DRY_RUN : "");
+        print(PERFORMING, step.trim(), dryRun ? DRY_RUN : "");
     }
 
     @Override

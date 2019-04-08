@@ -72,7 +72,7 @@ public class GherkinStoryParserBehaviour {
         assertThat(steps.size(), equalTo(3));
         assertThat(steps.get(0), equalTo("Given I have a car"));
         assertThat(steps.get(1), equalTo("When I add <wheels>"));
-        assertThat(steps.get(2), equalTo("Then It <can_drive>"));
+        assertThat(steps.get(2), equalTo("Then It <can_drive>\n"));
         assertThat(scenario.getExamplesTable().asString(), equalTo(
 				  "|wheels|can_drive|\n"
 				+ "|1|false|\n"
