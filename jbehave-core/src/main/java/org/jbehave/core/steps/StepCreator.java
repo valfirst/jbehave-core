@@ -443,10 +443,11 @@ public class StepCreator {
     private Object[] convertParameterValues(String[] valuesAsString, Type[] types, ParameterName[] names) {
         final Object[] parameters = new Object[valuesAsString.length];
         for (int position = 0; position < valuesAsString.length; position++) {
+            String valueAsString = valuesAsString[position].replaceAll("(^[\\n\\r]*|[\\n\\r]*$)", "");
             if (names[position].fromContext) {
-                parameters[position] = stepsContext.get(valuesAsString[position]);
+                parameters[position] = stepsContext.get(valueAsString);
             } else {
-                parameters[position] = parameterConverters.convert(valuesAsString[position], types[position], null);
+                parameters[position] = parameterConverters.convert(valueAsString, types[position], null);
             }
         }
         return parameters;

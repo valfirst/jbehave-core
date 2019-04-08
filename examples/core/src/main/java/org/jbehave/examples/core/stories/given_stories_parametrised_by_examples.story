@@ -8,7 +8,7 @@ GivenStories: org/jbehave/examples/core/stories/select_stock_exchange.story
 Given a stock of symbol <symbol> and a threshold of <threshold>
 When the stock is traded at price <price>
 Then the alert status is <status>
- 
+
 Examples:    
 |stockExchange|symbol|threshold|price|status|
 |NASDAQ|STK1|10.0|5.0|OFF|
