@@ -517,10 +517,11 @@ public class StepCreator {
             parameter = matchedParameter(position);
             List<String> delimitedNames;
 
-            
-            while(!(delimitedNames = delimitedNameFor(parameter)).isEmpty()) {
+            List<String> processedNames = new ArrayList<>();
+            while(!(delimitedNames = delimitedNameFor(parameter, processedNames)).isEmpty()) {
                 String parameterWithDelimitedNames = parameter;
                 for(String delimitedName : delimitedNames) {
+                    processedNames.add(delimitedName);
                     if (isTableName(namedParameters, delimitedName)) {
                         parameter = parameterControls.replaceAllDelimitedNames(parameter, delimitedName,
                                 namedParameter(namedParameters, delimitedName));
@@ -584,6 +585,12 @@ public class StepCreator {
                 delimitedNames.add(matcher.group(1));
             }
         }
+        return delimitedNames;
+    }
+
+    private List<String> delimitedNameFor(String parameter, List<String> processedNames) {
+        List<String> delimitedNames = delimitedNameFor(parameter);
+        delimitedNames.removeAll(processedNames);
         return delimitedNames;
     }
 
