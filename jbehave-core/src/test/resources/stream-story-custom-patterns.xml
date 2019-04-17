@@ -33,6 +33,7 @@
 </lifecycle>
 <step outcome="successful">Given a story step</step>
 <scenario keyword="Scenario:" title="I ask for a loan">
+<step outcome="successful">Given a scenario step</step>
 <givenStories keyword="GivenStories:">
 <givenStory parameters="">/given/story1</givenStory>
 <givenStory parameters="">/given/story2</givenStory>
@@ -57,8 +58,10 @@
 <outcome><value>I don&apos;t return all</value><value>100.0</value><value>&lt;50.0&gt;</value><value>No</value></outcome>
 <outcome><value>A wrong date</value><value>01/01/2011</value><value>&quot;02/01/2011&quot;</value><value>No</value></outcome>
 </outcomes>
+<step outcome="successful">Given a scenario step</step>
 </scenario><!-- after scenario -->
 <scenario keyword="Scenario:" title="Parametrised Scenario">
+<step outcome="successful">Given a scenario step</step>
 <examples keyword="Examples:">
 <step>Given money &lt;money&gt;</step>
 <step>Then I give it to &lt;to&gt;</step>
@@ -76,6 +79,7 @@
 <step outcome="successful">Given money $50</step>
 <step outcome="successful">Then I give it to Paul</step>
 <step outcome="pending" keyword="PENDING">Then I should have a balance of $30</step>
+<step outcome="successful">Given a scenario step</step>
 </examples><!-- after examples -->
 </scenario><!-- after scenario -->
 <step outcome="successful">Given a story step</step>
