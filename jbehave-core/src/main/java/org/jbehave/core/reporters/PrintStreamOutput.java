@@ -357,6 +357,22 @@ public abstract class PrintStreamOutput extends NullStoryReporter {
     }
 
     @Override
+    public void beforeScenarioSteps(Stage stage) {
+        if (stage == Stage.BEFORE) {
+            print(format("beforeBeforeScenarioSteps", ""));
+        } else if (stage == Stage.AFTER) {
+            print(format("beforeAfterScenarioSteps", ""));
+        }
+    }
+
+    @Override
+    public void afterScenarioSteps(Stage stage) {
+        if (stage == Stage.BEFORE) {
+            print(format("afterBeforeScenarioSteps", ""));
+        }
+    }
+
+    @Override
     public void afterStory(boolean givenOrRestartingStory) {
         print(format("afterStory", NL));
         // take care not to close System.out
