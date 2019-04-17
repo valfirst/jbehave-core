@@ -41,6 +41,14 @@ public interface StoryReporter {
 
     void afterAfterStorySteps();
 
+    void beforeBeforeScenarioSteps();
+
+    void afterBeforeScenarioSteps();
+
+    void beforeAfterScenarioSteps();
+
+    void afterAfterScenarioSteps();
+
     void scenarioNotAllowed(Scenario scenario, String filter);
 
     void beforeScenario(Scenario scenario);

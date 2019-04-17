@@ -29,9 +29,10 @@ class StoryNarrator {
         meta.setProperty("author", "Mauro");
         String beforeStoryStep = "Given a story step";
         String afterStoryStep = "Given a story step";
-        Lifecycle.Steps beforeScenarioSteps = new Lifecycle.Steps(Scope.SCENARIO, asList("Given a scenario step"));
+        String scenarioStep = "Given a scenario step";
+        Lifecycle.Steps beforeScenarioSteps = new Lifecycle.Steps(Scope.SCENARIO, asList(scenarioStep));
         Lifecycle.Steps beforeStorySteps = new Lifecycle.Steps(Scope.STORY, asList(beforeStoryStep));
-        Lifecycle.Steps afterScenarioSteps = new Lifecycle.Steps(Scope.SCENARIO, asList("Given a scenario step"));
+        Lifecycle.Steps afterScenarioSteps = new Lifecycle.Steps(Scope.SCENARIO, asList(scenarioStep));
         Lifecycle.Steps afterStorySteps = new Lifecycle.Steps(Scope.STORY, asList(afterStoryStep));
         Lifecycle lifecycle = new Lifecycle(asList(beforeScenarioSteps, beforeStorySteps), asList(afterScenarioSteps, afterStorySteps));
         Story story = new Story("/path/to/story", new Description("An interesting story & special chars"), new Meta(meta),
@@ -48,6 +49,10 @@ class StoryNarrator {
         reporter.afterBeforeStorySteps();
 
         reporter.beforeScenario(new Scenario("I ask for a loan", Meta.EMPTY));
+        reporter.beforeBeforeScenarioSteps();
+        reporter.beforeStep(scenarioStep);
+        reporter.successful(scenarioStep);
+        reporter.afterBeforeScenarioSteps();
         reporter.beforeGivenStories();
         reporter.givenStories(asList("/given/story1", "/given/story2"));
         reporter.afterGivenStories();
@@ -83,8 +88,16 @@ class StoryNarrator {
         } catch (UUIDExceptionWrapper e) {
             reporter.failedOutcomes("Then I don't return loan", ((OutcomesFailed) e.getCause()).outcomesTable());
         }
+        reporter.beforeAfterScenarioSteps();
+        reporter.beforeStep(scenarioStep);
+        reporter.successful(scenarioStep);
+        reporter.afterAfterScenarioSteps();
         reporter.afterScenario();
         reporter.beforeScenario(new Scenario("Parametrised Scenario", Meta.EMPTY));
+        reporter.beforeBeforeScenarioSteps();
+        reporter.beforeStep(scenarioStep);
+        reporter.successful(scenarioStep);
+        reporter.afterBeforeScenarioSteps();
         ExamplesTable table = new ExamplesTable("|money|to|\n|$30|Mauro|\n|$50|Paul|\n");
         reporter.beforeExamples(asList("Given money <money>", "Then I give it to <to>"), table);
         reporter.example(table.getRow(0), 0);
@@ -98,6 +111,10 @@ class StoryNarrator {
         } else {
             reporter.pending("Then I should have a balance of $30");
         }
+        reporter.beforeAfterScenarioSteps();
+        reporter.beforeStep(scenarioStep);
+        reporter.successful(scenarioStep);
+        reporter.afterAfterScenarioSteps();
         reporter.afterExamples();
         reporter.afterScenario();
 
