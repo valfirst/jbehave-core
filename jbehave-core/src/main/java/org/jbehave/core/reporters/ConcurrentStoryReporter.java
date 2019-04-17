@@ -34,6 +34,10 @@ public class ConcurrentStoryReporter implements StoryReporter {
     private static Method afterBeforeStorySteps;
     private static Method beforeAfterStorySteps;
     private static Method afterAfterStorySteps;
+    private static Method beforeBeforeScenarioSteps;
+    private static Method afterBeforeScenarioSteps;
+    private static Method beforeAfterScenarioSteps;
+    private static Method afterAfterScenarioSteps;
     private static Method scenarioNotAllowed;
     private static Method beforeScenario;
     private static Method beforeScenarioDeprecated;
@@ -72,6 +76,10 @@ public class ConcurrentStoryReporter implements StoryReporter {
             afterBeforeStorySteps = StoryReporter.class.getMethod("afterBeforeStorySteps");
             beforeAfterStorySteps = StoryReporter.class.getMethod("beforeAfterStorySteps");
             afterAfterStorySteps = StoryReporter.class.getMethod("afterAfterStorySteps");
+            beforeBeforeScenarioSteps = StoryReporter.class.getMethod("beforeBeforeScenarioSteps");
+            afterBeforeScenarioSteps = StoryReporter.class.getMethod("afterBeforeScenarioSteps");
+            beforeAfterScenarioSteps = StoryReporter.class.getMethod("beforeAfterScenarioSteps");
+            afterAfterScenarioSteps = StoryReporter.class.getMethod("afterAfterScenarioSteps");
             scenarioNotAllowed = StoryReporter.class.getMethod("scenarioNotAllowed", Scenario.class, String.class);
             beforeScenario = StoryReporter.class.getMethod("beforeScenario", Scenario.class);
             beforeScenarioDeprecated = StoryReporter.class.getMethod("beforeScenario", String.class);
@@ -202,6 +210,46 @@ public class ConcurrentStoryReporter implements StoryReporter {
             delayedMethods.add(new DelayedMethod(afterAfterStorySteps));
         } else {
             delegate.afterAfterStorySteps();
+        }
+    }
+
+    @Override
+    public void beforeBeforeScenarioSteps() {
+        crossReferencing.beforeBeforeScenarioSteps();
+        if (multiThreading) {
+            delayedMethods.add(new DelayedMethod(beforeBeforeScenarioSteps));
+        } else {
+            delegate.beforeBeforeScenarioSteps();
+        }
+    }
+
+    @Override
+    public void afterBeforeScenarioSteps() {
+        crossReferencing.afterBeforeScenarioSteps();
+        if (multiThreading) {
+            delayedMethods.add(new DelayedMethod(afterBeforeScenarioSteps));
+        } else {
+            delegate.afterBeforeScenarioSteps();
+        }
+    }
+
+    @Override
+    public void beforeAfterScenarioSteps() {
+        crossReferencing.beforeAfterScenarioSteps();
+        if (multiThreading) {
+            delayedMethods.add(new DelayedMethod(beforeAfterScenarioSteps));
+        } else {
+            delegate.beforeAfterScenarioSteps();
+        }
+    }
+
+    @Override
+    public void afterAfterScenarioSteps() {
+        crossReferencing.afterAfterScenarioSteps();
+        if (multiThreading) {
+            delayedMethods.add(new DelayedMethod(afterAfterScenarioSteps));
+        } else {
+            delegate.afterAfterScenarioSteps();
         }
     }
 

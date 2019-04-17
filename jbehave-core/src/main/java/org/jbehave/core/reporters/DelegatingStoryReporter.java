@@ -121,6 +121,34 @@ public class DelegatingStoryReporter implements StoryReporter {
             reporter.afterAfterStorySteps();
         }
     }
+    
+    @Override
+    public void beforeBeforeScenarioSteps() {
+        for (StoryReporter reporter : delegates) {
+            reporter.beforeBeforeScenarioSteps();
+        }
+    }
+
+    @Override
+    public void afterBeforeScenarioSteps() {
+        for (StoryReporter reporter : delegates) {
+            reporter.afterBeforeScenarioSteps();
+        }
+    }
+
+    @Override
+    public void beforeAfterScenarioSteps() {
+        for (StoryReporter reporter : delegates) {
+            reporter.beforeAfterScenarioSteps();
+        }
+    }
+
+    @Override
+    public void afterAfterScenarioSteps() {
+        for (StoryReporter reporter : delegates) {
+            reporter.afterAfterScenarioSteps();
+        }
+    }
 
     @Override
     public void beforeExamples(List<String> steps, ExamplesTable table) {
