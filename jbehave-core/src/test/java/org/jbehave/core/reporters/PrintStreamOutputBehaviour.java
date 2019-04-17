@@ -471,14 +471,17 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         String secondStep = "Given money $50";
         reporter.beforeStory(story, false);
         reporter.beforeScenario(new Scenario("I ask for a loan", Meta.EMPTY, null, table, Collections.<String>emptyList()));
+        reportBeforeScenarioSteps(reporter);
         reporter.beforeExamples(Collections.singletonList("Given money <money>"), table);
         reporter.example(table.getRow(0), 0);
         reporter.beforeGivenStories();
         reporter.givenStories(Collections.singletonList(givenStory.getPath()));
         reporter.beforeStory(givenStory, true);
         reporter.beforeScenario(givenStoryScenario);
+        reportBeforeScenarioSteps(reporter);
         reporter.beforeStep(givenStoryStep);
         reporter.successful(givenStoryStep);
+        reportAfterScenarioSteps(reporter);
         reporter.afterScenario();
         reporter.afterStory(true);
         reporter.afterGivenStories();
@@ -489,38 +492,38 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.givenStories(Collections.singletonList(givenStory.getPath()));
         reporter.beforeStory(givenStory, true);
         reporter.beforeScenario(givenStoryScenario);
+        reportBeforeScenarioSteps(reporter);
         reporter.beforeStep(givenStoryStep);
         reporter.successful(givenStoryStep);
+        reportAfterScenarioSteps(reporter);
         reporter.afterScenario();
         reporter.afterStory(true);
         reporter.afterGivenStories();
         reporter.beforeStep(secondStep);
         reporter.successful(secondStep);
+        reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
         reporter.afterScenario();
         reporter.afterStory(false);
 
         // Then
-        String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"An interesting story & "
-                + "special chars\",\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"I " 
-                + "ask for a loan\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"Given" 
-                + " money <money>\"],\"parameters\": {\"names\": [\"money\"],\"values\": " 
-                + "[[\"$30\"],[\"$50\"]]}, \"examples\": [{\"keyword\": \"Example:\", " 
-                + "\"parameters\": {\"money\":\"$30\"},\"givenStories\": {\"keyword\": \"GivenStories:\", " 
-                + "\"givenStories\":[{\"parameters\": \"\", \"path\": \"\\/given\\/story1\"}]," 
-                + "\"stories\": [{\"path\": \"\\/given\\/story1\", \"title\": \"An interesting " 
-                + "story & special chars\",\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": " 
-                + "\"Commute to bank\",\"steps\": [{\"steps\": [],\"outcome\": \"successful\", " 
-                + "\"value\": \"I take a taxi to the bank\"}]}]}]},\"steps\": [{\"steps\": []," 
-                + "\"outcome\": \"successful\", \"value\": \"Given money $30\"}]},{\"keyword\": " 
-                + "\"Example:\", \"parameters\": {\"money\":\"$50\"},\"givenStories\": {\"keyword\": " 
-                + "\"GivenStories:\", \"givenStories\":[{\"parameters\": \"\", \"path\": " 
-                + "\"\\/given\\/story1\"}],\"stories\": [{\"path\": \"\\/given\\/story1\", " 
-                + "\"title\": \"An interesting story & special chars\",\"scenarios\": [{\"keyword\": " 
-                + "\"Scenario:\", \"title\": \"Commute to bank\",\"steps\": [{\"steps\": []," 
-                + "\"outcome\": \"successful\", \"value\": \"I take a taxi to the bank\"}]}]}]}," 
-                + "\"steps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"Given " 
-                + "money $50\"}]}]}}]}";
+        String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"An interesting story & special chars\",\"scenarios\": [{\"keyword\": "
+                + "\"Scenario:\", \"title\": \"I ask for a loan\",\"beforeScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": "
+                + "\"When before scenario steps\"}],\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"Given money <money>\"],\"parameters\": "
+                + "{\"names\": [\"money\"],\"values\": [[\"$30\"],[\"$50\"]]}, \"examples\": [{\"keyword\": \"Example:\", \"parameters\": {\"money\""
+                + ":\"$30\"},\"givenStories\": {\"keyword\": \"GivenStories:\", \"givenStories\":[{\"parameters\": \"\", \"path\": \"\\/given\\/story1\"}],"
+                + "\"stories\": [{\"path\": \"\\/given\\/story1\", \"title\": \"An interesting story & special chars\",\"scenarios\": [{\"keyword\":"
+                + " \"Scenario:\", \"title\": \"Commute to bank\",\"beforeScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": "
+                + "\"When before scenario steps\"}],\"steps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"I take a taxi to the bank\"}],"
+                + " \"afterScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"When after scenario steps\"}]}]}]},\"steps\": "
+                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": \"Given money $30\"}]},{\"keyword\": \"Example:\", \"parameters\": {\"money\""
+                + ":\"$50\"},\"givenStories\": {\"keyword\": \"GivenStories:\", \"givenStories\":[{\"parameters\": \"\", \"path\": \"\\/given\\/story1\"}]"
+                + ",\"stories\": [{\"path\": \"\\/given\\/story1\", \"title\": \"An interesting story & special chars\",\"scenarios\": [{\"keyword\": "
+                + "\"Scenario:\", \"title\": \"Commute to bank\",\"beforeScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": "
+                + "\"When before scenario steps\"}],\"steps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"I take a taxi to the bank\"}],"
+                + " \"afterScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"When after scenario steps\"}]}]}]},\"steps\": "
+                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": \"Given money $50\"}], \"afterScenarioSteps\": [{\"steps\": [],\"outcome\":"
+                + " \"successful\", \"value\": \"When after scenario steps\"}]}]}}]}";
 
         assertThat(dos2unix(out.toString()), equalTo(expected));
     }
@@ -552,6 +555,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.beforeBeforeStorySteps();
         reporter.afterBeforeStorySteps();
         reporter.beforeScenario(scenario);
+        reportBeforeScenarioSteps(reporter);
         reporter.beforeExamples(Collections.singletonList(step), examplesTable);
         reporter.example(example, 0);
         reporter.beforeGivenStories();
@@ -561,6 +565,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.beforeBeforeStorySteps();
         reporter.afterBeforeStorySteps();
         reporter.beforeScenario(scenario);
+        reportBeforeScenarioSteps(reporter);
         reporter.beforeExamples(Collections.singletonList(step), examplesTable);
         reporter.example(example, 0);
         reporter.beforeGivenStories();
@@ -570,9 +575,11 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.beforeBeforeStorySteps();
         reporter.afterBeforeStorySteps();
         reporter.beforeScenario(scenario);
+        reportBeforeScenarioSteps(reporter);
         reporter.beforeExamples(Collections.singletonList(step), examplesTable);
         reporter.example(example, 0);
         reporter.successful(step);
+        reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
         reporter.afterScenario();
         reporter.beforeAfterStorySteps();
@@ -580,6 +587,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.afterStory(true);
         reporter.afterGivenStories();
         reporter.successful(step);
+        reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
         reporter.afterScenario();
         reporter.beforeAfterStorySteps();
@@ -587,9 +595,11 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.afterStory(true);
         reporter.afterGivenStories();
         reporter.successful(step);
+        reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
         reporter.afterScenario();
         reporter.beforeScenario(scenario);
+        reportBeforeScenarioSteps(reporter);
         reporter.beforeExamples(Collections.singletonList(step), examplesTable);
         reporter.example(example, 0);
         reporter.beforeGivenStories();
@@ -599,6 +609,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.beforeBeforeStorySteps();
         reporter.afterBeforeStorySteps();
         reporter.beforeScenario(scenario);
+        reportBeforeScenarioSteps(reporter);
         reporter.beforeExamples(Collections.singletonList(step), examplesTable);
         reporter.example(example, 0);
         reporter.beforeGivenStories();
@@ -608,9 +619,11 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.beforeBeforeStorySteps();
         reporter.afterBeforeStorySteps();
         reporter.beforeScenario(scenario);
+        reportBeforeScenarioSteps(reporter);
         reporter.beforeExamples(Collections.singletonList(step), examplesTable);
         reporter.example(example, 0);
         reporter.successful(step);
+        reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
         reporter.afterScenario();
         reporter.beforeAfterStorySteps();
@@ -618,6 +631,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.afterStory(true);
         reporter.afterGivenStories();
         reporter.successful(step);
+        reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
         reporter.afterScenario();
         reporter.beforeAfterStorySteps();
@@ -625,6 +639,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.afterStory(true);
         reporter.afterGivenStories();
         reporter.successful(step);
+        reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
         reporter.afterScenario();
         reporter.beforeAfterStorySteps();
@@ -632,47 +647,49 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.afterStory(false);
         
         // Then
-        String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Root story\",\"lifecycle\": {\"keyword\": "
-                + "\"Lifecycle:\",\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\""
-                + ",\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": "
-                + "\"My scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],\"parameters\": "
-                + "{\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}, \"examples\": "
-                + "[{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"givenStories\":"
-                + " {\"keyword\": \"GivenStories:\", \"givenStories\":[{\"parameters\": \"\", \"path\": \"\\/path\\/to\\/story\"}]"
-                + ",\"stories\": [{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Given story\",\"lifecycle\": {\"keyword\":"
-                + " \"Lifecycle:\",\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\","
-                + "\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"My scenario\","
-                + "\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],\"parameters\": {\"names\": [\"key\",\"row\"],"
-                + "\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}, \"examples\": [{\"keyword\": \"Example:\", \"parameters\":"
-                + " {\"key1\":\"value1\",\"key2\":\"value2\"},\"givenStories\": {\"keyword\": \"GivenStories:\", \"givenStories\":"
-                + "[{\"parameters\": \"\", \"path\": \"\\/path\\/to\\/story\"}],\"stories\": [{\"path\": \"\\/path\\/to\\/story\","
-                + " \"title\": \"Given story\",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": [\"key\","
-                + "\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": "
-                + "[{\"keyword\": \"Scenario:\", \"title\": \"My scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\":"
-                + " [\"My step\"],\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]},"
-                + " \"examples\": [{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"steps\": "
-                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}}],\"afterStorySteps\": []}]},\"steps\": "
-                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}}],\"afterStorySteps\": []}]},\"steps\": "
-                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}},{\"keyword\": \"Scenario:\", \"title\": "
-                + "\"My scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],\"parameters\": {\"names\": "
-                + "[\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}, \"examples\": [{\"keyword\": \"Example:\", "
-                + "\"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"givenStories\": {\"keyword\": \"GivenStories:\", "
-                + "\"givenStories\":[{\"parameters\": \"\", \"path\": \"\\/path\\/to\\/story\"}],\"stories\": [{\"path\": "
-                + "\"\\/path\\/to\\/story\", \"title\": \"Given story\",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\":"
-                + " {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}},\"beforeStorySteps\": "
-                + "[],\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"My scenario\",\"examples\": {\"keyword\": \"Examples:\""
-                + ",\"steps\": [\"My step\"],\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\","
-                + "\"row2\"]]}, \"examples\": [{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},"
-                + "\"givenStories\": {\"keyword\": \"GivenStories:\", \"givenStories\":[{\"parameters\": \"\", \"path\": "
-                + "\"\\/path\\/to\\/story\"}],\"stories\": [{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Given story\""
-                + ",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": "
-                + "[[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": [{\"keyword\": "
-                + "\"Scenario:\", \"title\": \"My scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],"
-                + "\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}, \"examples\":"
-                + " [{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"steps\": [{\"steps\":"
-                + " [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}}],\"afterStorySteps\": []}]},\"steps\": [{\"steps\":"
-                + " [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}}],\"afterStorySteps\": []}]},\"steps\": [{\"steps\":"
-                + " [],\"outcome\": \"successful\", \"value\": \"My step\"}]}]}}],\"afterStorySteps\": []}";
+        String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Root story\",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\": "
+                + "{\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": "
+                + "[{\"keyword\": \"Scenario:\", \"title\": \"My scenario\",\"beforeScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", "
+                + "\"value\": \"When before scenario steps\"}],\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],\"parameters\": "
+                + "{\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}, \"examples\": [{\"keyword\": \"Example:\", "
+                + "\"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"givenStories\": {\"keyword\": \"GivenStories:\", \"givenStories\":"
+                + "[{\"parameters\": \"\", \"path\": \"\\/path\\/to\\/story\"}],\"stories\": [{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Given story\""
+                + ",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\","
+                + "\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"My scenario\",\"beforeScenarioSteps\": "
+                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": \"When before scenario steps\"}],\"examples\": {\"keyword\": \"Examples:\","
+                + "\"steps\": [\"My step\"],\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}, \"examples\""
+                + ": [{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"givenStories\": {\"keyword\": \"GivenStories:\""
+                + ", \"givenStories\":[{\"parameters\": \"\", \"path\": \"\\/path\\/to\\/story\"}],\"stories\": [{\"path\": \"\\/path\\/to\\/story\", "
+                + "\"title\": \"Given story\",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\","
+                + "\"row1\"],[\"key2\",\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"My scenario\","
+                + "\"beforeScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"When before scenario steps\"}],\"examples\": "
+                + "{\"keyword\": \"Examples:\",\"steps\": [\"My step\"],\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],"
+                + "[\"key2\",\"row2\"]]}, \"examples\": [{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"steps\":"
+                + " [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"My step\"}], \"afterScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\","
+                + " \"value\": \"When after scenario steps\"}]}]}}],\"afterStorySteps\": []}]},\"steps\": [{\"steps\": [],\"outcome\": \"successful\", "
+                + "\"value\": \"My step\"}], \"afterScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"When after scenario steps\"}]}]}}],"
+                + "\"afterStorySteps\": []}]},\"steps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"My step\"}], \"afterScenarioSteps\": "
+                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": \"When after scenario steps\"}]}]}},{\"keyword\": \"Scenario:\", \"title\": "
+                + "\"My scenario\",\"beforeScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"When before scenario steps\"}],"
+                + "\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\","
+                + "\"row1\"],[\"key2\",\"row2\"]]}, \"examples\": [{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},"
+                + "\"givenStories\": {\"keyword\": \"GivenStories:\", \"givenStories\":[{\"parameters\": \"\", \"path\": \"\\/path\\/to\\/story\"}],\"stories\":"
+                + " [{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Given story\",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": "
+                + "[\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": [{\"keyword\": \"Scenario:\","
+                + " \"title\": \"My scenario\",\"beforeScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"When before scenario steps\"}],"
+                + "\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],"
+                + "[\"key2\",\"row2\"]]}, \"examples\": [{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"givenStories\": "
+                + "{\"keyword\": \"GivenStories:\", \"givenStories\":[{\"parameters\": \"\", \"path\": \"\\/path\\/to\\/story\"}],\"stories\": [{\"path\": "
+                + "\"\\/path\\/to\\/story\", \"title\": \"Given story\",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": [\"key\",\"row\"],"
+                + "\"values\": [[\"key1\",\"row1\"],[\"key2\",\"row2\"]]}},\"beforeStorySteps\": [],\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": "
+                + "\"My scenario\",\"beforeScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"When before scenario steps\"}],\"examples\""
+                + ": {\"keyword\": \"Examples:\",\"steps\": [\"My step\"],\"parameters\": {\"names\": [\"key\",\"row\"],\"values\": [[\"key1\",\"row1\"],"
+                + "[\"key2\",\"row2\"]]}, \"examples\": [{\"keyword\": \"Example:\", \"parameters\": {\"key1\":\"value1\",\"key2\":\"value2\"},\"steps\": "
+                + "[{\"steps\": [],\"outcome\": \"successful\", \"value\": \"My step\"}], \"afterScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", "
+                + "\"value\": \"When after scenario steps\"}]}]}}],\"afterStorySteps\": []}]},\"steps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": "
+                + "\"My step\"}], \"afterScenarioSteps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"When after scenario steps\"}]}]}}],"
+                + "\"afterStorySteps\": []}]},\"steps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"My step\"}], \"afterScenarioSteps\": [{\"steps\":"
+                + " [],\"outcome\": \"successful\", \"value\": \"When after scenario steps\"}]}]}}],\"afterStorySteps\": []}";
 
         assertThat(dos2unix(out.toString()), equalTo(expected));
     }
@@ -820,6 +837,22 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
                 + "something new\\\")\\n@Pending\\npublic void whenIDoSomethingNew() {\\n  \\/\\/ PENDING\\n}\\n\"]}]}";
 
         assertThat(dos2unix(out.toString()), equalTo(expected));
+    }
+
+    private void reportBeforeScenarioSteps(StoryReporter reporter) {
+        String step = "When before scenario steps";
+        reporter.beforeBeforeScenarioSteps();
+        reporter.beforeStep(step);
+        reporter.successful(step);
+        reporter.afterBeforeScenarioSteps();
+    }
+
+    private void reportAfterScenarioSteps(StoryReporter reporter) {
+        String step = "When after scenario steps";
+        reporter.beforeAfterScenarioSteps();
+        reporter.beforeStep(step);
+        reporter.successful(step);
+        reporter.afterAfterScenarioSteps();
     }
 
     @SuppressWarnings("serial")
