@@ -179,6 +179,12 @@ public class JsonOutput extends PrintStreamOutput {
             print(" \"examples\": [");
             getCurrentState().startExamples();
         }
+        if("beforeBeforeScenarioSteps".equals(key) || "beforeAfterScenarioSteps".equals(key)) {
+            stepPublishing = true;
+        }
+        if("afterBeforeScenarioSteps".equals(key)) {
+            stepPublishing = false;
+        }
         if (stepPublishing) {
             if ("example".equals(key) || "afterExamples".equals(key)) {
                 // Closing previous "example"
@@ -196,7 +202,7 @@ public class JsonOutput extends PrintStreamOutput {
                 stepPublishing = false;
                 getCurrentState().completeScenario();
             }
-            else if ("afterBeforeStorySteps".equals(key) || "afterAfterStorySteps".equals(key)){
+            else if ("afterBeforeStorySteps".equals(key) || "afterAfterStorySteps".equals(key)) {
                 stepPublishing = false;
             }
             if ("subSteps".equals(key)) {
@@ -270,6 +276,9 @@ public class JsonOutput extends PrintStreamOutput {
         patterns.setProperty("afterBeforeStorySteps", "]");
         patterns.setProperty("beforeAfterStorySteps", "\"afterStorySteps\": [");
         patterns.setProperty("afterAfterStorySteps", "]");
+        patterns.setProperty("beforeBeforeScenarioSteps", "\"beforeScenarioSteps\": [");
+        patterns.setProperty("afterBeforeScenarioSteps", "]");
+        patterns.setProperty("beforeAfterScenarioSteps", "], \"afterScenarioSteps\": [");
         patterns.setProperty("beforeScenario","'{'\"keyword\": \"{0}\", \"title\": \"{1}\"");
         patterns.setProperty("scenarioNotAllowed", "\"notAllowed\": '{'\"pattern\": \"{0}\"}");
         patterns.setProperty("afterScenario", "}");
