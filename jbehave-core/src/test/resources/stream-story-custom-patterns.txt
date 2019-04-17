@@ -33,6 +33,7 @@ Given a story step
 
 Given a story step
 Scenario: I ask for a loan
+Given a scenario step
 GivenStories:
 /given/story1
 /given/story2
@@ -55,8 +56,10 @@ Then I don't return loan <<< FAILED
 |Description|Value|Matcher|Verified|
 |I don't return all|100|<50.0>|No|
 |A wrong date|01/01/2011|"02/01/2011"|No|
+Given a scenario step
 
 Scenario: Parametrised Scenario
+Given a scenario step
 Examples:
 Given money <money>
 Then I give it to <to>
@@ -73,6 +76,7 @@ Example: {money=$50, to=Paul}
 Given money $50
 Then I give it to Paul
 Then I should have a balance of $30 <<< FAILED
+Given a scenario step
 
 
 Given a story step
