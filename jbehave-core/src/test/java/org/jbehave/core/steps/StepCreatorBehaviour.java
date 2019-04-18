@@ -554,6 +554,39 @@ public class StepCreatorBehaviour {
     }
 
     @Test
+    public void shouldNotRemoveSpacesAroundParameterValue() throws Exception {
+        // Given
+        SomeSteps stepsInstance = new SomeSteps();
+        parameterConverters = new ParameterConverters(new LoadFromClasspath(), new TableTransformers());
+        StepMatcher stepMatcher = mock(StepMatcher.class);
+        ParameterControls parameterControls = new ParameterControls().useDelimiterNamedParameters(true);
+        StepCreator stepCreator = stepCreatorUsing(stepsInstance, stepMatcher, parameterControls);
+        String stepAsString = "When I set parameter <p1> value to <p2>";
+        Map<String, String> params = new HashMap<>();
+        String parameterValue = "\n\n\r\n\r\n    value \n\n\r\n\n\r";
+        params.put("p1", parameterValue);
+        params.put("p2", parameterValue);
+        when(stepMatcher.parameterNames()).thenReturn(new String[] {"stepParam1", "stepParam2"});
+        when(stepMatcher.parameter(1)).thenReturn("<p1>");
+        when(stepMatcher.parameter(2)).thenReturn("<p2>");
+        StoryReporter storyReporter = mock(StoryReporter.class);
+
+        // When
+        Step step = stepCreator.createParametrisedStep(
+                SomeSteps.methodFor("aMultipleParamMethodWithoutNamedAnnotation"), stepAsString,
+                "I set parameter <p1> value to <p2>", params, Collections.<Step> emptyList());
+        step.perform(storyReporter, null);
+
+        // Then
+        @SuppressWarnings("unchecked")
+        Map<String, String> methodArgs = (Map<String, String>) stepsInstance.args;
+        String expectedValue = "    value ";
+        assertThat(methodArgs.get("theme"), is(expectedValue));
+        assertThat(methodArgs.get("variant"), is(expectedValue));
+        verify(storyReporter).beforeStep(stepAsString);
+    }
+
+    @Test
     public void shouldMatchParametersByAbsentNestedDelimitedNameWithNoNamedAnnotations() throws Exception {
         // Given
         SomeSteps stepsInstance = new SomeSteps();
