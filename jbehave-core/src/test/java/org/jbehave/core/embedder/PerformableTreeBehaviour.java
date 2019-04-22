@@ -181,16 +181,19 @@ public class PerformableTreeBehaviour {
         when(context.lifecycleSteps(lifecycle, meta, StepCollector.Stage.AFTER))
                 .thenReturn(new PerformableTree.PerformableSteps());
 
-        when(context.scenarioSteps(eq(scenario), anyMapOf(String.class, String.class)))
+        when(context.scenarioSteps(any(Scenario.class), anyMapOf(String.class, String.class)))
                 .thenReturn(new PerformableTree.PerformableSteps());
         when(scenario.getGivenStories()).thenReturn(givenStories);
         when(givenStories.getPaths()).thenReturn(Collections.<String>emptyList());
         when(story.getGivenStories()).thenReturn(givenStories);
+        String scenarioTitle = "scenarioTitle";
+        when(scenario.getTitle()).thenReturn(scenarioTitle);
         performableTree.addStories(context, Collections.singletonList(story));
         List<PerformableTree.PerformableScenario> performableScenarios = performableTree.getRoot().getStories().get(0)
                 .getScenarios();
 
         assertEquals(scenarioExample.size(), performableScenarios.size());
+        assertEquals(scenarioTitle + " [1]", performableScenarios.get(0).getScenario().getTitle());
         List<PerformableTree.ExamplePerformableScenario> examplePerformableScenarios = performableScenarios.get(0)
                 .getExamples();
         assertEquals(scenarioExample.size(), examplePerformableScenarios.size());
@@ -202,6 +205,7 @@ public class PerformableTreeBehaviour {
         assertEquals("b", examplePerformableScenarios.get(1).getParameters().get("var2"));
         assertEquals("b", examplePerformableScenarios.get(1).getParameters().get("var3"));
 
+        assertEquals(scenarioTitle + " [2]", performableScenarios.get(1).getScenario().getTitle());
         examplePerformableScenarios = performableScenarios.get(1).getExamples();
         assertEquals(scenarioExample.size(), examplePerformableScenarios.size());
         assertEquals("E", examplePerformableScenarios.get(0).getParameters().get("var1"));
