@@ -50,7 +50,7 @@ public class ParameterControls {
         return this;
     }
 
-    private String createDelimitedName(String name) {
+    public String createDelimitedName(String name) {
         return nameDelimiterLeft + name + nameDelimiterRight;
     }
 
