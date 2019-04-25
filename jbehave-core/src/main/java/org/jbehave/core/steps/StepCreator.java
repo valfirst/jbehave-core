@@ -16,6 +16,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jbehave.core.annotations.AfterScenario.Outcome;
 import org.jbehave.core.annotations.AsParameters;
 import org.jbehave.core.annotations.ToContext;
@@ -116,7 +118,8 @@ public class StepCreator {
             ParameterName[] parameterNames = parameterNames(method);
             Type[] types = parameterTypes(method, parameterNames);
 
-            String[] values = parameterValuesForStep(namedParameters, types, parameterNames);
+            List<Pair<String, String>> pairs = parameterValuesForStep(namedParameters, types, parameterNames);
+            String[] values = getArrayOfPairsValues(pairs);
             for (int i = 0; i < parameterNames.length; i++) {
                 String name = parameterNames[i].name;
                 if (name == null) {
@@ -127,6 +130,22 @@ public class StepCreator {
         }
         // else return empty map
         return matchedParameters; 
+    }
+
+    private String[] getArrayOfPairsValues(List<Pair<String, String>> pairs) {
+        String[] values = new String[pairs.size()];
+        for (int i = 0; i < pairs.size(); i++) {
+            values[i] = pairs.get(i).getValue();
+        }
+        return  values;
+    }
+
+    private String[] getArrayOfPairsKeys(List<Pair<String, String>> pairs) {
+        String[] keys = new String[pairs.size()];
+        for (int i = 0; i < pairs.size(); i++) {
+            keys[i] = pairs.get(i).getKey();
+        }
+        return  keys;
     }
 
     /**
@@ -294,7 +313,8 @@ public class StepCreator {
     }
 
     private String parametrisedStep(String stepAsString, Map<String, String> namedParameters, Type[] types,
-            String[] parameterValues, Object[] convertedParameters) {
+           List<Pair<String, String>> parameterValuesPairsList, Object[] convertedParameters) {
+        String[] parameterValues = getArrayOfPairsValues(parameterValuesPairsList);
         String parametrisedStep = stepAsString;
         // mark parameter values that are parsed
         boolean hasTable = hasTable(types);
@@ -303,7 +323,8 @@ public class StepCreator {
         }
         // mark parameter values that are named
         for (String name : namedParameters.keySet()) {
-            parametrisedStep = markNamedParameterValue(parametrisedStep, namedParameters, name);
+            parametrisedStep = markNamedParameterValue(parametrisedStep, namedParameters, name,
+                    parameterValuesPairsList);
         }
         // mark parameter values that are converted
         for (int position = 0; position < types.length; position++) {
@@ -323,10 +344,20 @@ public class StepCreator {
         return false;
     }
 
-    private String markNamedParameterValue(String stepText, Map<String, String> namedParameters, String name) {
+    private String markNamedParameterValue(String stepText, Map<String, String> namedParameters, String name,
+            List<Pair<String, String>> params) {
+        String[] parameterValues = getArrayOfPairsKeys(params);
         String value = namedParameter(namedParameters, name);
         if (value != null) {
-            return parameterControls.replaceAllDelimitedNames(stepText, name, markedValue(value));
+            for (int position = 0; position < parameterValues.length; position++) {
+                String parameter = parameterValues[position];
+                String delimitedName = parameterControls.createDelimitedName(name);
+                if (parameter.contains(delimitedName) && !parameter.equals(delimitedName)) {
+                    String updatedParameterValue = parameter.replaceAll(delimitedName, "\\" + value);
+                    stepText = stepText.replace(parameter, updatedParameterValue);
+                }
+                return parameterControls.replaceAllDelimitedNames(stepText, name, markedValue(value));
+            }
         }
         return stepText;
     }
@@ -432,12 +463,14 @@ public class StepCreator {
         return result;
     }
 
-    private String[] parameterValuesForStep(Map<String, String> namedParameters, Type[] types, ParameterName[] names) {
-        final String[] parameters = new String[types.length];
+    private List<Pair<String, String>> parameterValuesForStep(Map<String, String> namedParameters, Type[] types,
+            ParameterName[] names) {
+        final List<Pair<String, String>> parametersPairs = new ArrayList<>(types.length);
         for (int position = 0; position < types.length; position++) {
-            parameters[position] = parameterForPosition(position, names, namedParameters);
+            Pair<String, String> parameterPair = parameterForPosition(position, names, namedParameters);
+            parametersPairs.add(parameterPair);
         }
-        return parameters;
+        return parametersPairs;
     }
 
     private Object[] convertParameterValues(String[] valuesAsString, Type[] types, ParameterName[] names) {
@@ -452,7 +485,8 @@ public class StepCreator {
         return parameters;
     }
 
-    private String parameterForPosition(int position, ParameterName[] names, Map<String, String> namedParameters) {
+    private Pair<String, String> parameterForPosition(int position, ParameterName[] names,
+            Map<String, String> namedParameters) {
         int namePosition = parameterPosition(names, position);
         String parameter = null;
 
@@ -494,11 +528,13 @@ public class StepCreator {
 
         }
 
+        String delimitedParameterName = "";
         if (parameter == null) {
             // This allow parameters to be in different order.
             position = position - numberOfPreviousFromContext(names, position);
             stepMonitor.usingNaturalOrderForParameter(position);
             parameter = matchedParameter(position);
+            delimitedParameterName = parameter;
             List<String> delimitedNames;
 
             List<String> processedNames = new ArrayList<>();
@@ -519,7 +555,7 @@ public class StepCreator {
 
         stepMonitor.foundParameter(parameter, position);
 
-        return parameter;
+        return new ImmutablePair<>(delimitedParameterName, parameter);
     }
 
     private String replaceAllDelimitedNames(List<String> delimitedNames, int position, boolean annotated,
@@ -907,10 +943,11 @@ public class StepCreator {
             stepMatcher.find(stepWithoutStartingWord);
             ParameterName[] names = parameterNames(method);
             Type[] types = parameterTypes(method, names);
-            String[] parameterValues = parameterValuesForStep(namedParameters, types, names);
+            List<Pair<String, String>> parameterValuesPairsList = parameterValuesForStep(namedParameters, types, names);
+            String[] parameterValues = getArrayOfPairsValues(parameterValuesPairsList);
             convertedParameters = convertParameterValues(parameterValues, types, names);
             addNamedParametersToExamplesTables();
-            parametrisedStep = parametrisedStep(stepAsString, namedParameters, types, parameterValues,
+            parametrisedStep = parametrisedStep(stepAsString, namedParameters, types, parameterValuesPairsList,
                     convertedParameters);
         }
 

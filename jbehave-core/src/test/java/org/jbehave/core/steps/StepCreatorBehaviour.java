@@ -491,6 +491,32 @@ public class StepCreatorBehaviour {
     }
 
     @Test
+    public void shouldMatchParametersByDelimitedNameInsideOtherParameters() throws Exception {
+
+        // Given
+        SomeSteps stepsInstance = new SomeSteps();
+        parameterConverters = new ParameterConverters(new LoadFromClasspath(), new TableTransformers());
+        StepMatcher stepMatcher = mock(StepMatcher.class);
+        ParameterControls parameterControls = new ParameterControls().useDelimiterNamedParameters(true);
+        StepCreator stepCreator = stepCreatorUsing(stepsInstance, stepMatcher, parameterControls);
+        Map<String, String> params = Collections.singletonMap("parameter", "${paramName}");
+        when(stepMatcher.parameterNames()).thenReturn(params.keySet().toArray(new String[params.size()]));
+        when(stepMatcher.parameter(1)).thenReturn("parameter ${paramName} = '<parameter>");
+        StoryReporter storyReporter = mock(StoryReporter.class);
+
+        // When
+        String stepAsString = "When a parameter 'parameter ${paramName} = '<parameter>' is set";
+        Step step = stepCreator.createParametrisedStep(SomeSteps.methodFor("aMethodWithoutNamedAnnotation"),
+                stepAsString, "a parameter 'parameter ${paramName} = '<parameter>' is set",
+                params, Collections.<Step> emptyList());
+        step.perform(storyReporter, null);
+
+        // Then
+        assertThat((String) stepsInstance.args, equalTo("parameter ${paramName} = '${paramName}"));
+        verify(storyReporter).beforeStep(stepAsString);
+    }
+
+    @Test
     public void shouldMatchParametersByNestedDelimitedNameWithNoNamedAnnotations() throws Exception {
         // Given
         SomeSteps stepsInstance = new SomeSteps();
