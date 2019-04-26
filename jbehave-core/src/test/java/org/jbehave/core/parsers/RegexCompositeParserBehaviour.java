@@ -67,6 +67,17 @@ public class RegexCompositeParserBehaviour {
     }
 
     @Test
+    public void shouldTrimParsedCompositeStep() {
+        String compositeStepsAsText = "Composite: Given the first composite step\r" + NL+
+                "Given a step\r" + NL +
+                "Then another step\r" + NL;
+        List<Composite> composites = parser.parseComposites(compositeStepsAsText);
+        assertThat(composites.size(), equalTo(1));
+        assertCompositeStep(composites.get(0), StepType.GIVEN, "the first composite step", 0,
+                Arrays.asList("Given a step", "Then another step"));
+    }
+
+    @Test
     public void shouldParseCompositeStepWithCustomLocale() {
         String compositeStepsAsText = "Композитный: Дано композитный шаг" + NL+
                 "Дано шаг";

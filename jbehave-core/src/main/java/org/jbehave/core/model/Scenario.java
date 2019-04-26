@@ -17,6 +17,7 @@ public class Scenario {
     private final GivenStories givenStories;
     private final ExamplesTable examplesTable;
     private final List<String> steps;
+    private final List<String> rawSteps;
 
     public Scenario() {
         this(Arrays.<String>asList());
@@ -35,11 +36,16 @@ public class Scenario {
     }
 
     public Scenario(String title, Meta meta, GivenStories givenStories, ExamplesTable examplesTable, List<String> steps) {
+        this(title, meta, givenStories, examplesTable, steps, null);
+    }
+
+    public Scenario(String title, Meta meta, GivenStories givenStories, ExamplesTable examplesTable, List<String> steps, List<String> rawSteps) {
         this.title = title;
         this.meta = meta;
         this.givenStories = givenStories;
         this.examplesTable = examplesTable;
         this.steps = steps;
+        this.rawSteps = rawSteps;
     }
     
     public String getTitle() {
@@ -92,6 +98,10 @@ public class Scenario {
 
     public List<String> getSteps() {
         return unmodifiableList(steps);
+    }
+
+    public List<String> getRawSteps() {
+        return rawSteps == null ? null : unmodifiableList(rawSteps);
     }
 
     @Override

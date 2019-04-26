@@ -351,14 +351,14 @@ public class RegexStoryParser extends AbstractRegexParser implements StoryParser
         }
         GivenStories givenStories = findScenarioGivenStories(scenarioWithoutTitle);
         useExamplesTableForGivenStories(givenStories, examplesTable);
-        List<String> steps = new ArrayList<>();
+        List<String> rawSteps = new ArrayList<>();
         if(examplesTableAsString.trim().isEmpty()) {
-            steps.addAll(findSteps(scenarioWithoutTitle));
+            rawSteps.addAll(findSteps(scenarioWithoutTitle));
         } else {
             int afterExampleIndex = scenarioWithoutTitle.indexOf(examplesTableAsString) + examplesTableAsString.length();
-            steps.addAll(findSteps(scenarioWithoutTitle.substring(0, afterExampleIndex)));
+            rawSteps.addAll(findSteps(scenarioWithoutTitle.substring(0, afterExampleIndex)));
         }
-        return new Scenario(title, meta, givenStories, examplesTable, steps);
+        return new Scenario(title, meta, givenStories, examplesTable, trim(rawSteps), rawSteps);
     }
 
     private void useExamplesTableForGivenStories(GivenStories givenStories, ExamplesTable examplesTable) {
