@@ -418,6 +418,15 @@ public abstract class PrintStreamOutput extends NullStoryReporter {
         cause.set(null);
         print(format("beforeScenario", "{0} {1}\n", keywords.scenario(), scenario.getTitle()));
         print(scenario.getMeta());
+
+        List<String> rawSteps = scenario.getSteps(true);
+        if (rawSteps != null) {
+            print(format("rawStepsStart", EMPTY));
+            for (String rawStep : rawSteps) {
+                print(format("rawStep", "{0}\n", rawStep));
+            }
+            print(format("rawStepsEnd", EMPTY));
+        }
     }
 
     @Override

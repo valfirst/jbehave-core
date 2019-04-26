@@ -116,6 +116,14 @@ abstract class AbstractRegexParser {
         return concatenateWithOr(null, null, keywords);
     }
 
+    protected List<String> trim(List<String> steps) {
+        List<String> trimmedSteps = new ArrayList<>(steps.size());
+        for (String step : steps) {
+            trimmedSteps.add(step.trim());
+        }
+        return trimmedSteps;
+    }
+
     private String concatenateWithOr(String beforeKeyword, String afterKeyword, String[] keywords) {
         String before = beforeKeyword != null ? beforeKeyword : NONE;
         String after = afterKeyword != null ? afterKeyword : NONE;

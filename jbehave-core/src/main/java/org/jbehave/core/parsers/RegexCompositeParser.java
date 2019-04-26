@@ -53,7 +53,7 @@ public class RegexCompositeParser extends AbstractRegexParser implements Composi
         String compositeWithoutKeyword = removeStart(compositeAsText, keywords().composite()).trim();
         String compositeWithoutName = removeStart(compositeWithoutKeyword, compositePattern);
         compositeWithoutName = startingWithNL(compositeWithoutName);
-        List<String> steps = findSteps(compositeWithoutName);
+        List<String> steps = trim(findSteps(compositeWithoutName));
         StepType stepType = keywords().stepTypeFor(compositePattern);
         String stepWithoutStartingWord = keywords().stepWithoutStartingWord(compositePattern, stepType);
         return new Composite(stepType, stepWithoutStartingWord, priority, steps);
