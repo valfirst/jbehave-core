@@ -95,7 +95,7 @@ abstract class AbstractRegexParser {
         String initialStartingWords = concatenateInitialStartingWords();
         String followingStartingWords = concatenateFollowingStartingWords();
         return compile(
-                "((" + initialStartingWords + ")\\s(.)*?)\\s*(\\Z|" + followingStartingWords + "|\\n"
+                "((" + initialStartingWords + ")\\s(.*?))(\\Z|" + followingStartingWords + "|\\n"
                         + keywords.examplesTable() + "|\\n" + keywords.givenStories() + ")", DOTALL);
     }
 
@@ -113,6 +113,14 @@ abstract class AbstractRegexParser {
 
     protected String concatenateWithOr(String... keywords) {
         return concatenateWithOr(null, null, keywords);
+    }
+
+    protected List<String> trim(List<String> steps) {
+        List<String> trimmedSteps = new ArrayList<>(steps.size());
+        for (String step : steps) {
+            trimmedSteps.add(step.trim());
+        }
+        return trimmedSteps;
     }
 
     private String concatenateWithOr(String beforeKeyword, String afterKeyword, String[] keywords) {

@@ -695,6 +695,43 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
     }
 
     @Test
+    public void shouldReportRawStepsToJsonOutput() {
+        // Given
+        OutputStream out = new ByteArrayOutputStream();
+        StoryReporter reporter = new JsonOutput(new PrintStream(out), new Properties(), new LocalizedKeywords());
+
+        // When
+        Story story = new Story("/path/to/story", new Description("Main story"),
+                new Narrative("renovate my house", "customer", "get a loan"), new ArrayList<Scenario>());
+        String step = "When I open main application page";
+        Scenario scenario = new Scenario("Main scenario", Meta.EMPTY, null, null,
+                Collections.<String> singletonList(step), Collections.<String> singletonList(step));
+
+        reporter.beforeStory(story, false);
+        reporter.beforeBeforeStorySteps();
+        reporter.afterBeforeStorySteps();
+        reporter.beforeScenario(scenario);
+        reporter.beforeBeforeScenarioSteps();
+        reporter.afterBeforeScenarioSteps();
+        reporter.beforeStep(step);
+        reporter.successful(step);
+        reporter.beforeAfterScenarioSteps();
+        reporter.afterAfterScenarioSteps();
+        reporter.afterScenario();
+        reporter.beforeAfterStorySteps();
+        reporter.afterAfterStorySteps();
+        reporter.afterStory(false);
+
+        // Then
+        String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Main story\",\"beforeStorySteps\": [],\"scenarios\": "
+                + "[{\"keyword\": \"Scenario:\", \"title\": \"Main scenario\",\"rawSteps\": [\"When I open main application page\"],"
+                + "\"beforeScenarioSteps\": [],\"steps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": "
+                + "\"When I open main application page\"}], \"afterScenarioSteps\": []}],\"afterStorySteps\": []}";
+
+        assertThat(dos2unix(out.toString()), equalTo(expected));
+    }
+
+    @Test
     public void shouldReportEventsToJsonOutputEmptyScenarioLifecycle()
     {
         // Given
