@@ -37,6 +37,10 @@ public class Scenario {
     }
 
     public Scenario(String title, Meta meta, GivenStories givenStories, ExamplesTable examplesTable, List<String> steps) {
+        this(title, meta, givenStories, examplesTable, steps, null);
+    }
+
+    public Scenario(String title, Meta meta, GivenStories givenStories, ExamplesTable examplesTable, List<String> steps, List<String> rawSteps) {
         this.title = title;
         this.meta = meta;
         this.givenStories = givenStories;
