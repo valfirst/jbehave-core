@@ -334,6 +334,9 @@ public class JsonOutput extends PrintStreamOutput {
         patterns.setProperty("parameterValueStart", "((");
         patterns.setProperty("parameterValueEnd", "))");
         patterns.setProperty("parameterValueNewline", "\\n");
+        patterns.setProperty("rawStepsStart", "\"rawSteps\": [");
+        patterns.setProperty("rawStep", "\"{0}\"");
+        patterns.setProperty("rawStepsEnd", "]");
         return patterns;
     }
 
