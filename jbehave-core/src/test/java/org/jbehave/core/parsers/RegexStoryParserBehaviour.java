@@ -900,7 +900,7 @@ public class RegexStoryParserBehaviour {
         assertThat(steps.get(0), equalTo("Given a scenario" + NL +
                 "with this line"));
         assertThat(steps.get(1), equalTo("When I parse it" + NL +
-                "with another line" + NL));
+                "with another line"));
         assertThat(steps.get(2), equalTo("Then I should get steps" + NL +
                 "without worrying about lines" + NL +
                 "or extra white space between or after steps"));
