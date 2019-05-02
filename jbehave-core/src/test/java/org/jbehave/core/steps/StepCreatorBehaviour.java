@@ -47,16 +47,29 @@ import org.jbehave.core.steps.context.StepsContext.ObjectNotStoredException;
 import org.jbehave.core.steps.StepCreator.ParameterNotFound;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameter;
+import org.junit.runners.Parameterized.Parameters;
 import org.mockito.Matchers;
 
 import com.thoughtworks.paranamer.BytecodeReadingParanamer;
 import com.thoughtworks.paranamer.CachingParanamer;
 
+@RunWith(Parameterized.class)
 public class StepCreatorBehaviour {
+
+    @Parameter
+    public String parameterValue;
 
     private ParameterConverters parameterConverters = mock(ParameterConverters.class);
 
     private StepsContext stepsContext = new StepsContext();
+
+    @Parameters()
+    public static Object[] data() {
+        return new Object[] { "${paramName}", "" };
+    }
 
     @Before
     public void setUp() {
@@ -499,7 +512,7 @@ public class StepCreatorBehaviour {
         StepMatcher stepMatcher = mock(StepMatcher.class);
         ParameterControls parameterControls = new ParameterControls().useDelimiterNamedParameters(true);
         StepCreator stepCreator = stepCreatorUsing(stepsInstance, stepMatcher, parameterControls);
-        Map<String, String> params = Collections.singletonMap("parameter", "${paramName}");
+        Map<String, String> params = Collections.singletonMap("parameter", parameterValue);
         when(stepMatcher.parameterNames()).thenReturn(params.keySet().toArray(new String[params.size()]));
         when(stepMatcher.parameter(1)).thenReturn("parameter ${paramName} = '<parameter>");
         StoryReporter storyReporter = mock(StoryReporter.class);
@@ -512,7 +525,7 @@ public class StepCreatorBehaviour {
         step.perform(storyReporter, null);
 
         // Then
-        assertThat((String) stepsInstance.args, equalTo("parameter ${paramName} = '${paramName}"));
+        assertThat((String) stepsInstance.args, equalTo("parameter ${paramName} = '" + parameterValue));
         verify(storyReporter).beforeStep(stepAsString);
     }
 
