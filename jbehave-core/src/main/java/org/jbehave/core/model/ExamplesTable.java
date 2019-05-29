@@ -3,6 +3,7 @@ package org.jbehave.core.model;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.Stack;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
@@ -16,7 +17,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jbehave.core.annotations.Parameter;
@@ -161,12 +161,15 @@ public class ExamplesTable {
     private static final String EMPTY_VALUE = "";
 
     public static final Pattern INLINED_PROPERTIES_PATTERN = Pattern.compile("\\{(.*?[^\\\\])\\}\\s*(.*)", DOTALL);
+    public static final Pattern ESCAPED_BRACES_PATTERN = Pattern.compile("\\\\\\{|\\\\}", DOTALL);
     public static final ExamplesTable EMPTY = new ExamplesTable("");
 
     private static final String ROW_SEPARATOR_PATTERN = "\r?\n";
     private static final String HEADER_SEPARATOR = "|";
     private static final String VALUE_SEPARATOR = "|";
     private static final String IGNORABLE_SEPARATOR = "|--";
+    private static final String ESCAPED_LEFT_BRACE = "\\{";
+    private static final String ESCAPED_RIGHT_BRACE = "\\}";
 
     private final String tableAsString;
     private final ParameterConverters parameterConverters;
@@ -219,9 +222,7 @@ public class ExamplesTable {
         String  tableWithoutProperties = tableAsString.trim();
         Matcher matcher = INLINED_PROPERTIES_PATTERN.matcher(tableWithoutProperties);
         while (matcher.matches()) {
-            String propertiesAsString = matcher.group(1);
-            propertiesAsString = StringUtils.replace(propertiesAsString, "\\{", "{");
-            propertiesAsString = StringUtils.replace(propertiesAsString, "\\}", "}");
+            String propertiesAsString = parseBraces(matcher.group(1));
             propertiesList.add(new ExamplesTableProperties(propertiesAsString, headerSeparator,
                     valueSeparator, ignorableSeparator));
             tableWithoutProperties = matcher.group(2).trim();
@@ -231,6 +232,34 @@ public class ExamplesTable {
             propertiesList.add(new ExamplesTableProperties("", headerSeparator, valueSeparator, ignorableSeparator));
         }
         return tableWithoutProperties;
+    }
+
+    private String parseBraces(String propertiesAsString) {
+        if (propertiesAsString.contains(ESCAPED_LEFT_BRACE) | propertiesAsString.contains(ESCAPED_RIGHT_BRACE)) {
+            Matcher matcher = ESCAPED_BRACES_PATTERN.matcher(propertiesAsString);
+            Stack<Integer> stack = new Stack<>();
+            StringBuilder updatedPropertiesAsString = new StringBuilder();
+            int startIndex = 0;
+            while (matcher.find()) {
+                int braceStart = matcher.start();
+                int braceEnd = matcher.end();
+                String found = propertiesAsString.substring(braceStart, braceEnd);
+                if (found.equals(ESCAPED_LEFT_BRACE)) {
+                    if (stack.size() == 0) {
+                        updatedPropertiesAsString.append(propertiesAsString, startIndex, braceStart).append("{");
+                    }
+                    stack.push(braceEnd);
+                } else {
+                    int index = stack.pop();
+                    if (stack.size() == 0) {
+                        updatedPropertiesAsString.append(propertiesAsString, index, braceStart).append("}");
+                    }
+                    startIndex = braceEnd;
+                }
+            }
+            return updatedPropertiesAsString.toString();
+        }
+        return propertiesAsString;
     }
 
     private String applyTransformers(String tableAsString) {

@@ -227,7 +227,8 @@ public class ExamplesTableBehaviour {
     @Test
     public void shouldParseTableWithCustomNestedTransformers() {
         String tableWithProperties = "{transformer=myTransformer, trim=false, " +
-                "table=\\{transformer=NESTED_TRANSFORMER\\, parameter=value\\}}\n" + tableWithCommentsAsString;
+                "table=\\{transformer=NESTED_TRANSFORMER1\\, parameter=value1\\, " +
+                "table =\\{transformer=NESTED_TRANSFORMER2\\, parameter=value2\\}\\}}\\n" + tableWithCommentsAsString;
         TableTransformers tableTransformers = new TableTransformers();
         tableTransformers.useTransformer("myTransformer", new TableTransformer() {
 
@@ -241,7 +242,8 @@ public class ExamplesTableBehaviour {
                 .createExamplesTable(tableWithProperties);
         Properties properties = table.getProperties();
         assertThat(properties.getProperty("transformer"), equalTo("myTransformer"));
-        assertThat(properties.getProperty("table"), equalTo("{transformer=NESTED_TRANSFORMER, parameter=value}"));
+        assertThat(properties.getProperty("table"), equalTo("{transformer=NESTED_TRANSFORMER1, " +
+                "parameter=value1, table =\\{transformer=NESTED_TRANSFORMER2\\, parameter=value2\\}}"));
         ensureWhitespaceIsPreserved(table);
     }
 

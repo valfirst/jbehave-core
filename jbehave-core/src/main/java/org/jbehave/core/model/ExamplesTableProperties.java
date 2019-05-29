@@ -61,8 +61,10 @@ public final class ExamplesTableProperties {
         if (!isEmpty(propertiesAsString)) {
             for (String propertyAsString : propertiesAsString.split("(?<!\\\\),")) {
                 String[] property = StringUtils.split(propertyAsString, "=", 2);
-                result.put(property[0].trim(), StringUtils.replace(property[1], "\\,", ",").trim());
-             }
+                String propertyValue = property[1].replaceAll("\\\\,", ",")
+                        .replaceAll("(,)(?=[^\\\\{]*\\\\})", "\\\\,");
+                result.put(property[0].trim(), propertyValue.trim());
+            }
         }
         return result;
     }
