@@ -21,6 +21,7 @@ import org.jbehave.core.model.TableTransformers;
 import org.jbehave.core.parsers.RegexPrefixCapturingPatternParser;
 import org.jbehave.core.reporters.StoryReporter;
 import org.jbehave.core.steps.AbstractStepResult.NotPerformed;
+import org.jbehave.core.steps.StepCreator.ParametrisedStep;
 import org.jbehave.core.steps.context.StepsContext;
 import org.junit.Test;
 
@@ -29,6 +30,8 @@ import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.MethodDescriptor;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -493,7 +496,23 @@ public class StepCandidateBehaviour {
         verify(reporter).beforeStep(stepAsString10);
         verify(reporter).beforeStep(stepAsString11);
     }
-    
+
+    @Test
+    public void shouldNotChooseCompositeStepAsComposedStepCandidate() throws Exception {
+        SomeSteps someSteps = new SomeSteps();
+        Method method = SomeSteps.class.getMethod("aMethodWith", String.class);
+        String compositeStepAsString = "I live on the $nth floor";
+        String composedStepCandidate = "I live on the $nth floor for few years";
+        StepCandidate candidate = candidateWith(compositeStepAsString, THEN, method, someSteps);
+        candidate.composedOf(new String[] { "Then " + composedStepCandidate });
+        List<Step> steps = new ArrayList<>(1);
+        List<StepCandidate> candidates = Arrays.asList(candidate,
+                candidateWith(composedStepCandidate, THEN, method, someSteps));
+        candidate.addComposedSteps(steps, "Then " + compositeStepAsString, namedParameters, candidates);
+        assertThat(steps.size(), equalTo(1));
+        assertThat(steps.get(0).asString(new Keywords()), equalTo("Then I live on the ｟$nth｠ floor for few years"));
+    }
+
     @Test
     public void shouldMatchAndIdentifyPendingAnnotatedSteps() {
         PendingSteps steps = new PendingSteps();

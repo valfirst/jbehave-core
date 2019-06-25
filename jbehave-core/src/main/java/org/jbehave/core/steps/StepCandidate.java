@@ -228,8 +228,9 @@ public class StepCandidate {
             stepType = keywords.stepTypeFor(composedStep);
         }
         for (StepCandidate candidate : allCandidates) {
-            if (stepType == candidate.getStepType() && (StringUtils.endsWith(composedStep,
-                    candidate.getPatternAsString()) || candidate.matches(composedStep, previousNonAndStep))) {
+            if (stepType == candidate.getStepType() && !candidate.equals(this)
+                    && (StringUtils.endsWith(composedStep, candidate.getPatternAsString())
+                            || candidate.matches(composedStep, previousNonAndStep))) {
                 return candidate;
             }
         }
