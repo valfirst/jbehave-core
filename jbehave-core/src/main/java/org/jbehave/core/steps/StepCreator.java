@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -958,9 +959,17 @@ public class StepCreator {
             stepMatcher.find(stepWithoutStartingWord);
             ParameterName[] names = parameterNames(method);
             Type[] types = parameterTypes(method, names);
+            namedParameters.keySet().forEach(k ->
+                Optional.ofNullable(stepsContext.getCompositeObject(k.replaceAll("[<>]", "")))
+                        .ifPresent(v -> namedParameters.put(k, (String) v)));
             List<Pair<String, String>> parameterValuesPairsList = parameterValuesForStep(namedParameters, types, names, true);
             String[] parameterValues = getArrayOfPairsValues(parameterValuesPairsList);
             convertedParameters = convertParameterValues(parameterValues, types, names);
+            if (method == null) {
+                for (int i = 0; i < names.length; i++) {
+                    stepsContext.putCompositeObject(names[i].name, convertedParameters[i]);
+                }
+            }
             addNamedParametersToExamplesTables();
             parametrisedStep = parametrisedStep(stepAsString, namedParameters, types, parameterValuesPairsList,
                     convertedParameters);
