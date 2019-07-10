@@ -4,6 +4,8 @@ import com.thoughtworks.paranamer.BytecodeReadingParanamer;
 import org.jbehave.core.annotations.*;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
 import org.jbehave.core.reporters.StoryReporter;
+import org.jbehave.core.steps.context.StepsContext;
+import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -22,10 +24,106 @@ import static org.mockito.Mockito.mock;
 
 public class CompositeCandidateStepsBehaviour {
 
+    @After
+    public void afterEachTest() {
+        StepsContext stepsContext = new StepsContext();
+        // Clear composite objects storage
+        stepsContext.successful(null);
+    }
+
     @Test
     public void shouldMatchCompositesAndCreateComposedStepsUsingMatchedParameters() {
         CandidateSteps compositeSteps = new SimpleCompositeSteps();
         shouldMatchCompositesAndCreateComposedStepsUsingMatchedParameters(compositeSteps);
+    }
+
+    @Test
+    public void testPutCompositeObjectInStepsContext() {
+        StepsContext stepsContext = new StepsContext();
+        stepsContext.putCompositeObject("param1", "value1");
+        stepsContext.putCompositeObject("param2", "value2");
+        assertThat(stepsContext.getCompositeObject("param1"), equalTo("value1"));
+        assertThat(stepsContext.getCompositeObject("param2"), equalTo("value2"));
+    }
+
+    @Test
+    public void testGetCompositeObjectInStepsContext() {
+        StepsContext stepsContext = new StepsContext();
+        stepsContext.putCompositeObject("param1", "value1");
+        stepsContext.putCompositeObject("param2", 1);
+        assertThat(stepsContext.getCompositeObject("param1").getClass(), equalTo(String.class));
+        assertThat(stepsContext.getCompositeObject("param2").getClass(), equalTo(Integer.class));
+        assertThat(stepsContext.getCompositeObject("param1"), equalTo("value1"));
+        assertThat(stepsContext.getCompositeObject("param2"), equalTo(1));
+    }
+
+    @Test
+    public void testSuccessfulMethodInStepsContext() {
+        StepsContext stepsContext = new StepsContext();
+        stepsContext.putCompositeObject("param", "value");
+        stepsContext.beforeStep("step");
+        stepsContext.successful("step");
+        assertThat(stepsContext.getCompositeObject("param"), equalTo(null));
+    }
+
+    @Test
+    public void testFailedMethodInStepsContext() {
+        StepsContext stepsContext = new StepsContext();
+        stepsContext.putCompositeObject("param", "value");
+        stepsContext.beforeStep("step");
+        stepsContext.failed("step", new Throwable());
+        assertThat(stepsContext.getCompositeObject("param"), equalTo(null));
+    }
+
+    @Test
+    public void testIgnorableMethodInStepsContext() {
+        StepsContext stepsContext = new StepsContext();
+        stepsContext.putCompositeObject("param", "value");
+        stepsContext.beforeStep("step");
+        stepsContext.ignorable("step");
+        assertThat(stepsContext.getCompositeObject("param"), equalTo(null));
+    }
+
+    @Test
+    public void testPendingMethodInStepsContext() {
+        StepsContext stepsContext = new StepsContext();
+        stepsContext.putCompositeObject("param", "value");
+        stepsContext.pending("step");
+        assertThat(stepsContext.getCompositeObject("param"), equalTo("value"));
+    }
+
+    @Test
+    public void testBeforeStepMethodInStepsContext() {
+        StepsContext stepsContext = new StepsContext();
+        stepsContext.putCompositeObject("param", "value");
+        stepsContext.beforeStep("step1");
+        stepsContext.beforeStep("step2");
+        stepsContext.successful("step1");
+        assertThat(stepsContext.getCompositeObject("param"), equalTo("value"));
+        stepsContext.successful("step2");
+        assertThat(stepsContext.getCompositeObject("param"), equalTo(null));
+    }
+
+    @Test
+    public void shouldMatchCompositesAndCreateComposedStepsUsingStepsContext() {
+        StepsContext stepsContext = new StepsContext();
+        stepsContext.putCompositeObject("customer", "Mr Jones");
+        stepsContext.putCompositeObject("product", "ticket");
+        CompositeStepsUsingNamedParameters steps = new CompositeStepsUsingNamedParameters();
+        List<StepCandidate> candidates = steps.listCandidates();
+        StepCandidate candidate = candidateMatchingStep(candidates, "Given <customer> has previously bough a <product>");
+        assertThat(candidate.isComposite(), is(true));
+        Map<String, String> namedParameters = new HashMap<>();
+        namedParameters.put("customer", "#{customer}");
+        namedParameters.put("product", "#{product}");
+        List<Step> composedSteps = new ArrayList<>();
+        candidate.addComposedSteps(composedSteps, "Given #{customer} has previously bought a #{product}", namedParameters, candidates);
+        assertThat(composedSteps.size(), equalTo(2));
+        for (Step step : composedSteps) {
+            step.perform(mock(StoryReporter.class), null);
+        }
+        assertThat(steps.loggedIn, equalTo("Mr Jones"));
+        assertThat(steps.added, equalTo("ticket"));
     }
 
     @Test
