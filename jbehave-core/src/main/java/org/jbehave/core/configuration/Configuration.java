@@ -506,6 +506,11 @@ public abstract class Configuration {
         return this;
     }
 
+    public Configuration useStepsContext(StepsContext stepsContext) {
+        this.stepsContext = stepsContext;
+        return this;
+    }
+
     public boolean isParallelStoryExampleTableEnabled() {
         return parallelStoryExampleTableEnabled;
     }

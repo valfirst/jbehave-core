@@ -4,13 +4,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jbehave.core.annotations.ToContext;
+import org.jbehave.core.reporters.NullStoryReporter;
 
 /**
  * Holds runtime context-related objects.
  */
-public class StepsContext {
+public class StepsContext extends NullStoryReporter {
 
     private static final String OBJECT_ALREADY_STORED_MESSAGE = "Object key '%s' has been already stored before.";
     private static final String OBJECT_NOT_STORED_MESSAGE = "Object key '%s' has not been stored";
@@ -19,6 +21,8 @@ public class StepsContext {
     private static final ThreadLocal<Map<String, Object>> scenarioObjects = new ThreadLocal<>();
     private static final ThreadLocal<Map<String, Object>> storyObjects = new ThreadLocal<>();
     private static final ThreadLocal<Set<String>> keysStored = new ThreadLocal<>();
+    private static final ThreadLocal<Map<String, Object>> compositeObjects = ThreadLocal.withInitial(HashMap::new);
+    private static final ThreadLocal<AtomicInteger> compositeCounter = ThreadLocal.withInitial(AtomicInteger::new);
 
     public void put(String key, Object object, ToContext.RetentionLevel retentionLevel) {
         checkForDuplicate(key);
@@ -31,6 +35,45 @@ public class StepsContext {
             objects = getStoryObjects();
         }
         objects.put(key, object);
+    }
+
+    public void putCompositeObject(String key, Object object) {
+        compositeObjects.get().put(key, object);
+    }
+
+    public Object getCompositeObject(String key) {
+        return compositeObjects.get().get(key);
+    }
+
+    @Override
+    public void beforeStep(String step) {
+        compositeCounter.get().incrementAndGet();
+    }
+
+    @Override
+    public void successful(String step) {
+        stopStep();
+    }
+
+    @Override
+    public void failed(String step, Throwable cause) {
+        stopStep();
+    }
+
+    @Override
+    public void ignorable(String step) {
+        stopStep();
+    }
+
+    @Override
+    public void pending(String step) {
+        stopStep();
+    }
+
+    private void stopStep() {
+        if (compositeCounter.get().decrementAndGet() == 0) {
+            compositeObjects.get().clear();
+        }
     }
 
     private void checkForDuplicate(String key) {
