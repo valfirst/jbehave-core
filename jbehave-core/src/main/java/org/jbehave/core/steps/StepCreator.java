@@ -358,7 +358,7 @@ public class StepCreator {
                 String delimitedName = parameterControls.createDelimitedName(name);
                 if (parameter.contains(delimitedName) && !parameter.equals(delimitedName)) {
                     String updatedParameterValue = parameter.replaceAll(delimitedName,
-                            Matcher.quoteReplacement("\\" + value));
+                            Matcher.quoteReplacement(value));
                     stepText = stepText.replace(parameter, updatedParameterValue);
                 }
                 return parameterControls.replaceAllDelimitedNames(stepText, name, markedValue(value));
