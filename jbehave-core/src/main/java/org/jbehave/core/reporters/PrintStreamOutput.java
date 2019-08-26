@@ -363,6 +363,8 @@ public abstract class PrintStreamOutput extends NullStoryReporter {
             print(format("beforeBeforeScenarioSteps", ""));
         } else if (stage == Stage.AFTER) {
             print(format("beforeAfterScenarioSteps", ""));
+        } else {
+            print(format("beforeScenarioSteps", ""));
         }
     }
 
