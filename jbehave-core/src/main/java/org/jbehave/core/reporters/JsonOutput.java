@@ -216,7 +216,9 @@ public class JsonOutput extends PrintStreamOutput {
         }
         else if ("subSteps".equals(key)) {
             // Starting "steps"
-            print("\"steps\": [");
+            if (subStepsLevel.get() > 0) {
+                print("\"steps\": [");
+            }
             subStepsLevel.incrementAndGet();
             stepPublishing = true;
         }
@@ -277,6 +279,7 @@ public class JsonOutput extends PrintStreamOutput {
         patterns.setProperty("beforeAfterStorySteps", "\"afterStorySteps\": [");
         patterns.setProperty("afterAfterStorySteps", "]");
         patterns.setProperty("beforeBeforeScenarioSteps", "\"beforeScenarioSteps\": [");
+        patterns.setProperty("beforeScenarioSteps", "\"steps\": [");
         patterns.setProperty("afterBeforeScenarioSteps", "]");
         patterns.setProperty("beforeAfterScenarioSteps", "], \"afterScenarioSteps\": [");
         patterns.setProperty("beforeScenario","'{'\"keyword\": \"{0}\", \"title\": \"{1}\"");

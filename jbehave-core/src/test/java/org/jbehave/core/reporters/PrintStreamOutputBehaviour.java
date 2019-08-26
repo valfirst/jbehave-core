@@ -480,12 +480,14 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.beforeStory(givenStory, true);
         reporter.beforeScenario(givenStoryScenario);
         reportBeforeScenarioSteps(reporter);
+        reporter.beforeScenarioSteps(null);
         reporter.beforeStep(givenStoryStep);
         reporter.successful(givenStoryStep);
         reportAfterScenarioSteps(reporter);
         reporter.afterScenario();
         reporter.afterStory(true);
         reporter.afterGivenStories();
+        reporter.beforeScenarioSteps(null);
         reporter.beforeStep(firstStep);
         reporter.successful(firstStep);
         reporter.example(table.getRow(1), 1);
@@ -494,12 +496,14 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.beforeStory(givenStory, true);
         reporter.beforeScenario(givenStoryScenario);
         reportBeforeScenarioSteps(reporter);
+        reporter.beforeScenarioSteps(null);
         reporter.beforeStep(givenStoryStep);
         reporter.successful(givenStoryStep);
         reportAfterScenarioSteps(reporter);
         reporter.afterScenario();
         reporter.afterStory(true);
         reporter.afterGivenStories();
+        reporter.beforeScenarioSteps(null);
         reporter.beforeStep(secondStep);
         reporter.successful(secondStep);
         reportAfterScenarioSteps(reporter);
@@ -579,6 +583,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reportBeforeScenarioSteps(reporter);
         reporter.beforeExamples(Collections.singletonList(step), examplesTable);
         reporter.example(example, 0);
+        reporter.beforeScenarioSteps(null);
         reporter.successful(step);
         reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
@@ -587,6 +592,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.afterAfterStorySteps();
         reporter.afterStory(true);
         reporter.afterGivenStories();
+        reporter.beforeScenarioSteps(null);
         reporter.successful(step);
         reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
@@ -595,6 +601,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.afterAfterStorySteps();
         reporter.afterStory(true);
         reporter.afterGivenStories();
+        reporter.beforeScenarioSteps(null);
         reporter.successful(step);
         reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
@@ -623,6 +630,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reportBeforeScenarioSteps(reporter);
         reporter.beforeExamples(Collections.singletonList(step), examplesTable);
         reporter.example(example, 0);
+        reporter.beforeScenarioSteps(null);
         reporter.successful(step);
         reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
@@ -631,6 +639,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.afterAfterStorySteps();
         reporter.afterStory(true);
         reporter.afterGivenStories();
+        reporter.beforeScenarioSteps(null);
         reporter.successful(step);
         reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
@@ -639,6 +648,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.afterAfterStorySteps();
         reporter.afterStory(true);
         reporter.afterGivenStories();
+        reporter.beforeScenarioSteps(null);
         reporter.successful(step);
         reportAfterScenarioSteps(reporter);
         reporter.afterExamples();
@@ -714,6 +724,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.beforeScenario(scenario);
         reporter.beforeScenarioSteps(Stage.BEFORE);
         reporter.afterScenarioSteps(Stage.BEFORE);
+        reporter.beforeScenarioSteps(null);
         reporter.beforeStep(step);
         reporter.successful(step);
         reporter.beforeScenarioSteps(Stage.AFTER);
@@ -751,27 +762,40 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.beforeScenario(new Scenario("Normal scenario", Meta.EMPTY));
         reporter.beforeExamples(Collections.singletonList("Then '<expected>' is equal to '<actual>'"), emptyExamplesTable);
         reporter.example(table.getRow(0), -1);
+        reporter.beforeScenarioSteps(Stage.BEFORE);
+        reporter.afterScenarioSteps(Stage.BEFORE);
+        reporter.beforeScenarioSteps(null);
         reporter.beforeStep("Then '((some data))' is ((equal to)) '((some data))'");
         reporter.successful("Then '((some data))' is ((equal to)) '((some data))'");
+        reporter.beforeScenarioSteps(Stage.AFTER);
+        reporter.afterScenarioSteps(Stage.AFTER);
         reporter.afterExamples();
         reporter.afterScenario();
         reporter.beforeScenario(new Scenario("Some empty scenario", Meta.EMPTY));
         reporter.beforeExamples(Collections.<String>emptyList(), emptyExamplesTable);
         reporter.example(table.getRow(0), -1);
+        reporter.beforeScenarioSteps(Stage.BEFORE);
+        reporter.afterScenarioSteps(Stage.BEFORE);
+        reporter.beforeScenarioSteps(null);
+        reporter.beforeScenarioSteps(Stage.AFTER);
+        reporter.afterScenarioSteps(Stage.AFTER);
         reporter.afterExamples();
         reporter.afterScenario();
         reporter.afterStory(false);
 
         // Then
-        String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Story with lifecycle and empty scenario\",\"lifecycle\": "
-                + "{\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": [\"actual\",\"expected\"],\"values\": [[\"some data\",\"some "
-                + "data\"]]}},\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\": \"Normal scenario\",\"examples\": {\"keyword\": \"Examples:\""
-                + ",\"steps\": [\"Then '<expected>' is equal to '<actual>'\"],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": "
-                + "[{\"keyword\": \"Example:\", \"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"},\"steps\": [{\"steps\": "
-                + "[],\"outcome\": \"successful\", \"value\": \"Then '((some data))' is ((equal to)) '((some data))'\"}]}]}},"
-                + "{\"keyword\": \"Scenario:\", \"title\": \"Some empty scenario\",\"examples\": {\"keyword\": "
-                + "\"Examples:\",\"steps\": [],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": "
-                + "[{\"keyword\": \"Example:\", \"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"}}]}}]}";
+        String expected = "{\"path\": \"\\/path\\/to\\/story\", \"title\": \"Story with lifecycle and empty scenario\""
+                + ",\"lifecycle\": {\"keyword\": \"Lifecycle:\",\"parameters\": {\"names\": [\"actual\",\"expected\"],"
+                + "\"values\": [[\"some data\",\"some data\"]]}},\"scenarios\": [{\"keyword\": \"Scenario:\", \"title\""
+                + ": \"Normal scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\": [\"Then \'<expected>\' is"
+                + " equal to \'<actual>\'\"],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": [{\"keyword\""
+                + ": \"Example:\", \"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"},"
+                + "\"beforeScenarioSteps\": [],\"steps\": [{\"steps\": [],\"outcome\": \"successful\", \"value\": \"Then"
+                + " \'((some data))\' is ((equal to)) \'((some data))\'\"}], \"afterScenarioSteps\": []}]}},{\"keyword\":"
+                + " \"Scenario:\", \"title\": \"Some empty scenario\",\"examples\": {\"keyword\": \"Examples:\",\"steps\""
+                + ": [],\"parameters\": {\"names\": [],\"values\": []}, \"examples\": [{\"keyword\": \"Example:\", "
+                + "\"parameters\": {\"actual\":\"some data\",\"expected\":\"some data\"},\"beforeScenarioSteps\": [],"
+                + "\"steps\": [], \"afterScenarioSteps\": []}]}}]}";
 
         assertThat(dos2unix(out.toString()), equalTo(expected));
     }
@@ -799,6 +823,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
 
         reporter.beforeStory(story, false);
         reporter.beforeScenario(new Scenario("Nested steps scenario", Meta.EMPTY));
+        reporter.beforeScenarioSteps(null);
         reporter.beforeStep(regularStep);
         reporter.successful(regularStep);
         reporter.beforeStep(mainStep);
@@ -851,6 +876,7 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
 
         reporter.beforeStory(story, false);
         reporter.beforeScenario(new Scenario("Pending steps scenario", Meta.EMPTY));
+        reporter.beforeScenarioSteps(null);
         reporter.beforeStep(regularStep);
         reporter.successful(regularStep);
         reporter.beforeStep(mainStep);
