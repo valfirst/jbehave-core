@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -362,6 +361,8 @@ public abstract class PrintStreamOutput extends NullStoryReporter {
             print(format("beforeBeforeScenarioSteps", ""));
         } else if (stage == Stage.AFTER) {
             print(format("beforeAfterScenarioSteps", ""));
+        } else {
+            print(format("beforeScenarioSteps", ""));
         }
     }
 

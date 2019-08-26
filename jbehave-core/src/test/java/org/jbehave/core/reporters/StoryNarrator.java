@@ -57,6 +57,7 @@ class StoryNarrator {
         reporter.beforeGivenStories();
         reporter.givenStories(asList("/given/story1", "/given/story2"));
         reporter.afterGivenStories();
+        reporter.beforeScenarioSteps(null);
         reporter.beforeStep("Given I have a balance of $50");
         reporter.successful("Given I have a balance of $50");
         reporter.ignorable("!-- Then ignore me");
@@ -102,9 +103,11 @@ class StoryNarrator {
         ExamplesTable table = new ExamplesTable("|money|to|\n|$30|Mauro|\n|$50|Paul|\n");
         reporter.beforeExamples(asList("Given money <money>", "Then I give it to <to>"), table);
         reporter.example(table.getRow(0), 0);
+        reporter.beforeScenarioSteps(null);
         reporter.successful("Given money $30");
         reporter.successful("Then I give it to Mauro");
         reporter.example(table.getRow(1), 1);
+        reporter.beforeScenarioSteps(null);
         reporter.successful("Given money $50");
         reporter.successful("Then I give it to Paul");
         if (withFailure) {
