@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -1126,7 +1127,7 @@ public class PerformableTree {
 			while (restart) {
 				restart = false;
 				try {
-				    steps.perform(context);
+				    perform(steps, context, r -> r.beforeScenarioSteps(null), r -> r.afterScenarioSteps(null));
 				} catch (RestartingScenarioFailure e) {
 				    restart = true;
 				    continue;
@@ -1134,18 +1135,21 @@ public class PerformableTree {
 			}
 		}
 
-        protected void performBeforeScenario(RunContext context) throws InterruptedException {
-            StoryReporter reporter = context.reporter();
-            reporter.beforeBeforeScenarioSteps();
-            beforeSteps.perform(context);
-            reporter.afterBeforeScenarioSteps();
+        protected void perform(RunContext context, GivenStories stories) throws InterruptedException {
+            perform(beforeSteps, context, r -> r.beforeScenarioSteps(Stage.BEFORE),
+                    r -> r.afterScenarioSteps(Stage.BEFORE));
+            performGivenStories(context, givenStories, stories);
+            performRestartableSteps(context);
+            perform(afterSteps, context, r -> r.beforeScenarioSteps(Stage.AFTER),
+                    r -> r.afterScenarioSteps(Stage.AFTER));
         }
 
-        protected void performAfterScenario(RunContext context) throws InterruptedException {
+        protected void perform(PerformableSteps performableSteps, RunContext context, Consumer<StoryReporter> before,
+                Consumer<StoryReporter> after) throws InterruptedException {
             StoryReporter reporter = context.reporter();
-            reporter.beforeAfterScenarioSteps();
-            afterSteps.perform(context);
-            reporter.afterAfterScenarioSteps();
+            before.accept(reporter);
+            performableSteps.perform(context);
+            after.accept(reporter);
         }
 
 		public Meta getStoryAndScenarioMeta() {
@@ -1170,10 +1174,7 @@ public class PerformableTree {
             if (context.configuration().storyControls().resetStateBeforeScenario()) {
                 context.resetState();
             }
-            performBeforeScenario(context);
-            performGivenStories(context, givenStories, scenario.getGivenStories());
-            performRestartableSteps(context);
-            performAfterScenario(context);
+            perform(context, scenario.getGivenStories());
         }
 
         @Override
@@ -1208,10 +1209,7 @@ public class PerformableTree {
             context.stepsContext().resetExample();
             context.reporter().example(parameters);
             context.reporter().example(parameters, exampleIndex);
-            performBeforeScenario(context);
-            performGivenStories(context, givenStories, scenario.getGivenStories());
-            performRestartableSteps(context);
-            performAfterScenario(context);
+            perform(context, scenario.getGivenStories());
         }
 
         @Override

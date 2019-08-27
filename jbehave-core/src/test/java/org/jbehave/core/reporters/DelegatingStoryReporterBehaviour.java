@@ -6,6 +6,7 @@ import org.jbehave.core.model.GivenStories;
 import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
+import org.jbehave.core.steps.StepCollector.Stage;
 import org.jbehave.core.failures.UUIDExceptionWrapper;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -41,8 +42,8 @@ public class DelegatingStoryReporterBehaviour {
         delegator.storyNotAllowed(story, filter);
         delegator.beforeScenario(scenario);
         delegator.beforeScenario("My scenario 1");
-        delegator.beforeBeforeScenarioSteps();
-        delegator.afterBeforeScenarioSteps();
+        delegator.beforeScenarioSteps(Stage.BEFORE);
+        delegator.afterScenarioSteps(Stage.BEFORE);
         delegator.scenarioNotAllowed(scenario, filter);
         delegator.scenarioMeta(Meta.EMPTY);
         delegator.givenStories(givenStoryPaths);
@@ -54,8 +55,8 @@ public class DelegatingStoryReporterBehaviour {
         delegator.notPerformed("Then step 1.3");
         delegator.beforeExamples(asList("Given step <one>", "Then step <two>"), examplesTable);
         delegator.example(examplesTable.getRow(0), 0);
-        delegator.beforeAfterScenarioSteps();
-        delegator.afterAfterScenarioSteps();
+        delegator.beforeScenarioSteps(Stage.AFTER);
+        delegator.afterScenarioSteps(Stage.AFTER);
         delegator.afterExamples();
         delegator.afterScenario();
        
@@ -79,8 +80,8 @@ public class DelegatingStoryReporterBehaviour {
 
         inOrder.verify(delegate).beforeScenario(scenario);
         inOrder.verify(delegate).beforeScenario("My scenario 1");
-        inOrder.verify(delegate).beforeBeforeScenarioSteps();
-        inOrder.verify(delegate).afterBeforeScenarioSteps();
+        inOrder.verify(delegate).beforeScenarioSteps(Stage.BEFORE);
+        inOrder.verify(delegate).afterScenarioSteps(Stage.BEFORE);
         inOrder.verify(delegate).scenarioNotAllowed(scenario, filter);
         inOrder.verify(delegate).scenarioMeta(Meta.EMPTY);
         inOrder.verify(delegate).givenStories(givenStoryPaths);
@@ -92,8 +93,8 @@ public class DelegatingStoryReporterBehaviour {
         inOrder.verify(delegate).notPerformed("Then step 1.3");
         inOrder.verify(delegate).beforeExamples(asList("Given step <one>", "Then step <two>"), examplesTable);
         inOrder.verify(delegate).example(examplesTable.getRow(0), 0);
-        inOrder.verify(delegate).beforeAfterScenarioSteps();
-        inOrder.verify(delegate).afterAfterScenarioSteps();
+        inOrder.verify(delegate).beforeScenarioSteps(Stage.AFTER);
+        inOrder.verify(delegate).afterScenarioSteps(Stage.AFTER);
         inOrder.verify(delegate).afterExamples();
         inOrder.verify(delegate).afterScenario();
         

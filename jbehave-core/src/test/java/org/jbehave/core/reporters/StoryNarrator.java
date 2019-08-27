@@ -18,6 +18,7 @@ import org.jbehave.core.failures.UUIDExceptionWrapper;
 import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.model.*;
 import org.jbehave.core.model.OutcomesTable.OutcomesFailed;
+import org.jbehave.core.steps.StepCollector.Stage;
 import org.jbehave.core.steps.StepCreator;
 
 class StoryNarrator {
@@ -49,10 +50,10 @@ class StoryNarrator {
         reporter.afterBeforeStorySteps();
 
         reporter.beforeScenario(new Scenario("I ask for a loan", Meta.EMPTY));
-        reporter.beforeBeforeScenarioSteps();
+        reporter.beforeScenarioSteps(Stage.BEFORE);
         reporter.beforeStep(scenarioStep);
         reporter.successful(scenarioStep);
-        reporter.afterBeforeScenarioSteps();
+        reporter.afterScenarioSteps(Stage.BEFORE);
         reporter.beforeGivenStories();
         reporter.givenStories(asList("/given/story1", "/given/story2"));
         reporter.afterGivenStories();
@@ -88,16 +89,16 @@ class StoryNarrator {
         } catch (UUIDExceptionWrapper e) {
             reporter.failedOutcomes("Then I don't return loan", ((OutcomesFailed) e.getCause()).outcomesTable());
         }
-        reporter.beforeAfterScenarioSteps();
+        reporter.beforeScenarioSteps(Stage.AFTER);
         reporter.beforeStep(scenarioStep);
         reporter.successful(scenarioStep);
-        reporter.afterAfterScenarioSteps();
+        reporter.afterScenarioSteps(Stage.AFTER);
         reporter.afterScenario();
         reporter.beforeScenario(new Scenario("Parametrised Scenario", Meta.EMPTY));
-        reporter.beforeBeforeScenarioSteps();
+        reporter.beforeScenarioSteps(Stage.BEFORE);
         reporter.beforeStep(scenarioStep);
         reporter.successful(scenarioStep);
-        reporter.afterBeforeScenarioSteps();
+        reporter.afterScenarioSteps(Stage.BEFORE);
         ExamplesTable table = new ExamplesTable("|money|to|\n|$30|Mauro|\n|$50|Paul|\n");
         reporter.beforeExamples(asList("Given money <money>", "Then I give it to <to>"), table);
         reporter.example(table.getRow(0), 0);
@@ -111,10 +112,10 @@ class StoryNarrator {
         } else {
             reporter.pending("Then I should have a balance of $30");
         }
-        reporter.beforeAfterScenarioSteps();
+        reporter.beforeScenarioSteps(Stage.AFTER);
         reporter.beforeStep(scenarioStep);
         reporter.successful(scenarioStep);
-        reporter.afterAfterScenarioSteps();
+        reporter.afterScenarioSteps(Stage.AFTER);
         reporter.afterExamples();
         reporter.afterScenario();
 

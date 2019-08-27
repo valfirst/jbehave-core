@@ -17,6 +17,7 @@ import org.jbehave.core.model.OutcomesTable.OutcomesFailed;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
 import org.jbehave.core.reporters.StoryNarrator.IsDateEqual;
+import org.jbehave.core.steps.StepCollector.Stage;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -711,12 +712,12 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
         reporter.beforeBeforeStorySteps();
         reporter.afterBeforeStorySteps();
         reporter.beforeScenario(scenario);
-        reporter.beforeBeforeScenarioSteps();
-        reporter.afterBeforeScenarioSteps();
+        reporter.beforeScenarioSteps(Stage.BEFORE);
+        reporter.afterScenarioSteps(Stage.BEFORE);
         reporter.beforeStep(step);
         reporter.successful(step);
-        reporter.beforeAfterScenarioSteps();
-        reporter.afterAfterScenarioSteps();
+        reporter.beforeScenarioSteps(Stage.AFTER);
+        reporter.afterScenarioSteps(Stage.AFTER);
         reporter.afterScenario();
         reporter.beforeAfterStorySteps();
         reporter.afterAfterStorySteps();
@@ -878,18 +879,18 @@ public class PrintStreamOutputBehaviour extends AbstractOutputBehaviour {
 
     private void reportBeforeScenarioSteps(StoryReporter reporter) {
         String step = "When before scenario steps";
-        reporter.beforeBeforeScenarioSteps();
+        reporter.beforeScenarioSteps(Stage.BEFORE);
         reporter.beforeStep(step);
         reporter.successful(step);
-        reporter.afterBeforeScenarioSteps();
+        reporter.afterScenarioSteps(Stage.BEFORE);
     }
 
     private void reportAfterScenarioSteps(StoryReporter reporter) {
         String step = "When after scenario steps";
-        reporter.beforeAfterScenarioSteps();
+        reporter.beforeScenarioSteps(Stage.AFTER);
         reporter.beforeStep(step);
         reporter.successful(step);
-        reporter.afterAfterScenarioSteps();
+        reporter.afterScenarioSteps(Stage.AFTER);
     }
 
     @SuppressWarnings("serial")
