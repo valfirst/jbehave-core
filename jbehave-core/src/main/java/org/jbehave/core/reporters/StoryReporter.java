@@ -12,6 +12,7 @@ import org.jbehave.core.model.OutcomesTable;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
 import org.jbehave.core.model.StoryDuration;
+import org.jbehave.core.steps.StepCollector.Stage;
 
 /**
  * Allows the runner to report the state of running stories
@@ -41,13 +42,9 @@ public interface StoryReporter {
 
     void afterAfterStorySteps();
 
-    void beforeBeforeScenarioSteps();
+    void beforeScenarioSteps(Stage stage);
 
-    void afterBeforeScenarioSteps();
-
-    void beforeAfterScenarioSteps();
-
-    void afterAfterScenarioSteps();
+    void afterScenarioSteps(Stage stage);
 
     void scenarioNotAllowed(Scenario scenario, String filter);
 
