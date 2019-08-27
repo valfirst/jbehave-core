@@ -16,6 +16,7 @@ import org.jbehave.core.model.OutcomesTable;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
 import org.jbehave.core.model.StoryDuration;
+import org.jbehave.core.steps.StepCollector.Stage;
 
 /**
  * When running a multithreading mode, reports cannot be written concurrently but should 
@@ -34,10 +35,8 @@ public class ConcurrentStoryReporter implements StoryReporter {
     private static Method afterBeforeStorySteps;
     private static Method beforeAfterStorySteps;
     private static Method afterAfterStorySteps;
-    private static Method beforeBeforeScenarioSteps;
-    private static Method afterBeforeScenarioSteps;
-    private static Method beforeAfterScenarioSteps;
-    private static Method afterAfterScenarioSteps;
+    private static Method beforeScenarioSteps;
+    private static Method afterScenarioSteps;
     private static Method scenarioNotAllowed;
     private static Method beforeScenario;
     private static Method beforeScenarioDeprecated;
@@ -76,10 +75,8 @@ public class ConcurrentStoryReporter implements StoryReporter {
             afterBeforeStorySteps = StoryReporter.class.getMethod("afterBeforeStorySteps");
             beforeAfterStorySteps = StoryReporter.class.getMethod("beforeAfterStorySteps");
             afterAfterStorySteps = StoryReporter.class.getMethod("afterAfterStorySteps");
-            beforeBeforeScenarioSteps = StoryReporter.class.getMethod("beforeBeforeScenarioSteps");
-            afterBeforeScenarioSteps = StoryReporter.class.getMethod("afterBeforeScenarioSteps");
-            beforeAfterScenarioSteps = StoryReporter.class.getMethod("beforeAfterScenarioSteps");
-            afterAfterScenarioSteps = StoryReporter.class.getMethod("afterAfterScenarioSteps");
+            beforeScenarioSteps = StoryReporter.class.getMethod("beforeScenarioSteps", Stage.class);
+            afterScenarioSteps = StoryReporter.class.getMethod("afterScenarioSteps", Stage.class);
             scenarioNotAllowed = StoryReporter.class.getMethod("scenarioNotAllowed", Scenario.class, String.class);
             beforeScenario = StoryReporter.class.getMethod("beforeScenario", Scenario.class);
             beforeScenarioDeprecated = StoryReporter.class.getMethod("beforeScenario", String.class);
@@ -214,42 +211,22 @@ public class ConcurrentStoryReporter implements StoryReporter {
     }
 
     @Override
-    public void beforeBeforeScenarioSteps() {
-        crossReferencing.beforeBeforeScenarioSteps();
+    public void beforeScenarioSteps(Stage stage) {
+        crossReferencing.beforeScenarioSteps(stage);
         if (multiThreading) {
-            delayedMethods.add(new DelayedMethod(beforeBeforeScenarioSteps));
+            delayedMethods.add(new DelayedMethod(beforeScenarioSteps, stage));
         } else {
-            delegate.beforeBeforeScenarioSteps();
+            delegate.beforeScenarioSteps(stage);
         }
     }
 
     @Override
-    public void afterBeforeScenarioSteps() {
-        crossReferencing.afterBeforeScenarioSteps();
+    public void afterScenarioSteps(Stage stage) {
+        crossReferencing.afterScenarioSteps(stage);
         if (multiThreading) {
-            delayedMethods.add(new DelayedMethod(afterBeforeScenarioSteps));
+            delayedMethods.add(new DelayedMethod(afterScenarioSteps, stage));
         } else {
-            delegate.afterBeforeScenarioSteps();
-        }
-    }
-
-    @Override
-    public void beforeAfterScenarioSteps() {
-        crossReferencing.beforeAfterScenarioSteps();
-        if (multiThreading) {
-            delayedMethods.add(new DelayedMethod(beforeAfterScenarioSteps));
-        } else {
-            delegate.beforeAfterScenarioSteps();
-        }
-    }
-
-    @Override
-    public void afterAfterScenarioSteps() {
-        crossReferencing.afterAfterScenarioSteps();
-        if (multiThreading) {
-            delayedMethods.add(new DelayedMethod(afterAfterScenarioSteps));
-        } else {
-            delegate.afterAfterScenarioSteps();
+            delegate.afterScenarioSteps(stage);
         }
     }
 
