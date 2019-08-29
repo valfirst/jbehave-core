@@ -20,7 +20,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jbehave.core.annotations.AfterScenario.Outcome;
+import org.jbehave.core.condition.ConditionChecker;
 import org.jbehave.core.annotations.AsParameters;
+import org.jbehave.core.annotations.Conditional;
 import org.jbehave.core.annotations.ToContext;
 import org.jbehave.core.annotations.FromContext;
 import org.jbehave.core.annotations.Named;
@@ -293,6 +295,13 @@ public class StepCreator {
             final String stepWithoutStartingWord, final Map<String, String> namedParameters,
             final List<Step> composedSteps) {
         return new ParametrisedStep(stepAsString, method, stepWithoutStartingWord, namedParameters, composedSteps);
+    }
+
+    public Step createConditionalParametrisedStep(final ConditionChecker conditionalChecker,
+            final List<Method> methods, final String stepAsString, final String stepWithoutStartingWord,
+            final Map<String, String> namedParameters, final List<Step> composedSteps) {
+        return new ConditionalParametrisedStep(conditionalChecker, stepAsString, methods, stepWithoutStartingWord, namedParameters,
+                composedSteps);
     }
 
     public Step createParametrisedStepUponOutcome(final Method method, final String stepAsString,
@@ -874,6 +883,31 @@ public class StepCreator {
         }
     }
 
+    public class ConditionalParametrisedStep extends ParametrisedStep {
+
+        private final ConditionChecker conditionalChecker;
+        private final List<Method> methods;
+
+        public ConditionalParametrisedStep(ConditionChecker conditionalChecker, String stepAsString,
+                List<Method> methods, String stepWithoutStartingWord, Map<String, String> namedParameters,
+                List<Step> composedSteps) {
+            super(stepAsString, null, stepWithoutStartingWord, namedParameters, composedSteps);
+            this.conditionalChecker = conditionalChecker;
+            this.methods = methods;
+        }
+
+        @Override
+        public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
+            return methods.stream().filter(m -> {
+                Conditional conditional = m.getAnnotation(Conditional.class);
+                return conditionalChecker.check(conditional.condition(), conditional.value());
+            })
+            .map(m -> super.perform(storyReporter, storyFailureIfItHappened, m))
+            .findFirst()
+            .orElseGet(this::asPending);
+        }
+    }
+
     public class ParametrisedStep extends AbstractStep {
         private Object[] convertedParameters;
         private String parametrisedStep;
@@ -899,6 +933,11 @@ public class StepCreator {
 
         @Override
         public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
+            return perform(storyReporter, storyFailureIfItHappened, method);
+        }
+
+        protected StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened, Method method)
+        {
             storyReporter.beforeStep(stepAsString);
             Timer timer = new Timer().start();
             try {
@@ -913,7 +952,7 @@ public class StepCreator {
                         .setTimings(timer.stop());
             } catch (ParameterNotFound e) {
                 // step parametrisation failed, return pending StepResult
-                return pending(stepAsString).withParameterValues(parametrisedStep);
+                return asPending();
             } catch (InvocationTargetException e) {
                 if (e.getCause() instanceof RestartingScenarioFailure) {
                     throw (RestartingScenarioFailure) e.getCause();
@@ -981,6 +1020,10 @@ public class StepCreator {
                     ((ExamplesTable) object).withNamedParameters(namedParameters);
                 }
             }
+        }
+
+        protected StepResult asPending() {
+            return pending(stepAsString).withParameterValues(parametrisedStep);
         }
     }
 
