@@ -46,5 +46,9 @@ public abstract class AbstractCandidateSteps implements CandidateSteps {
             super(stepType + " " + patternAsString);
         }
 
+        public DuplicateCandidateFound(String step) {
+            super(step);
+        }
+
     }
 }

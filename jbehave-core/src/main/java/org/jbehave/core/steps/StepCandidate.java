@@ -84,6 +84,10 @@ public class StepCandidate {
         return keywords.startingWordFor(stepType);
     }
 
+    protected StepCreator getStepCreator() {
+        return stepCreator;
+    }
+
     public void useStepMonitor(StepMonitor stepMonitor) {
         this.stepMonitor = stepMonitor;
         this.stepCreator.useStepMonitor(stepMonitor);
@@ -236,7 +240,7 @@ public class StepCandidate {
         return null;
     }
 
-    private String stripStartingWord(String stepAsString) {
+    protected String stripStartingWord(String stepAsString) {
         return keywords.stepWithoutStartingWord(stepAsString, stepType);
     }
 
