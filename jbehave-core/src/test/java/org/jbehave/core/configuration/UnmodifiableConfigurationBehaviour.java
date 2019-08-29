@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.hamcrest.Matchers;
+import org.jbehave.core.condition.ConditionChecker;
 import org.jbehave.core.embedder.StoryControls;
 import org.jbehave.core.failures.FailureStrategy;
 import org.jbehave.core.failures.PendingStepStrategy;
@@ -53,6 +54,7 @@ public class UnmodifiableConfigurationBehaviour {
         assertThat(unmodifiable.stepPatternParser(), is(delegate.stepPatternParser()));
         assertThat(unmodifiable.viewGenerator(), is(delegate.viewGenerator()));
         assertThat(unmodifiable.examplesTableFactory(), is(delegate.examplesTableFactory()));
+        assertThat(unmodifiable.conditionChecker(), is(delegate.conditionChecker()));
     }
 
     @Test
@@ -79,6 +81,7 @@ public class UnmodifiableConfigurationBehaviour {
         assertThatNotAllowed(unmodifiable, "useViewGenerator", ViewGenerator.class);
         assertThatNotAllowed(unmodifiable, "useStoryPathResolver", StoryPathResolver.class);
         assertThatNotAllowed(unmodifiable, "useExamplesTableFactory", ExamplesTableFactory.class);
+        assertThatNotAllowed(unmodifiable, "useConditionChecker", ConditionChecker.class);
     }
 
     private void assertThatNotAllowed(Configuration unmodifiable, String methodName, Class<?>... types)

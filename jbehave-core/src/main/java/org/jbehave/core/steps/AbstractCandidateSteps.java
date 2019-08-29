@@ -58,5 +58,9 @@ public abstract class AbstractCandidateSteps implements CandidateSteps {
             super(format(DUPLICATE_FORMAT, candidate.getStepType(), candidate.getPatternAsString()));
         }
 
+        public DuplicateCandidateFound(String step) {
+            super(step);
+        }
+
     }
 }
