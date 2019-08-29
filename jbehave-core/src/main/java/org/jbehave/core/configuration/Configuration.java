@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.jbehave.core.Embeddable;
+import org.jbehave.core.condition.ConditionChecker;
+import org.jbehave.core.condition.DefaultConditionChecker;
 import org.jbehave.core.embedder.Embedder;
 import org.jbehave.core.embedder.StoryControls;
 import org.jbehave.core.failures.FailingUponPendingStep;
@@ -200,6 +202,11 @@ public abstract class Configuration {
 
     private boolean parallelStoryExampleTableEnabled;
 
+    /**
+     * The condition checker
+     */
+    protected ConditionChecker conditionChecker;
+
     public Configuration() {
     }
 
@@ -384,6 +391,18 @@ public abstract class Configuration {
             compositePaths = Collections.emptySet();
         }
         return compositePaths;
+    }
+
+    public ConditionChecker conditionChecker() {
+        if ( conditionChecker == null ){
+            conditionChecker = new DefaultConditionChecker();
+        }
+        return conditionChecker;
+    }
+
+    public Configuration useConditionChecker(ConditionChecker conditionChecker) {
+        this.conditionChecker = conditionChecker;
+        return this;
     }
 
     public Configuration useKeywords(Keywords keywords) {

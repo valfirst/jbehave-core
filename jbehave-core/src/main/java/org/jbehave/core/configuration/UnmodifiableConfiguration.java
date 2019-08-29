@@ -2,6 +2,7 @@ package org.jbehave.core.configuration;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.jbehave.core.condition.ConditionChecker;
 import org.jbehave.core.embedder.StoryControls;
 import org.jbehave.core.failures.FailureStrategy;
 import org.jbehave.core.failures.PendingStepStrategy;
@@ -134,6 +135,16 @@ public class UnmodifiableConfiguration extends Configuration {
     @Override
     public StoryReporterBuilder storyReporterBuilder() {
         return delegate.storyReporterBuilder();
+    }
+
+    @Override
+    public ConditionChecker conditionChecker() {
+        return delegate.conditionChecker();
+    }
+
+    @Override
+    public Configuration useConditionChecker(ConditionChecker conditionalChecker) {
+        throw notAllowed();
     }
 
     @Override

@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>Conditional Steps</title>
+</head>
+
+<body>
+
+<h2>Conditional Steps</h2>
+
+<p>The conditional step mechanism allows the user to choose a step to execute based on the result
+of some evaluation. This mechanism can be used instead of conditional statements
+like if-else if the number of similar steps grows as well as their internal logic.
+E.g. consider the following steps:</p>
+
+<pre class="brush: java">
+    @Conditional(condition = PlatformCondition.class, value = "mobile")
+    @Then("the alert status should be $status")
+    public void alertStatusOnMobile(String status) {
+        // ...
+    }
+
+    @Conditional(condition = PlatformCondition.class, value = "web")
+    @Then("the alert status should be $status")
+    public void alertStatusOnWeb(String status) {
+        // ...
+    }
+</pre>
+
+<p>A custom conditional checker can be created by implementing the
+<a href="javadoc/core/org/jbehave/core/condition/ConditionChecker.html">ConditionChecker</a>
+interface and then registering the new implementation in a
+<a href="javadoc/core/org/jbehave/core/configuration/Configuration.html">Configuration</a>
+instance.</p>
+
+<script type="syntaxhighlighter" class="brush: java">
+<![CDATA[
+
+public class TrueConditionChecker implements ConditionChecker {
+    @Override
+    public boolean check(Class<? extends Predicate<Object>> type, Object value) {
+        Predicate<Object> condition = ...
+        return Boolean.TRUE.equals(condition.test(value));
+    }
+}
+
+public class Stories extends JUnitStories {
+
+    public Stories() {
+        Configuration configuration = new MostUsefulConfiguration()
+                .useConditionChecker(new TrueConditionChecker())
+    }
+}
+]]>
+</script>
+
+<p>Notes:</p>
+<ul>
+    <li>if a step is annotated as conditional, then all the steps with the same wording must be conditioinal, otherwise, an exception is thrown</li>
+    <li>if the condition matches several steps, the first step is used</li>
+    <li>if there are no steps matching, then the step is marked as pending</li>
+</ul>
+
+</body>
+</html>
