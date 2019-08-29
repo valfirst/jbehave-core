@@ -11,6 +11,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 import org.hamcrest.Matchers;
@@ -30,6 +31,7 @@ import org.jbehave.core.steps.StepCollector.Stage;
 import org.jbehave.core.steps.StepCreator.PendingStep;
 import org.jbehave.core.steps.StepFinder.ByLevenshteinDistance;
 import org.junit.Test;
+import org.reflections.ReflectionUtils;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -62,8 +64,8 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
     @Test
     public void shouldCreateExecutableStepsOnlyFromPreviousNonAndStep() {
         // Given
-        StepCandidate candidate = mock(StepCandidate.class, "candidate");
-        StepCandidate andCandidate = mock(StepCandidate.class, "andCandidate");
+        StepCandidate candidate = mockStepCandidate(StepType.WHEN, "candidate");
+        StepCandidate andCandidate = mockStepCandidate(StepType.WHEN, "andCandidate");
         Step step = mock(Step.class);
         Step andStep = mock(Step.class);
 
@@ -87,9 +89,9 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
     @Test
     public void shouldCreateExecutableStepsUponOutcome() {
         // Given
-        StepCandidate anyCandidate = mock(StepCandidate.class, "anyCandidate");
-        StepCandidate successCandidate = mock(StepCandidate.class, "successCandidate");
-        StepCandidate failureCandidate = mock(StepCandidate.class, "failureCandidate");
+        StepCandidate anyCandidate = mockStepCandidate(StepType.WHEN, "anyCandidate");
+        StepCandidate successCandidate = mockStepCandidate(StepType.WHEN, "successCandidate");
+        StepCandidate failureCandidate = mockStepCandidate(StepType.WHEN, "failureCandidate");
         Step anyStep = mock(Step.class, "anyStep");
         Step successStep = mock(Step.class, "successStep");
         Step failureStep = mock(Step.class, "failureStep");
@@ -125,9 +127,9 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
     @Test
     public void shouldCreateExecutableStepsUponOutcomeAndScope() {
         // Given
-        StepCandidate anyCandidate = mock(StepCandidate.class, "anyCandidate");
-        StepCandidate successCandidate = mock(StepCandidate.class, "successCandidate");
-        StepCandidate failureCandidate = mock(StepCandidate.class, "failureCandidate");
+        StepCandidate anyCandidate = mockStepCandidate(StepType.WHEN, "anyCandidate");
+        StepCandidate successCandidate = mockStepCandidate(StepType.WHEN, "successCandidate");
+        StepCandidate failureCandidate = mockStepCandidate(StepType.WHEN, "failureCandidate");
         Step anyStep = mock(Step.class, "anyStep");
         Step successStep = mock(Step.class, "successStep");
         Step failureStep = mock(Step.class, "failureStep");
@@ -164,9 +166,9 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
     @Test
     public void shouldAddPrioritizedComposedStepsWhenACompositeIsMatched() {
         // Given
-        StepCandidate compositeCandidate = mock(StepCandidate.class, "compositeCandidate");
-        StepCandidate composedCandidate1 = mock(StepCandidate.class, "composedCandidate1");
-        StepCandidate composedCandidate2 = mock(StepCandidate.class, "composedCandidate2");
+        StepCandidate compositeCandidate = mockStepCandidate(StepType.WHEN, "compositeCandidate");
+        StepCandidate composedCandidate1 = mockStepCandidate(StepType.WHEN, "composedCandidate1");
+        StepCandidate composedCandidate2 = mockStepCandidate(StepType.WHEN, "composedCandidate2");
         when(compositeCandidate.getPriority()).thenReturn(3);
         when(composedCandidate1.getPriority()).thenReturn(2);
         when(composedCandidate2.getPriority()).thenReturn(1);
@@ -216,13 +218,13 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
         String andGivenPendingStep = "And a given pending step";
         String whenPendingStep = "When yet another pending step";
         String andWhenPendingStep = "And a when pending step";
-        StepCandidate firstCandidate = mock(StepCandidate.class, "firstCandidate");
+        StepCandidate firstCandidate = mockStepCandidate(StepType.WHEN, "firstCandidate");
         when(firstCandidate.matches(givenPendingStep)).thenReturn(false);
-        StepCandidate secondCandidate = mock(StepCandidate.class, "secondCandidate");
+        StepCandidate secondCandidate = mockStepCandidate(StepType.WHEN, "secondCandidate");
         when(secondCandidate.matches(andGivenPendingStep)).thenReturn(false);
-        StepCandidate thirdCandidate = mock(StepCandidate.class, "thirdCandidate");
+        StepCandidate thirdCandidate = mockStepCandidate(StepType.WHEN, "thirdCandidate");
         when(thirdCandidate.matches(whenPendingStep)).thenReturn(false);
-        StepCandidate fourthCandidate = mock(StepCandidate.class, "fourthCandidate");
+        StepCandidate fourthCandidate = mockStepCandidate(StepType.WHEN, "fourthCandidate");
         when(fourthCandidate.matches(andWhenPendingStep)).thenReturn(false);
         List<CandidateSteps> steps = mockCandidateSteps(firstCandidate, secondCandidate, thirdCandidate, fourthCandidate);
 
@@ -236,6 +238,18 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
         assertIsPending(executableSteps.get(1), andGivenPendingStep, givenPendingStep);
         assertIsPending(executableSteps.get(2), whenPendingStep, givenPendingStep);
         assertIsPending(executableSteps.get(3), andWhenPendingStep, whenPendingStep);
+    }
+
+    private StepCandidate mockStepCandidate(StepType stepType, String candidateName)
+    {
+        StepCandidate stepCandidate = mock(StepCandidate.class, candidateName);
+        when(stepCandidate.getPatternAsString()).thenReturn(candidateName);
+        when(stepCandidate.getStepType()).thenReturn(stepType);
+        @SuppressWarnings("unchecked")
+        Method method = ReflectionUtils.getMethods(ClassWithSimpleMethod.class, m -> m.getName().equals("simpleMethod"))
+                .iterator().next();
+        when(stepCandidate.getMethod()).thenReturn(method);
+        return stepCandidate;
     }
 
     private void assertIsPending(Step step, String stepAsString, String previousNonAndStep) {
@@ -409,10 +423,10 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
         // and some methods split across them
         CandidateSteps steps1 = mock(Steps.class);
         CandidateSteps steps2 = mock(Steps.class);
-        StepCandidate candidate1 = mock(StepCandidate.class);
-        StepCandidate candidate2 = mock(StepCandidate.class);
-        StepCandidate candidate3 = mock(StepCandidate.class);
-        StepCandidate candidate4 = mock(StepCandidate.class);
+        StepCandidate candidate1 = mockStepCandidate(StepType.WHEN, "");
+        StepCandidate candidate2 = mockStepCandidate(StepType.THEN, "");
+        StepCandidate candidate3 = mockStepCandidate(StepType.GIVEN, "");
+        StepCandidate candidate4 = mockStepCandidate(StepType.AND, "");
         Step step1 = mock(Step.class);
         Step step2 = mock(Step.class);
         Step step3 = mock(Step.class);
@@ -607,6 +621,10 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
         properties.put("before", "before");
         properties.put("after", "after");
         return new Meta(properties);
+    }
+
+    public static class ClassWithSimpleMethod {
+        public void simpleMethod() { }
     }
 
     public static class ClassWithMethodsAandB extends Steps {
