@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,7 +22,9 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.jbehave.core.annotations.AfterScenario.Outcome;
+import org.jbehave.core.condition.ConditionChecker;
 import org.jbehave.core.annotations.AsParameters;
+import org.jbehave.core.annotations.Conditional;
 import org.jbehave.core.annotations.ToContext;
 import org.jbehave.core.annotations.FromContext;
 import org.jbehave.core.annotations.Named;
@@ -293,6 +297,13 @@ public class StepCreator {
             final String stepWithoutStartingWord, final Map<String, String> namedParameters,
             final List<Step> composedSteps) {
         return new ParametrisedStep(stepAsString, method, stepWithoutStartingWord, namedParameters, composedSteps);
+    }
+
+    public Step createConditionalParametrisedStep(final ConditionChecker conditionalChecker, final List<Method> methods,
+            Map<Method, InjectableStepsFactory> stepsFactories, final String stepAsString, final String stepWithoutStartingWord,
+            final Map<String, String> namedParameters, final List<Step> composedSteps) {
+        return new ConditionalParametrisedStep(conditionalChecker, stepAsString, methods, stepsFactories,
+                stepWithoutStartingWord, namedParameters, composedSteps);
     }
 
     public Step createParametrisedStepUponOutcome(final Method method, final String stepAsString,
@@ -874,6 +885,50 @@ public class StepCreator {
         }
     }
 
+    public class ConditionalParametrisedStep extends ParametrisedStep {
+
+        private final ConditionChecker conditionalChecker;
+        private final Map<Method, InjectableStepsFactory> stepsFactories;
+        private final List<Method> methods;
+
+        public ConditionalParametrisedStep(ConditionChecker conditionalChecker, String stepAsString,
+                List<Method> methods, Map<Method, InjectableStepsFactory> stepsFactories,
+                String stepWithoutStartingWord, Map<String, String> namedParameters, List<Step> composedSteps) {
+            super(stepAsString, null, stepWithoutStartingWord, namedParameters, composedSteps);
+            this.conditionalChecker = conditionalChecker;
+            this.stepsFactories = stepsFactories;
+            this.methods = methods;
+        }
+
+        @Override
+        public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
+            return getConditionalMethod()
+                .map(m -> super.perform(storyReporter, storyFailureIfItHappened, m,
+                    () -> stepsFactories.get(m).createInstanceOfType(m.getDeclaringClass())))
+                .orElseGet(this::asPending);
+        }
+
+        @Override
+        public StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
+            return getConditionalMethod().map(m -> doNotPerform(storyReporter, storyFailureIfItHappened, m))
+                    .orElseGet(this::asPending);
+        }
+
+        @Override
+        public String asString(Keywords keywords) {
+            return asString(keywords, getConditionalMethod().get());
+        }
+
+        private Optional<Method> getConditionalMethod() {
+            return methods.stream().filter(m -> {
+                Conditional conditional = Optional.ofNullable(m.getAnnotation(Conditional.class))
+                        .orElseGet(() -> m.getDeclaringClass().getAnnotation(Conditional.class));
+                return conditionalChecker.check(conditional.condition(), conditional.value());
+            })
+            .findFirst();
+        }
+    }
+
     public class ParametrisedStep extends AbstractStep {
         private Object[] convertedParameters;
         private String parametrisedStep;
@@ -899,21 +954,26 @@ public class StepCreator {
 
         @Override
         public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
+            return perform(storyReporter, storyFailureIfItHappened, method, () -> stepsInstance());
+        }
+
+        protected StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened,
+                Method method, Supplier<Object> instanceSupplier) {
             storyReporter.beforeStep(stepAsString);
             Timer timer = new Timer().start();
             try {
-                parametriseStep();
+                parametriseStep(method);
                 stepMonitor.performing(parametrisedStep, dryRun);
                 stepMonitor.beforePerforming(parametrisedStep, dryRun, method);
                 if (!dryRun && method != null) {
-                    Object outputObject = method.invoke(stepsInstance(), convertedParameters);
+                    Object outputObject = method.invoke(instanceSupplier.get(), convertedParameters);
                     storeOutput(outputObject, method);
                 }
                 return successful(stepAsString).withParameterValues(parametrisedStep)
                         .setTimings(timer.stop());
             } catch (ParameterNotFound e) {
                 // step parametrisation failed, return pending StepResult
-                return pending(stepAsString).withParameterValues(parametrisedStep);
+                return asPending();
             } catch (InvocationTargetException e) {
                 if (e.getCause() instanceof RestartingScenarioFailure) {
                     throw (RestartingScenarioFailure) e.getCause();
@@ -938,8 +998,12 @@ public class StepCreator {
 
         @Override
         public StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
+            return doNotPerform(storyReporter, storyFailureIfItHappened, method);
+        }
+
+        protected StepResult doNotPerform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened, Method method) {
             try {
-                parametriseStep();
+                parametriseStep(method);
             } catch (Throwable t) {
                 // step parametrisation failed, but still return
                 // notPerformed StepResult
@@ -949,13 +1013,17 @@ public class StepCreator {
 
         @Override
         public String asString(Keywords keywords) {
+            return asString(keywords, method);
+        }
+
+        protected String asString(Keywords keywords, Method method) {
             if ( parametrisedStep == null){
-                parametriseStep();
+                parametriseStep(method);
             }
             return parametrisedStep;
         }
         
-        private void parametriseStep() {
+        protected void parametriseStep(Method method) {
             stepMatcher.find(stepWithoutStartingWord);
             ParameterName[] names = parameterNames(method);
             Type[] types = parameterTypes(method, names);
@@ -983,6 +1051,10 @@ public class StepCreator {
                     ((ExamplesTable) object).withNamedParameters(namedParameters);
                 }
             }
+        }
+
+        protected StepResult asPending() {
+            return pending(stepAsString).withParameterValues(parametrisedStep);
         }
     }
 

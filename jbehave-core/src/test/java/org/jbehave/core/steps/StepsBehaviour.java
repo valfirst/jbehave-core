@@ -29,7 +29,6 @@ import org.jbehave.core.model.Meta;
 import org.jbehave.core.reporters.StoryReporter;
 import org.jbehave.core.steps.AbstractStepResult.Failed;
 import org.jbehave.core.steps.StepCollector.Stage;
-import org.jbehave.core.steps.AbstractCandidateSteps.DuplicateCandidateFound;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.equalTo;
@@ -309,25 +308,11 @@ public class StepsBehaviour {
         assertThat(stepResult.getFailure().getCause(), instanceOf(BeforeOrAfterFailed.class));
     }
 
-    @Test(expected=DuplicateCandidateFound.class)
-    public void shouldFailIfDuplicateStepsAreEncountered() {
-        DuplicateSteps steps = new DuplicateSteps();
-        steps.listCandidates();
-    }
-
-    @Test(expected=DuplicateCandidateFound.class)
-    public void shouldFailIfDuplicateStepsWithDifferentParamsNamesAreEncountered() {
-        DuplicateStepsWithParameters steps = new DuplicateStepsWithParameters();
-        steps.listCandidates();
-    }
-
     @Test
     public void shouldNotFailWithDuplicateCandidateFoundExceptionIfStepsWordingsDoNotMatchEachOther() {
         StepsWithParameters steps = new StepsWithParameters();
         Configuration configuration = new MostUsefulConfiguration();
         List<StepCandidate> candidates = new InstanceStepsFactory(configuration, steps).createCandidateSteps().get(0).listCandidates();
-        assertThat(candidates.size(), equalTo(2));
-
         performMatchedStep(candidates, "GIVEN a given param '$someParameterName'",
                 "Given a given param '$someParameterName'");
         performMatchedStep(candidates, "GIVEN a given param '$givenParameter' and '$secondParam'",
@@ -349,10 +334,6 @@ public class StepsBehaviour {
     
     static class MultipleAliasesSteps extends Steps {
         
-        private int givens;
-        private int whens;
-        private int thens;
-        
         private boolean beforeNormalScenario;
         private boolean afterNormalScenario;
         private boolean afterSuccessfulScenario;
@@ -367,6 +348,9 @@ public class StepsBehaviour {
         private boolean afterGivenStory;
         private boolean beforeStories;
         private boolean afterStories;
+        protected int givens;
+        protected int whens;
+        protected int thens;
         
         @Given("a given")
         @Aliases(values={"a given alias", "another given alias"})
@@ -461,9 +445,9 @@ public class StepsBehaviour {
 
     static class SingleAliasSteps extends Steps {
 
-        private int givens;
-        private int whens;
-        private int thens;
+        protected int givens;
+        protected int whens;
+        protected int thens;
 
         @Given("a given")
         @Alias("a given alias")
@@ -565,9 +549,9 @@ public class StepsBehaviour {
 
     static class LocalizedSteps extends Steps {
 
-        private int givens;
-        private int whens;
-        private int thens;
+        protected int givens;
+        protected int whens;
+        protected int thens;
 
         public LocalizedSteps(Configuration configuration) {
             super(configuration);

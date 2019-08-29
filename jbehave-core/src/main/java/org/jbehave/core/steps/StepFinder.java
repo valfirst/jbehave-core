@@ -1,12 +1,24 @@
 package org.jbehave.core.steps;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collector;
+import java.util.stream.Collector.Characteristics;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jbehave.core.annotations.Conditional;
+import org.jbehave.core.configuration.Configuration;
+import org.jbehave.core.steps.AbstractCandidateSteps.DuplicateCandidateFound;
 
 /**
  * <p>
@@ -105,11 +117,64 @@ public class StepFinder {
      * @return A List of {@link StepCandidate}
      */
     public List<StepCandidate> collectCandidates(List<CandidateSteps> candidateSteps) {
-        List<StepCandidate> collected = new ArrayList<>();
-        for (CandidateSteps steps : candidateSteps) {
-            collected.addAll(steps.listCandidates());
+        if (candidateSteps.isEmpty()) {
+            return Collections.emptyList();
         }
-        return collected;
+        Configuration configuration = candidateSteps.get(0).configuration();
+        return candidateSteps.stream()
+            .map(CandidateSteps::listCandidates)
+            .flatMap(List::stream)
+            .collect(stepCandidateCollector())
+            .entrySet()
+            .stream()
+            .map(e -> {
+                List<StepCandidate> candidates = e.getValue();
+                boolean conditional = isAnnotationPresent(Conditional.class, candidates);
+                if (candidates.size() == 1) {
+                    if (conditional) {
+                        return createConditionalCandidate(candidates, configuration);
+                    }
+                    return candidates.get(0);
+                } else if (!conditional) {
+                    throw new DuplicateCandidateFound(e.getKey());
+                }
+                return createConditionalCandidate(candidates, configuration);
+            })
+            .collect(Collectors.toList());
+    }
+
+    private static Collector<StepCandidate, Map<String, List<StepCandidate>>, Map<String, List<StepCandidate>>>
+            stepCandidateCollector()
+    {
+        return Collector.of(HashMap::new, (map, candidate) ->
+        {
+            String candidateWording = candidate.getStartingWord() + " " + candidate.getPatternAsString();
+            Optional<String> candidateKey = map.keySet().stream()
+                    .filter(k -> candidate.matches(k) && map.get(k).stream().allMatch(c -> c.matches(candidateWording)))
+                    .findFirst();
+            if (candidateKey.isPresent())
+            {
+                map.get(candidateKey.get()).add(candidate);
+                return;
+            }
+            List<StepCandidate> candidates = new ArrayList<>();
+            candidates.add(candidate);
+            map.put(candidateWording, candidates);
+        }, (l, r) -> l, Characteristics.IDENTITY_FINISH);
+    }
+
+    private static StepCandidate createConditionalCandidate(List<StepCandidate> candidates, Configuration configuration) {
+        Map<Method, InjectableStepsFactory> factories = candidates.stream().collect(
+                Collectors.toMap(StepCandidate::getMethod, StepCandidate::getStepsFactory, (l, r) -> l));
+        List<Method> methods = candidates.stream().map(StepCandidate::getMethod)
+                .collect(Collectors.toList());
+        return ConditionalStepCandidate.from(candidates.get(0), methods, factories, configuration);
+    }
+
+    private boolean isAnnotationPresent(Class<? extends Annotation> type, Collection<StepCandidate> candidates) {
+        return candidates.stream()
+                .map(StepCandidate::getMethod)
+                .allMatch(m -> m != null && (m.isAnnotationPresent(type) || m.getDeclaringClass().isAnnotationPresent(type)));
     }
 
     /**
