@@ -207,7 +207,9 @@ public class Steps extends AbstractCandidateSteps {
     }
 
     private boolean isAnnotationPresent(Class<? extends Annotation> type, Collection<StepCandidate> candidates) {
-        return candidates.stream().map(StepCandidate::getMethod).allMatch(m -> m.isAnnotationPresent(type));
+        return candidates.stream()
+                .map(StepCandidate::getMethod)
+                .allMatch(m -> m.isAnnotationPresent(type) || m.getDeclaringClass().isAnnotationPresent(type));
     }
 
     private void addCandidatesFromVariants(List<StepCandidate> candidates, Method method, StepType stepType, String value, int priority) {
