@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.hamcrest.Matchers;
 import org.jbehave.core.annotations.AfterScenario;
@@ -55,6 +56,17 @@ public class StepsBehaviour {
     @Test
     public void shouldListConditionalCandidateSteps() {
         DuplicateAnnotatedSteps steps = new DuplicateAnnotatedSteps();
+        shouldListConditionalCandidateSteps(steps, () -> steps.expected);
+    }
+
+    @Test
+    public void shouldListClassLeverConditionalCandidateSteps() {
+        ClassLevelConditionSteps steps = new ClassLevelConditionSteps();
+        shouldListConditionalCandidateSteps(steps, () -> steps.expected);
+    }
+
+    private void shouldListConditionalCandidateSteps(AbstractCountingSteps steps, Supplier<String> expectedValue)
+    {
         List<StepCandidate> candidates = steps.listCandidates();
         assertThat(candidates.size(), equalTo(3));
 
@@ -65,7 +77,7 @@ public class StepsBehaviour {
         assertThat(steps.givens, equalTo(1));
         assertThat(steps.whens, equalTo(1));
         assertThat(steps.thens, equalTo(1));
-        assertThat(steps.expected, equalTo("success"));
+        assertThat(expectedValue.get(), equalTo("success"));
     }
 
     @Test
@@ -363,11 +375,7 @@ public class StepsBehaviour {
         
     }
     
-    static class MultipleAliasesSteps extends Steps {
-        
-        private int givens;
-        private int whens;
-        private int thens;
+    static class MultipleAliasesSteps extends AbstractCountingSteps {
         
         private boolean beforeNormalScenario;
         private boolean afterNormalScenario;
@@ -475,11 +483,7 @@ public class StepsBehaviour {
         
     }
 
-    static class SingleAliasSteps extends Steps {
-
-        private int givens;
-        private int whens;
-        private int thens;
+    static class SingleAliasSteps extends AbstractCountingSteps {
 
         @Given("a given")
         @Alias("a given alias")
@@ -562,12 +566,23 @@ public class StepsBehaviour {
         public void givenNotAnnotatedStep() {}
     }
 
-    static class DuplicateAnnotatedSteps extends Steps {
+    static abstract class AbstractCountingSteps extends Steps {
+        protected int givens;
+        protected int whens;
+        protected int thens;
+
+        public AbstractCountingSteps() {
+        }
+
+        public AbstractCountingSteps(Configuration configuration) {
+            super(configuration);
+        }
+    }
+
+    @Conditional(condition = DummyCondition.class)
+    static class DuplicateAnnotatedSteps extends AbstractCountingSteps {
 
         private String expected;
-        private int givens;
-        private int whens;
-        private int thens;
 
         @Conditional(condition = TestCondition.class)
         @Given("a given")
@@ -591,21 +606,52 @@ public class StepsBehaviour {
         public void then() {
             thens++;
         }
+    }
 
-        public static class TestCondition implements Predicate<Object> {
-            @Override
-            public boolean test(Object t)
-            {
-                return !t.equals("skip");
-            }
+    public static class TestCondition implements Predicate<Object> {
+        @Override
+        public boolean test(Object t)
+        {
+            return !t.equals("skip");
         }
     }
 
-    static class LocalizedSteps extends Steps {
+    public static class DummyCondition implements Predicate<Object> {
+        @Override
+        public boolean test(Object t)
+        {
+            return false;
+        }
+    }
 
-        private int givens;
-        private int whens;
-        private int thens;
+    @Conditional(condition = TestCondition.class)
+    static class ClassLevelConditionSteps extends AbstractCountingSteps {
+
+        private String expected;
+
+        @Given("a given")
+        public void givenExpectedToBeExecuted() {
+            expected = "success";
+            givens++;
+        }
+
+        @Given("a given")
+        public void givenNotExpectedToBeExecuted() {
+            expected = "skip";
+        }
+
+        @When("a when")
+        public void when() {
+            whens++;
+        }
+
+        @Then("a then")
+        public void then() {
+            thens++;
+        }
+    }
+
+    static class LocalizedSteps extends AbstractCountingSteps {
 
         public LocalizedSteps(Configuration configuration) {
             super(configuration);

@@ -899,7 +899,8 @@ public class StepCreator {
         @Override
         public StepResult perform(StoryReporter storyReporter, UUIDExceptionWrapper storyFailureIfItHappened) {
             return methods.stream().filter(m -> {
-                Conditional conditional = m.getAnnotation(Conditional.class);
+                Conditional conditional = Optional.ofNullable(m.getAnnotation(Conditional.class))
+                        .orElseGet(() -> m.getDeclaringClass().getAnnotation(Conditional.class));
                 return conditionalChecker.check(conditional.condition(), conditional.value());
             })
             .map(m -> super.perform(storyReporter, storyFailureIfItHappened, m))
