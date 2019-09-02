@@ -27,6 +27,21 @@ E.g. consider the following steps:</p>
     }
 </pre>
 
+<pre class="brush: java">
+    @Conditional(condition = PlatformCondition.class, value = "mobile")
+    class MobileSteps {
+        @Then("the alert status should be $status")
+        public void alertStatusShouldBe(String status) {
+            // ...
+        }
+
+        @Then("the alert status should not be $status")
+        public void alertStatusShouldNotBe(String status) {
+            // ...
+        }
+    }
+</pre>
+
 <p>A custom conditional checker can be created by implementing the
 <a href="javadoc/core/org/jbehave/core/condition/ConditionChecker.html">ConditionChecker</a>
 interface and then registering the new implementation in a
@@ -56,6 +71,7 @@ public class Stories extends JUnitStories {
 
 <p>Notes:</p>
 <ul>
+    <li>A condition at the method level has higher priority than a condition at the class level</li>
     <li>if a step is annotated as conditional, then all the steps with the same wording must be conditioinal, otherwise, an exception is thrown</li>
     <li>if the condition matches several steps, the first step is used</li>
     <li>if there are no steps matching, then the step is marked as pending</li>
