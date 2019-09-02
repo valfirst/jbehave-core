@@ -11,7 +11,7 @@ import java.util.function.Predicate;
  * is a state that can be determined programmatically before the step is performed.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ ElementType.METHOD, ElementType.TYPE })
 public @interface Conditional {
     Class<? extends Predicate<Object>> condition();
 
