@@ -84,6 +84,10 @@ public class StepCandidate {
         return keywords.startingWordFor(stepType);
     }
 
+    public InjectableStepsFactory getStepsFactory() {
+        return stepsFactory;
+    }
+
     protected StepCreator getStepCreator() {
         return stepCreator;
     }
