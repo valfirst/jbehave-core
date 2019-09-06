@@ -80,9 +80,8 @@ public class CompositeCandidateStepsBehaviour {
     public void testPendingMethodInStepsContext() {
         StepsContext stepsContext = new StepsContext();
         stepsContext.putCompositeObject("param", "value");
-        stepsContext.beforeStep("step");
         stepsContext.pending("step");
-        assertThat(stepsContext.getCompositeObject("param"), equalTo(null));
+        assertThat(stepsContext.getCompositeObject("param"), equalTo("value"));
     }
 
     @Test

@@ -67,11 +67,14 @@ public class StepsContext extends NullStoryReporter {
 
     @Override
     public void pending(String step) {
-        stopStep();
+        // Pending steps don't report 'beforeStep'
     }
 
     private void stopStep() {
-        if (compositeCounter.get().decrementAndGet() == 0) {
+        // Before/After steps may report failure without prior 'beforeStep' invocation,
+        // so we must be sure counter doesn't become negative
+        AtomicInteger counter = compositeCounter.get();
+        if (counter.get() == 0 || counter.decrementAndGet() == 0) {
             compositeObjects.get().clear();
         }
     }
