@@ -353,26 +353,26 @@ public abstract class PrintStreamOutput extends NullStoryReporter {
     }
 
     private void printStorySteps(String stepsStage, Stage storyStage) {
-        String storyStageName = CaseUtils.toCamelCase(storyStage.name(), true);
-        print(format(stepsStage + storyStageName + "StorySteps", ""));
+        printSteps(stepsStage, storyStage, "Story");
     }
 
     @Override
     public void beforeScenarioSteps(Stage stage) {
-        if (stage == Stage.BEFORE) {
-            print(format("beforeBeforeScenarioSteps", ""));
-        } else if (stage == Stage.AFTER) {
-            print(format("beforeAfterScenarioSteps", ""));
-        } else {
-            print(format("beforeScenarioSteps", ""));
-        }
+        printScenarioSteps("before", stage);
     }
 
     @Override
     public void afterScenarioSteps(Stage stage) {
-        if (stage == Stage.BEFORE) {
-            print(format("afterBeforeScenarioSteps", ""));
-        }
+        printScenarioSteps("after", stage);
+    }
+
+    private void printScenarioSteps(String stepsStage, Stage scenarioStage) {
+        printSteps(stepsStage, scenarioStage, "Scenario");
+    }
+
+    private void printSteps(String stepsStage, Stage levelStage, String level) {
+        String scenarioStageName = levelStage != null ? CaseUtils.toCamelCase(levelStage.name(), true) : "";
+        print(format(stepsStage + scenarioStageName + level + "Steps", ""));
     }
 
     @Override
