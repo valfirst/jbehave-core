@@ -86,7 +86,6 @@ Given a scenario step
 
 
 Given an after story step
-
 @When("something \"$param\"")
 @Pending
 public void whenSomething() {
@@ -98,5 +97,6 @@ public void whenSomething() {
 public void thenSomethingIsParam1() {
   // PENDING
 }
+
 
 
