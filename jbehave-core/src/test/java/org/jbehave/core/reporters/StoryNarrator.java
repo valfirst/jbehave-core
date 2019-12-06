@@ -90,6 +90,7 @@ class StoryNarrator {
         } catch (UUIDExceptionWrapper e) {
             reporter.failedOutcomes("Then I don't return loan", ((OutcomesFailed) e.getCause()).outcomesTable());
         }
+        reporter.afterScenarioSteps(null);
         reporter.beforeScenarioSteps(Stage.AFTER);
         reporter.beforeStep(scenarioStep);
         reporter.successful(scenarioStep);
@@ -106,6 +107,7 @@ class StoryNarrator {
         reporter.beforeScenarioSteps(null);
         reporter.successful("Given money $30");
         reporter.successful("Then I give it to Mauro");
+        reporter.afterScenarioSteps(null);
         reporter.example(table.getRow(1), 1);
         reporter.beforeScenarioSteps(null);
         reporter.successful("Given money $50");
@@ -115,6 +117,7 @@ class StoryNarrator {
         } else {
             reporter.pending("Then I should have a balance of $30");
         }
+        reporter.afterScenarioSteps(null);
         reporter.beforeScenarioSteps(Stage.AFTER);
         reporter.beforeStep(scenarioStep);
         reporter.successful(scenarioStep);
@@ -125,7 +128,6 @@ class StoryNarrator {
         reporter.beforeStorySteps(Stage.AFTER);
         reporter.beforeStep(afterStoryStep);
         reporter.successful(afterStoryStep);
-        reporter.afterStorySteps(Stage.AFTER);
 
         String method1="@When(\"something \\\"$param\\\"\")\n"
                 + "@Pending\n"
@@ -138,6 +140,7 @@ class StoryNarrator {
                 + "  // PENDING\n"
                 + "}\n";
         reporter.pendingMethods(asList(method1, method2));
+        reporter.afterStorySteps(Stage.AFTER);
         reporter.afterStory(givenStory);
     }
 
