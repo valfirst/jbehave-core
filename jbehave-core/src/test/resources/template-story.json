@@ -145,7 +145,7 @@
 ,
 {"outcome": "successful", "step": "Then I give it to Paul"}
 ,
-{"outcome": "failed", "step": "Then I should have a balance of $30", "failure": "java.lang.Exception: Expected <30> got <25>\n\tat org.jbehave.core.reporters.StoryNarrator.narrateAnInterestingStory(StoryNarrator.java:114)\n\tat org.jbehave.core.reporters.TemplateOutputBehaviour.shouldOutputStoryToJson(TemplateOutputBehaviour.java:36)\n\t(reflection-invoke)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n..."}
+{"outcome": "failed", "step": "Then I should have a balance of $30", "failure": "java.lang.Exception: Expected <30> got <25>\n\tat org.jbehave.core.reporters.StoryNarrator.narrateAnInterestingStory(StoryNarrator.java:116)\n\tat org.jbehave.core.reporters.TemplateOutputBehaviour.shouldOutputStoryToJson(TemplateOutputBehaviour.java:36)\n\t(reflection-invoke)\n\tat org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)\n..."}
 ,
 {"outcome": "successful", "step": "Given a scenario step"}
 
