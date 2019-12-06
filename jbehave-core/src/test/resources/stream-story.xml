@@ -86,7 +86,6 @@
 </scenario>
 <afterStorySteps>
 <step outcome="successful">Given an after story step</step>
-</afterStorySteps>
 <pendingMethod>@When(&quot;something \&quot;$param\&quot;&quot;)
 @Pending
 public void whenSomething() {
@@ -99,4 +98,5 @@ public void thenSomethingIsParam1() {
   // PENDING
 }
 </pendingMethod>
+</afterStorySteps>
 </story>
