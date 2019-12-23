@@ -516,10 +516,8 @@ public class PerformableTree {
 		private final StepsContext stepsContext;
         private Map<Story, StoryDuration> cancelledStories = new HashMap<>();
         private Map<String, List<PendingStep>> pendingStories = new HashMap<>();
-        private final ThreadLocal<StoryReporter> reporter = new ThreadLocal<>();
-        private String path;
         private boolean givenStory;
-        private State state;
+        private final ThreadLocal<StoryRunContext> storyRunContext = ThreadLocal.withInitial(StoryRunContext::new);
 
         public RunContext(Configuration configuration, List<CandidateSteps> candidateSteps, EmbedderMonitor embedderMonitor,
                 MetaFilter filter, BatchFailures failures) {
@@ -537,7 +535,7 @@ public class PerformableTree {
 		}
 
     	public boolean restartScenario() {
-    		Throwable cause = failure(state);
+    		Throwable cause = failure(state());
     		while (cause != null) {
     			if (cause instanceof RestartingScenarioFailure) {
     				return true;
@@ -548,7 +546,7 @@ public class PerformableTree {
     	}
 
     	public boolean restartStory() {
-    		Throwable cause = failure(state);
+    		Throwable cause = failure(state());
     		while (cause != null) {
     			if (cause instanceof RestartingStoryFailure) {
     				return true;
@@ -559,14 +557,14 @@ public class PerformableTree {
     	}
 
 		public void currentPath(String path) {
-            this.path = path;
-            this.reporter.set(configuration.storyReporter(path));
+            getStoryRunContext().pathIs(path);
+            getStoryRunContext().reporterIs(configuration.storyReporter(path));
         }
 
         public void interruptIfCancelled() throws InterruptedException {
             for (Story story : cancelledStories.keySet()) {
-                if (path.equals(story.getPath())) {
-                    throw new InterruptedException(path);
+                if (path().equals(story.getPath())) {
+                    throw new InterruptedException(path());
                 }
             }
         }
@@ -584,11 +582,11 @@ public class PerformableTree {
         }
 
         public String path() {
-            return path;
+            return getStoryRunContext().path();
         }
 
         public FilteredStory filter(Story story) {
-            return new FilteredStory(filter, story, configuration.storyControls(), givenStory);
+            return new FilteredStory(filter, story, configuration.storyControls(), givenStory());
         }
 
         public MetaFilter filter() {
@@ -658,7 +656,7 @@ public class PerformableTree {
 
         public RunContext childContextFor(GivenStory givenStory) {
             RunContext child = new RunContext(configuration, candidateSteps, embedderMonitor, filter, failures);
-            child.path = configuration.pathCalculator().calculate(path, givenStory.getPath());
+            child.getStoryRunContext().pathIs(configuration.pathCalculator().calculate(path(), givenStory.getPath()));
             child.givenStory = true;
             return child;
         }
@@ -676,19 +674,19 @@ public class PerformableTree {
         }
 
         public State state() {
-            return state;
+            return getStoryRunContext().state();
         }
 
         public void stateIs(State state) {
-            this.state = state;
+            getStoryRunContext().stateIs(state);
         }
 
         public boolean failureOccurred() {
-            return failed(state);
+            return failed(state());
         }
 
         public void resetState() {
-            this.state = new FineSoFar();
+            getStoryRunContext().resetState();
         }
 
         public void resetFailures() {
@@ -696,7 +694,7 @@ public class PerformableTree {
         }
 
         public StoryReporter reporter() {
-            return reporter.get();
+            return getStoryRunContext().reporter();
         }
 
         public boolean failed(State state) {
@@ -711,9 +709,9 @@ public class PerformableTree {
         }
 
         public void addFailure() {
-            Throwable failure = failure(state);
+            Throwable failure = failure(state());
             if (failure != null) {
-                failures.put(state.toString(), failure);
+                failures.put(state().toString(), failure);
             }
         }
 
@@ -725,20 +723,20 @@ public class PerformableTree {
 
         public void pendingSteps(List<PendingStep> pendingSteps) {
             if (!pendingSteps.isEmpty()) {
-                pendingStories.put(path, pendingSteps);
+                pendingStories.put(path(), pendingSteps);
             }
         }
 
         public boolean hasPendingSteps() {
-            return pendingStories.containsKey(path);
+            return pendingStories.containsKey(path());
         }
 
         public boolean isStoryPending() {
-            return pendingStories.containsKey(path);
+            return pendingStories.containsKey(path());
         }
 
         public boolean hasFailed() {
-            return failed(state);
+            return failed(state());
         }
 
         public Status status(State initial) {
@@ -763,6 +761,43 @@ public class PerformableTree {
         	return embedderMonitor;
         }
 
+        private StoryRunContext getStoryRunContext() {
+            return storyRunContext.get();
+        }
+    }
+
+    private static class StoryRunContext {
+        private State state;
+        private String path;
+        private StoryReporter reporter;
+
+        private State state() {
+            return state;
+        }
+
+        private void stateIs(State state) {
+            this.state = state;
+        }
+
+        private void resetState() {
+            this.state = new FineSoFar();
+        }
+
+        private String path() {
+            return path;
+        }
+
+        private void pathIs(String path) {
+            this.path = path;
+        }
+
+        public StoryReporter reporter() {
+            return this.reporter;
+        }
+
+        private void reporterIs(StoryReporter reporter) {
+            this.reporter = reporter;
+        }
     }
 
     public static class FailureContext {
