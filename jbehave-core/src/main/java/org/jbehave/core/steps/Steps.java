@@ -10,13 +10,10 @@ import static org.jbehave.core.steps.StepType.WHEN;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -30,7 +27,6 @@ import org.jbehave.core.annotations.BeforeScenario;
 import org.jbehave.core.annotations.BeforeStories;
 import org.jbehave.core.annotations.BeforeStory;
 import org.jbehave.core.annotations.Composite;
-import org.jbehave.core.annotations.Conditional;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.ScenarioType;
 import org.jbehave.core.annotations.Then;
@@ -189,27 +185,7 @@ public class Steps extends AbstractCandidateSteps {
                 addCandidatesFromAliases(candidates, method, THEN, priority);
             }
         }
-        return candidates.stream()
-            .collect(Collectors.groupingBy(c -> c.getStepType() + " " + c.getPatternAsString(),
-                    Collectors.mapping(Function.identity(), Collectors.toList()))).entrySet().stream()
-            .map(e -> {
-                List<StepCandidate> candidateSteps = e.getValue();
-                if (candidateSteps.size() == 1) {
-                    return candidateSteps.get(0);
-                } else if(!isAnnotationPresent(Conditional.class, candidateSteps)) {
-                    throw new DuplicateCandidateFound(e.getKey());
-                }
-                List<Method> methods = candidateSteps.stream().map(StepCandidate::getMethod)
-                        .collect(Collectors.toList());
-                return ConditionalStepCandidate.from(candidateSteps.get(0), methods, stepsFactory, configuration());
-            })
-            .collect(Collectors.toList());
-    }
-
-    private boolean isAnnotationPresent(Class<? extends Annotation> type, Collection<StepCandidate> candidates) {
-        return candidates.stream()
-                .map(StepCandidate::getMethod)
-                .allMatch(m -> m.isAnnotationPresent(type) || m.getDeclaringClass().isAnnotationPresent(type));
+        return candidates;
     }
 
     private void addCandidatesFromVariants(List<StepCandidate> candidates, Method method, StepType stepType, String value, int priority) {

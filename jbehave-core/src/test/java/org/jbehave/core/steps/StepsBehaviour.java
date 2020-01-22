@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.hamcrest.Matchers;
 import org.jbehave.core.annotations.AfterScenario;
@@ -17,7 +15,6 @@ import org.jbehave.core.annotations.Aliases;
 import org.jbehave.core.annotations.BeforeScenario;
 import org.jbehave.core.annotations.BeforeStories;
 import org.jbehave.core.annotations.BeforeStory;
-import org.jbehave.core.annotations.Conditional;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.ScenarioType;
 import org.jbehave.core.annotations.Then;
@@ -32,10 +29,7 @@ import org.jbehave.core.model.Meta;
 import org.jbehave.core.reporters.StoryReporter;
 import org.jbehave.core.steps.AbstractStepResult.Failed;
 import org.jbehave.core.steps.StepCollector.Stage;
-import org.jbehave.core.steps.AbstractCandidateSteps.DuplicateCandidateFound;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static org.hamcrest.Matchers.equalTo;
 
@@ -49,44 +43,6 @@ import static org.mockito.Mockito.verify;
 public class StepsBehaviour {
 
     private Map<String, String> tableRow = new HashMap<>();
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
-    @Test
-    public void shouldListConditionalCandidateSteps() {
-        DuplicateAnnotatedSteps steps = new DuplicateAnnotatedSteps();
-        shouldListConditionalCandidateSteps(steps, () -> steps.expected);
-    }
-
-    @Test
-    public void shouldListClassLeverConditionalCandidateSteps() {
-        ClassLevelConditionSteps steps = new ClassLevelConditionSteps();
-        shouldListConditionalCandidateSteps(steps, () -> steps.expected);
-    }
-
-    private void shouldListConditionalCandidateSteps(AbstractCountingSteps steps, Supplier<String> expectedValue)
-    {
-        List<StepCandidate> candidates = steps.listCandidates();
-        assertThat(candidates.size(), equalTo(3));
-
-        performMatchedStep(candidates, "GIVEN a given", "Given a given");
-        performMatchedStep(candidates, "WHEN a when", "When a when");
-        performMatchedStep(candidates, "THEN a then", "Then a then");
-        
-        assertThat(steps.givens, equalTo(1));
-        assertThat(steps.whens, equalTo(1));
-        assertThat(steps.thens, equalTo(1));
-        assertThat(expectedValue.get(), equalTo("success"));
-    }
-
-    @Test
-    public void shouldFailIfSimilarAnnotatedAndNotAnnotatedStepsWereFound() {
-        expectedException.expect(DuplicateCandidateFound.class);
-        expectedException.expectMessage("GIVEN a given");
-        DuplicateNotOnlyAnnotatedSteps steps = new DuplicateNotOnlyAnnotatedSteps();
-        steps.listCandidates();
-    }
 
     @Test
     public void shouldListCandidateStepsFromAnnotatedMethodsWithSingleAlias() {
@@ -352,17 +308,6 @@ public class StepsBehaviour {
         assertThat(stepResult.getFailure().getCause(), instanceOf(BeforeOrAfterFailed.class));
     }
 
-    @Test
-    public void shouldFailIfDuplicateStepsAreEncountered() {
-        expectedException.expect(DuplicateCandidateFound.class);
-        expectedException.expectMessage("GIVEN a given");
-        DuplicateSteps steps = new DuplicateSteps();
-        List<StepCandidate> candidates = steps.listCandidates();
-        assertThat(candidates.size(), equalTo(2));
-        candidates.get(0).createMatchedStep("Given a given", tableRow, Collections.<Step>emptyList()).perform(null, null);
-
-    }
-
     @Test(expected=StartingWordNotFound.class)
     public void shouldNotCreateStepIfStartingWordNotFound(){
         Configuration configuration = new MostUsefulConfiguration();
@@ -376,7 +321,7 @@ public class StepsBehaviour {
         
     }
     
-    static class MultipleAliasesSteps extends AbstractCountingSteps {
+    static class MultipleAliasesSteps extends Steps {
         
         private boolean beforeNormalScenario;
         private boolean afterNormalScenario;
@@ -392,6 +337,9 @@ public class StepsBehaviour {
         private boolean afterGivenStory;
         private boolean beforeStories;
         private boolean afterStories;
+        protected int givens;
+        protected int whens;
+        protected int thens;
         
         @Given("a given")
         @Aliases(values={"a given alias", "another given alias"})
@@ -484,7 +432,11 @@ public class StepsBehaviour {
         
     }
 
-    static class SingleAliasSteps extends AbstractCountingSteps {
+    static class SingleAliasSteps extends Steps {
+
+        protected int givens;
+        protected int whens;
+        protected int thens;
 
         @Given("a given")
         @Alias("a given alias")
@@ -562,97 +514,11 @@ public class StepsBehaviour {
                 
     }
 
-    static class DuplicateNotOnlyAnnotatedSteps extends DuplicateAnnotatedSteps {
-        @Given("a given")
-        public void givenNotAnnotatedStep() {}
-    }
+    static class LocalizedSteps extends Steps {
 
-    static abstract class AbstractCountingSteps extends Steps {
         protected int givens;
         protected int whens;
         protected int thens;
-
-        public AbstractCountingSteps() {
-        }
-
-        public AbstractCountingSteps(Configuration configuration) {
-            super(configuration);
-        }
-    }
-
-    @Conditional(condition = DummyCondition.class)
-    static class DuplicateAnnotatedSteps extends AbstractCountingSteps {
-
-        private String expected;
-
-        @Conditional(condition = TestCondition.class)
-        @Given("a given")
-        public void givenExpectedToBeExecuted() {
-            expected = "success";
-            givens++;
-        }
-
-        @Conditional(condition = TestCondition.class, value = "skip")
-        @Given("a given")
-        public void givenNotExpectedToBeExecuted() {
-            expected = "skip";
-        }
-
-        @When("a when")
-        public void when() {
-            whens++;
-        }
-
-        @Then("a then")
-        public void then() {
-            thens++;
-        }
-    }
-
-    public static class TestCondition implements Predicate<Object> {
-        @Override
-        public boolean test(Object t)
-        {
-            return !t.equals("skip");
-        }
-    }
-
-    public static class DummyCondition implements Predicate<Object> {
-        @Override
-        public boolean test(Object t)
-        {
-            return false;
-        }
-    }
-
-    @Conditional(condition = TestCondition.class)
-    static class ClassLevelConditionSteps extends AbstractCountingSteps {
-
-        private String expected;
-
-        @Given("a given")
-        public void givenExpectedToBeExecuted() {
-            expected = "success";
-            givens++;
-        }
-
-        @Given("a given")
-        public void givenNotExpectedToBeExecuted() {
-            expected = "skip";
-        }
-
-        @When("a when")
-        public void when() {
-            whens++;
-        }
-
-        @Then("a then")
-        public void then() {
-            thens++;
-        }
-    }
-
-    static class LocalizedSteps extends AbstractCountingSteps {
 
         public LocalizedSteps(Configuration configuration) {
             super(configuration);
