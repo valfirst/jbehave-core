@@ -26,7 +26,6 @@ import org.jbehave.core.annotations.Scope;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.Keywords;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
-import org.jbehave.core.embedder.PerformableTree.FineSoFar;
 import org.jbehave.core.embedder.PerformableTree.RunContext;
 import org.jbehave.core.failures.BatchFailures;
 import org.jbehave.core.io.StoryLoader;
@@ -160,7 +159,7 @@ public class PerformableTreeBehaviour {
     @Test
     public void shouldNotShareStoryStateBetweenThreads() throws Throwable {
         RunContext context = runStoryInContext(EMPTY_STORY);
-        assertThat(context.state(), instanceOf(FineSoFar.class));
+        assertThat(context.state().getClass().getSimpleName(), is("FineSoFar"));
         assertReturnsNullInAnotherThread(context::state);
     }
 
