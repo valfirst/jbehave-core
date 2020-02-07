@@ -66,6 +66,7 @@
         </performableScenario>
       </scenarios>
       <afterSteps/>
+      <successfulScenariosId/>
     </performableStory>
   </stories>
   <scenarios>
