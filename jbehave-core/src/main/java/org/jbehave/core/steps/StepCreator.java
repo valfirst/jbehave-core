@@ -1032,11 +1032,13 @@ public class StepCreator {
                         .ifPresent(v -> namedParameters.put(k, (String) v)));
             List<Pair<String, String>> parameterValuesPairsList = parameterValuesForStep(namedParameters, types, names, true);
             String[] parameterValues = getArrayOfPairsValues(parameterValuesPairsList);
-            convertedParameters = convertParameterValues(parameterValues, types, names);
             if (method == null) {
+                convertedParameters = parameterValues;
                 for (int i = 0; i < names.length; i++) {
                     stepsContext.putCompositeObject(names[i].name, convertedParameters[i]);
                 }
+            } else {
+                convertedParameters = convertParameterValues(parameterValues, types, names);
             }
             addNamedParametersToExamplesTables();
             parametrisedStep = parametrisedStep(stepAsString, namedParameters, types, parameterValuesPairsList,
