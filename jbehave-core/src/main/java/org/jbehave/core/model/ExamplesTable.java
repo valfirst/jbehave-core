@@ -13,10 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.jbehave.core.annotations.Parameter;
@@ -168,7 +166,6 @@ public class ExamplesTable {
     private static final String VALUE_SEPARATOR = "|";
     private static final String IGNORABLE_SEPARATOR = "|--";
 
-    private final String tableAsString;
     private final ParameterConverters parameterConverters;
     private final TableTransformers tableTransformers;
     private final Row defaults;
@@ -195,42 +192,29 @@ public class ExamplesTable {
     public ExamplesTable(String tableAsString, String headerSeparator, String valueSeparator,
             String ignorableSeparator, ParameterConverters parameterConverters, ParameterControls parameterControls,
             TableTransformers tableTransformers) {
-        this.tableAsString = tableAsString;
+        this(TableUtils.parseData(tableAsString, headerSeparator, valueSeparator, ignorableSeparator), headerSeparator,
+                valueSeparator, ignorableSeparator, parameterConverters, parameterControls, tableTransformers);
+    }
+
+    ExamplesTable(ExamplesTableData examplesTableData, String headerSeparator, String valueSeparator,
+            String ignorableSeparator, ParameterConverters parameterConverters, ParameterControls parameterControls,
+            TableTransformers tableTransformers) {
         this.parameterConverters = parameterConverters;
         this.parameterControls = parameterControls;
         this.tableTransformers = tableTransformers;
         this.defaults = new ConvertedParameters(EMPTY_MAP, parameterConverters);
-        String tableWithoutProperties = stripProperties(headerSeparator, valueSeparator, ignorableSeparator);
-        String transformedTable = applyTransformers(tableWithoutProperties);
+        this.propertiesList.addAll(examplesTableData.getProperties());
+        String transformedTable = applyTransformers(examplesTableData.getTable());
         parseByRows(transformedTable);
     }
 
     private ExamplesTable(ExamplesTable other, Row defaults) {
         this.data.addAll(other.data);
-        this.tableAsString = other.tableAsString;
         this.parameterConverters = other.parameterConverters;
         this.tableTransformers = other.tableTransformers;
         this.headers.addAll(other.headers);
         this.propertiesList.addAll(other.propertiesList);
         this.defaults = defaults;
-    }
-
-    private String stripProperties(String headerSeparator, String valueSeparator, String ignorableSeparator) {
-        String  tableWithoutProperties = tableAsString.trim();
-        Matcher matcher = INLINED_PROPERTIES_PATTERN.matcher(tableWithoutProperties);
-        while (matcher.matches()) {
-            String propertiesAsString = matcher.group(1);
-            propertiesAsString = StringUtils.replace(propertiesAsString, "\\{", "{");
-            propertiesAsString = StringUtils.replace(propertiesAsString, "\\}", "}");
-            propertiesList.add(new ExamplesTableProperties(propertiesAsString, headerSeparator,
-                    valueSeparator, ignorableSeparator));
-            tableWithoutProperties = matcher.group(2).trim();
-            matcher = INLINED_PROPERTIES_PATTERN.matcher(tableWithoutProperties);
-        }
-        if (propertiesList.isEmpty()) {
-            propertiesList.add(new ExamplesTableProperties("", headerSeparator, valueSeparator, ignorableSeparator));
-        }
-        return tableWithoutProperties;
     }
 
     private String applyTransformers(String tableAsString) {
