@@ -47,7 +47,7 @@
       <!-- hack to overcome https://issues.apache.org/jira/browse/MSITE-228-->
       <groupId>org.apache.maven.skins</groupId>
       <artifactId>maven-default-skin</artifactId>
-      <version>1.0</version>
+      <version>1.3</version>
       <optional>true</optional>
     </dependency>
   </dependencies>
