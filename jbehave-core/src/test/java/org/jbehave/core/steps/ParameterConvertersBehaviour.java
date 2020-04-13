@@ -51,7 +51,9 @@ import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.ResourceLoader;
 import org.jbehave.core.model.ExamplesTable;
 import org.jbehave.core.model.ExamplesTableFactory;
+import org.jbehave.core.model.TableParsers;
 import org.jbehave.core.model.TableTransformers;
+import org.jbehave.core.steps.ParameterConverters.AbstractChainableParameterConverter;
 import org.jbehave.core.steps.ParameterConverters.AbstractParameterConverter;
 import org.jbehave.core.steps.ParameterConverters.BooleanConverter;
 import org.jbehave.core.steps.ParameterConverters.BooleanListConverter;
@@ -63,6 +65,7 @@ import org.jbehave.core.steps.ParameterConverters.ExamplesTableConverter;
 import org.jbehave.core.steps.ParameterConverters.ExamplesTableParametersConverter;
 import org.jbehave.core.steps.ParameterConverters.FileConverter;
 import org.jbehave.core.steps.ParameterConverters.FluentEnumConverter;
+import org.jbehave.core.steps.ParameterConverters.ChainableParameterConverter;
 import org.jbehave.core.steps.ParameterConverters.MethodReturningConverter;
 import org.jbehave.core.steps.ParameterConverters.NumberConverter;
 import org.jbehave.core.steps.ParameterConverters.NumberListConverter;
@@ -92,12 +95,13 @@ public class ParameterConvertersBehaviour {
     public void shouldDefineDefaultConverters() {
         Keywords keywords = new LocalizedKeywords();
         LoadFromClasspath resourceLoader = new LoadFromClasspath();
+        TableParsers tableParsers = new TableParsers();
         TableTransformers tableTransformers = new TableTransformers();
         ParameterControls parameterControls = new ParameterControls();
         ParameterConverters converters = new ParameterConverters(resourceLoader, parameterControls, tableTransformers,
                 true);
-        ParameterConverter<?>[] defaultConverters = converters.defaultConverters(keywords, resourceLoader, parameterControls,
-                tableTransformers, Locale.ENGLISH, ",");
+        ChainableParameterConverter<?, ?>[] defaultConverters = converters.defaultConverters(keywords, resourceLoader, parameterControls,
+                tableParsers, tableTransformers, Locale.ENGLISH, ",");
         assertThatDefaultConvertersInclude(defaultConverters, BooleanConverter.class, NumberConverter.class,
                 StringListConverter.class,
                 DateConverter.class,
@@ -109,11 +113,11 @@ public class ParameterConvertersBehaviour {
                 ExamplesTableParametersConverter.class);
     }
 
-    private void assertThatDefaultConvertersInclude(ParameterConverter<?>[] defaultConverters,
-            Class<? extends ParameterConverter<?>>... converterTypes) {
+    private void assertThatDefaultConvertersInclude(ChainableParameterConverter<?, ?>[] defaultConverters,
+                                                    Class<? extends ParameterConverter<?>>... converterTypes) {
         for (Class<? extends ParameterConverter<?>> type : converterTypes) {
             boolean found = false;
-            for (ParameterConverter<?> converter : defaultConverters) {
+            for (ChainableParameterConverter<?, ?> converter : defaultConverters) {
                 if (converter.getClass().isAssignableFrom(type)) {
                     found = true;
                 }
@@ -336,22 +340,19 @@ public class ParameterConvertersBehaviour {
     }
 
     @Test
-    public void shouldConvertCommaSeparatedValuesToArrayWithDefaultFormat()
-    {
+    public void shouldConvertCommaSeparatedValuesToArrayWithDefaultFormat() {
         ParameterConverters converters = new ParameterConverters();
         assertThat(converters.convert("1,2,3", int[].class, null), is(new int[] {1, 2, 3}));
     }
 
     @Test
-    public void shouldConvertEmptyStringToEmptyArray()
-    {
+    public void shouldConvertEmptyStringToEmptyArray() {
         ParameterConverters converters = new ParameterConverters();
         assertThat(converters.convert("", int[].class, null), is(new int[0]));
     }
 
     @Test
-    public void shouldFailToConvertToArrayOfCustomOjects()
-    {
+    public void shouldFailToConvertToArrayOfCustomObjectsIfNoConverterFound() {
         expectedException.expect(ParameterConvertionFailed.class);
         expectedException.expectMessage(
                 "No parameter converter for class [Lorg.jbehave.core.steps.ParameterConvertersBehaviour$Bar");
@@ -875,6 +876,29 @@ public class ParameterConvertersBehaviour {
         assertThat(new ParameterConverters().convert("+03:00", ZoneOffset.class, null), is(ZoneOffset.ofHours(3)));
     }
 
+    @Test
+    public void shouldConvertStringViaChainOfConverters() {
+        ParameterConverters converters = new ParameterConverters();
+        converters.addConverters(new FirstParameterConverter(), new SecondParameterConverter(),
+                new ThirdParameterConverter());
+        String input = "|key|\n|value|";
+        Object convertedValue = converters.convert(input, ThirdConverterOutput.class, null);
+        assertThat(convertedValue, instanceOf(ThirdConverterOutput.class));
+        ThirdConverterOutput output = (ThirdConverterOutput) convertedValue;
+        assertThat(output.getOutput(), is(input + "\nfirstsecondthird"));
+    }
+
+    @Test
+    public void shouldConvertFromStringUsingChainableParameterConverterIfDefaultDoesNotExist() {
+        ParameterConverters converters = new ParameterConverters();
+        converters.addConverters(new StringContainerConverter());
+        String inputValue = "string value";
+        Object convertedValue = converters.convert(inputValue, StringContainer.class, null);
+        assertThat(convertedValue, instanceOf(StringContainer.class));
+        StringContainer output = (StringContainer) convertedValue;
+        assertThat(output.getOutput(), is(inputValue));
+    }
+
     @AsJson
     public static class MyJsonDto {
 
@@ -948,4 +972,61 @@ public class ParameterConvertersBehaviour {
         }
     }
 
+    private class FirstParameterConverter extends AbstractChainableParameterConverter<FirstConverterOutput, ExamplesTable> {
+        @Override
+        public FirstConverterOutput convertValue(ExamplesTable value, Type type) {
+            return new FirstConverterOutput(value.asString() + "first");
+        }
+    }
+
+    private class FirstConverterOutput extends StringContainer {
+        private FirstConverterOutput(String output) {
+            super(output);
+        }
+    }
+
+    private class SecondParameterConverter extends AbstractChainableParameterConverter<SecongConverterOutput, FirstConverterOutput> {
+        @Override
+        public SecongConverterOutput convertValue(FirstConverterOutput value, Type type) {
+            return new SecongConverterOutput(value.getOutput() + "second");
+        }
+    }
+
+    private class SecongConverterOutput extends StringContainer {
+        private SecongConverterOutput(String output) {
+            super(output);
+        }
+    }
+
+    private class ThirdParameterConverter extends AbstractChainableParameterConverter<ThirdConverterOutput, SecongConverterOutput> {
+        @Override
+        public ThirdConverterOutput convertValue(SecongConverterOutput value, Type type) {
+            return new ThirdConverterOutput(value.getOutput() + "third");
+        }
+    }
+
+    private class ThirdConverterOutput extends StringContainer {
+        private ThirdConverterOutput(String output) {
+            super(output);
+        }
+    }
+
+    private class StringContainer {
+        private final String output;
+
+        private StringContainer(String output) {
+            this.output = output;
+        }
+
+        String getOutput() {
+            return output;
+        }
+    }
+
+    private class StringContainerConverter extends AbstractChainableParameterConverter<StringContainer, String> {
+        @Override
+        public StringContainer convertValue(String value, Type type) {
+            return new StringContainer(value);
+        }
+    }
 }

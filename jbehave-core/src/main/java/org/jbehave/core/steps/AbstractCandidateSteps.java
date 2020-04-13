@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.jbehave.core.configuration.Configuration;
 
+import static java.text.MessageFormat.format;
+
 /**
  * @author Valery Yatsynovich
  */
@@ -20,11 +22,10 @@ public abstract class AbstractCandidateSteps implements CandidateSteps {
         return configuration;
     }
 
-    protected void checkForDuplicateCandidates(List<StepCandidate> candidates, StepType stepType, String patternAsString) {
-        for (StepCandidate candidate : candidates) {
-            if (candidate.getStepType() == stepType && candidate.getPatternAsString().equals(patternAsString)) {
-                throw new DuplicateCandidateFound(stepType, patternAsString);
-            }
+    protected void checkForDuplicateCandidates(List<StepCandidate> candidates, StepCandidate candidate) {
+        String candidateName = candidate.getName();
+        if (candidates.stream().anyMatch(c -> c.matches(candidateName) && candidate.matches(c.getName()))) {
+            throw new DuplicateCandidateFound(candidate);
         }
     }
 
@@ -41,9 +42,14 @@ public abstract class AbstractCandidateSteps implements CandidateSteps {
 
     @SuppressWarnings("serial")
     public static class DuplicateCandidateFound extends RuntimeException {
+        public static final String DUPLICATE_FORMAT = "{0} {1}";
 
-        public DuplicateCandidateFound(StepType stepType, String patternAsString) {
-            super(stepType + " " + patternAsString);
+        public DuplicateCandidateFound(StepCandidate candidate) {
+            super(format(DUPLICATE_FORMAT, candidate.getStepType(), candidate.getPatternAsString()));
+        }
+
+        public DuplicateCandidateFound(String step) {
+            super(step);
         }
 
         public DuplicateCandidateFound(String step) {

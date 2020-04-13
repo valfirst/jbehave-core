@@ -308,6 +308,17 @@ public class StepsBehaviour {
         assertThat(stepResult.getFailure().getCause(), instanceOf(BeforeOrAfterFailed.class));
     }
 
+    @Test
+    public void shouldNotFailWithDuplicateCandidateFoundExceptionIfStepsWordingsDoNotMatchEachOther() {
+        StepsWithParameters steps = new StepsWithParameters();
+        Configuration configuration = new MostUsefulConfiguration();
+        List<StepCandidate> candidates = new InstanceStepsFactory(configuration, steps).createCandidateSteps().get(0).listCandidates();
+        performMatchedStep(candidates, "GIVEN a given param '$someParameterName'",
+                "Given a given param '$someParameterName'");
+        performMatchedStep(candidates, "GIVEN a given param '$givenParameter' and '$secondParam'",
+                "Given a given param '$givenParameter' and '$secondParam'");
+    }
+
     @Test(expected=StartingWordNotFound.class)
     public void shouldNotCreateStepIfStartingWordNotFound(){
         Configuration configuration = new MostUsefulConfiguration();
@@ -512,6 +523,28 @@ public class StepsBehaviour {
         public void duplicateGiven() {
         }
                 
+    }
+
+    static class DuplicateStepsWithParameters extends Steps {
+        
+        @Given("a given param '$someParameterName'")
+        public void given(String someParameterName) {
+        }
+
+        @Given("a given param '$givenParameter'")
+        public void duplicateGiven(String givenParameter) {
+        }
+    }
+
+    static class StepsWithParameters extends Steps {
+        
+        @Given("a given param '$someParameterName'")
+        public void given(String someParameterName) {
+        }
+
+        @Given("a given param '$givenParameter' and '$secondParam'")
+        public void duplicateGiven(String givenParameter, String secondParam) {
+        }
     }
 
     static class LocalizedSteps extends Steps {

@@ -21,18 +21,9 @@ import org.jbehave.core.configuration.Keywords;
 import org.jbehave.core.i18n.LocalizedKeywords;
 import org.jbehave.core.io.LoadFromClasspath;
 import org.jbehave.core.io.ResourceLoader;
-import org.jbehave.core.model.Description;
-import org.jbehave.core.model.ExamplesTable;
-import org.jbehave.core.model.ExamplesTableFactory;
+import org.jbehave.core.model.*;
 import org.jbehave.core.model.FailedStory;
-import org.jbehave.core.model.GivenStories;
-import org.jbehave.core.model.Lifecycle;
 import org.jbehave.core.model.Lifecycle.Steps;
-import org.jbehave.core.model.Meta;
-import org.jbehave.core.model.Narrative;
-import org.jbehave.core.model.Scenario;
-import org.jbehave.core.model.Story;
-import org.jbehave.core.model.TableTransformers;
 import org.jbehave.core.steps.ParameterControls;
 import org.jbehave.core.steps.ParameterConverters;
 
@@ -63,7 +54,11 @@ public class RegexStoryParser extends AbstractRegexParser implements StoryParser
     }
 
     public RegexStoryParser(Keywords keywords, ResourceLoader resourceLoader, TableTransformers tableTransformers) {
-        this(keywords, new ExamplesTableFactory(keywords, resourceLoader, tableTransformers));
+        this(keywords, new ExamplesTableFactory(keywords, resourceLoader, new TableParsers(), tableTransformers));
+    }
+
+    public RegexStoryParser(Keywords keywords, ResourceLoader resourceLoader, TableParsers tableParsers, TableTransformers tableTransformers) {
+        this(keywords, new ExamplesTableFactory(keywords, resourceLoader, tableParsers, tableTransformers));
     }
 
     public RegexStoryParser(ExamplesTableFactory tableFactory) {
@@ -428,13 +423,14 @@ public class RegexStoryParser extends AbstractRegexParser implements StoryParser
 
     private ExamplesTable createExamplesTable(ExamplesTable originalExamplesTable, List<Map<String, String>>
             resultRows) {
+        TableParsers tableParsers = new TableParsers();
         TableTransformers tableTransformers = new TableTransformers();
         ParameterConverters parameterConverters = new ParameterConverters(new LoadFromClasspath(), parameterControls,
                 tableTransformers, true);
         return !resultRows.isEmpty() ?
                 new ExamplesTable("", originalExamplesTable.getHeaderSeparator(),
                         originalExamplesTable.getValueSeparator(), parameterConverters, parameterControls,
-                        tableTransformers).withRows(resultRows) :
+                        tableParsers, tableTransformers).withRows(resultRows) :
                 null;
     }
 
