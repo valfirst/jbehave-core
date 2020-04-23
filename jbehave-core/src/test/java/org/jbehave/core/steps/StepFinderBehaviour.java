@@ -5,9 +5,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 import static org.jbehave.core.steps.StepType.GIVEN;
 import static org.jbehave.core.steps.StepType.THEN;
 import static org.jbehave.core.steps.StepType.WHEN;
@@ -27,6 +27,7 @@ import org.jbehave.core.annotations.Then;
 import org.jbehave.core.annotations.When;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.configuration.MostUsefulConfiguration;
+import org.jbehave.core.parsers.StepPatternParser;
 import org.jbehave.core.steps.AbstractCandidateSteps.DuplicateCandidateFound;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,12 +45,14 @@ public class StepFinderBehaviour {
         CandidateSteps steps = mock(CandidateSteps.class);
         Configuration configuration = mock(Configuration.class);
         StepCandidate step = mock(StepCandidate.class);
+        StepPatternParser stepPatternParser = mock(StepPatternParser.class);
 
         when(steps.configuration()).thenReturn(configuration);
+        when(configuration.stepPatternParser()).thenReturn(stepPatternParser);
+        when(stepPatternParser.getPrefix()).thenReturn("$");
         when(steps.listCandidates()).thenReturn(Arrays.asList(step));
         when(step.getMethod()).thenReturn(null);
-        when(step.getStartingWord()).thenReturn("Then");
-        when(step.getPatternAsString()).thenReturn("I perform composite");
+        when(step.getName()).thenReturn("Then I perform composite");
 
         List<StepCandidate> candidates = finder.collectCandidates(Arrays.asList(steps));
         assertThat(candidates.size(), equalTo(1));
@@ -57,9 +60,10 @@ public class StepFinderBehaviour {
         verify(steps).configuration();
         verify(steps).listCandidates();
         verify(step).getMethod();
-        verify(step).getStartingWord();
-        verify(step).getPatternAsString();
-        verifyNoMoreInteractions(steps, configuration, step);
+        verify(step).getName();
+        verify(configuration).stepPatternParser();
+        verify(stepPatternParser).getPrefix();
+        verifyNoMoreInteractions(steps, step);
     }
 
     @Test

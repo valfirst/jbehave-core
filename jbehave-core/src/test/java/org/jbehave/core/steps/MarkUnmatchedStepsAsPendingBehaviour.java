@@ -17,6 +17,7 @@ import java.util.*;
 import org.hamcrest.Matchers;
 import org.jbehave.core.annotations.*;
 import org.jbehave.core.annotations.AfterScenario.Outcome;
+import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.embedder.MatchingStepMonitor;
 import org.jbehave.core.failures.PendingStepFound;
 import org.jbehave.core.failures.UUIDExceptionWrapper;
@@ -26,6 +27,7 @@ import org.jbehave.core.model.Meta;
 import org.jbehave.core.model.Scenario;
 import org.jbehave.core.model.Story;
 import org.jbehave.core.steps.AbstractStepResult.Ignorable;
+import org.jbehave.core.parsers.StepPatternParser;
 import org.jbehave.core.steps.AbstractStepResult.Comment;
 import org.jbehave.core.steps.StepCollector.Stage;
 import org.jbehave.core.steps.StepCreator.PendingStep;
@@ -49,6 +51,7 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
 
         String stepAsString = "my step";
         when(candidate.matches(stepAsString, null)).thenReturn(true);
+        when(candidate.getName()).thenReturn(stepAsString);
         when(candidate.createMatchedStep(stepAsString, parameters, Collections.<Step>emptyList())).thenReturn(executableStep);
         List<CandidateSteps> steps = mockCandidateSteps(candidate);
 
@@ -245,6 +248,7 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
         StepCandidate stepCandidate = mock(StepCandidate.class, candidateName);
         when(stepCandidate.getPatternAsString()).thenReturn(candidateName);
         when(stepCandidate.getStepType()).thenReturn(stepType);
+        when(stepCandidate.getName()).thenReturn(candidateName);
         @SuppressWarnings("unchecked")
         Method method = ReflectionUtils.getMethods(ClassWithSimpleMethod.class, m -> m.getName().equals("simpleMethod"))
                 .iterator().next();
@@ -270,6 +274,7 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
 
         String stepAsString = "my ignorable step";
         when(candidate.ignore(stepAsString)).thenReturn(true);
+        when(candidate.getName()).thenReturn(stepAsString);
         List<CandidateSteps> steps = mockCandidateSteps(candidate);
 
         // When
@@ -287,6 +292,7 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
 
         String stepAsString = "comment";
         when(candidate.comment(stepAsString)).thenReturn(true);
+        when(candidate.getName()).thenReturn(stepAsString);
         List<CandidateSteps> steps = mockCandidateSteps(candidate);
 
         // When
@@ -431,6 +437,7 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
         Step step2 = mock(Step.class);
         Step step3 = mock(Step.class);
         Step step4 = mock(Step.class);
+        mockPrefixExtraction(steps1);
 
         when(steps1.listCandidates()).thenReturn(asList(candidate1, candidate2));
         when(steps2.listCandidates()).thenReturn(asList(candidate3, candidate4));
@@ -471,6 +478,7 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
         Step step2 = mock(Step.class);
         Step step3 = mock(Step.class);
         Step step4 = mock(Step.class);
+        mockPrefixExtraction(steps1);
 
         when(steps1.listCandidates()).thenReturn(asList(candidate1, candidate2));
         when(steps2.listCandidates()).thenReturn(asList(candidate3, candidate4));
@@ -481,10 +489,18 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
         when(candidate2.matches(stepAsString, null)).thenReturn(true);
         when(candidate3.matches(stepAsString, null)).thenReturn(true);
         when(candidate4.matches(stepAsString, null)).thenReturn(true);
-        when(candidate1.getPatternAsString()).thenReturn("Given I do something");
-        when(candidate2.getPatternAsString()).thenReturn("When I do something ");
-        when(candidate3.getPatternAsString()).thenReturn("Then I do something");
-        when(candidate4.getPatternAsString()).thenReturn("And I do something");
+        String given = "Given I do something";
+        when(candidate1.getPatternAsString()).thenReturn(given);
+        when(candidate1.getName()).thenReturn(given);
+        String when = "When I do something ";
+        when(candidate2.getPatternAsString()).thenReturn(when);
+        when(candidate2.getName()).thenReturn(when);
+        String then = "Then I do something";
+        when(candidate3.getPatternAsString()).thenReturn(then);
+        when(candidate3.getName()).thenReturn(then);
+        String and = "And I do something";
+        when(candidate4.getPatternAsString()).thenReturn(and);
+        when(candidate4.getName()).thenReturn(and);
         when(candidate1.createMatchedStep(stepAsString, parameters, Collections.<Step>emptyList())).thenReturn(step1);
         when(candidate2.createMatchedStep(stepAsString, parameters, Collections.<Step>emptyList())).thenReturn(step2);
         when(candidate3.createMatchedStep(stepAsString, parameters, Collections.<Step>emptyList())).thenReturn(step3);
@@ -607,8 +623,18 @@ public class MarkUnmatchedStepsAsPendingBehaviour {
 
     private List<CandidateSteps> mockCandidateSteps(StepCandidate... candidate) {
         CandidateSteps steps = mock(Steps.class);
+        mockPrefixExtraction(steps);
         when(steps.listCandidates()).thenReturn(asList(candidate));
         return Collections.singletonList(steps);
+    }
+
+    private void mockPrefixExtraction(CandidateSteps steps)
+    {
+        Configuration configuration = mock(Configuration.class);
+        StepPatternParser stepPatternParser = mock(StepPatternParser.class);
+        when(configuration.stepPatternParser()).thenReturn(stepPatternParser);
+        when(stepPatternParser.getPrefix()).thenReturn("$");
+        when(steps.configuration()).thenReturn(configuration);
     }
 
 
