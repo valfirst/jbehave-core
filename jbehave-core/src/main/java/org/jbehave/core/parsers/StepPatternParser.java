@@ -35,4 +35,5 @@ public interface StepPatternParser {
 	 */
 	StepMatcher parseStep(StepType stepType, String stepPattern);
 
+	String getPrefix();
 }

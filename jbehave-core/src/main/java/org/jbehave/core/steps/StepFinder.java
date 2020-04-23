@@ -14,9 +14,12 @@ import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collector.Characteristics;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jbehave.core.annotations.Conditional;
+import org.jbehave.core.annotations.Given;
+import org.jbehave.core.annotations.Then;
 import org.jbehave.core.configuration.Configuration;
 import org.jbehave.core.steps.AbstractCandidateSteps.DuplicateCandidateFound;
 
@@ -121,26 +124,35 @@ public class StepFinder {
             return Collections.emptyList();
         }
         Configuration configuration = candidateSteps.get(0).configuration();
+        String parameterPrefix = configuration.stepPatternParser().getPrefix();
         return candidateSteps.stream()
-            .map(CandidateSteps::listCandidates)
-            .flatMap(List::stream)
-            .collect(stepCandidateCollector())
-            .entrySet()
-            .stream()
-            .map(e -> {
-                List<StepCandidate> candidates = e.getValue();
-                boolean conditional = isAnnotationPresent(Conditional.class, candidates);
-                if (candidates.size() == 1) {
-                    if (conditional) {
-                        return createConditionalCandidate(candidates, configuration);
-                    }
-                    return candidates.get(0);
-                } else if (!conditional) {
-                    throw new DuplicateCandidateFound(e.getKey());
-                }
-                return createConditionalCandidate(candidates, configuration);
-            })
-            .collect(Collectors.toList());
+                             .map(CandidateSteps::listCandidates)
+                             .flatMap(List::stream)
+                             .collect(Collectors.groupingBy(s -> StringUtils.substringBefore(s.getName(), parameterPrefix)))
+                             .entrySet()
+                             .stream()
+                             .flatMap(e -> {
+                                 List<StepCandidate> candidates = e.getValue();
+                                 return candidates.size() == 1 ? Stream.of(e)
+                                                               : candidates.stream()
+                                                                           .collect(stepCandidateCollector())
+                                                                           .entrySet()
+                                                                           .stream();
+                             })
+                             .map(e -> {
+                                 List<StepCandidate> candidates = e.getValue();
+                                 boolean conditional = isAnnotationPresent(Conditional.class, candidates);
+                                 if (candidates.size() == 1) {
+                                     if (conditional) {
+                                         return createConditionalCandidate(candidates, configuration);
+                                     }
+                                     return candidates.get(0);
+                                 } else if (!conditional) {
+                                     throw new DuplicateCandidateFound(e.getKey());
+                                 }
+                                 return createConditionalCandidate(candidates, configuration);
+                             })
+                             .collect(Collectors.toList());
     }
 
     private static Collector<StepCandidate, Map<String, List<StepCandidate>>, Map<String, List<StepCandidate>>>
@@ -148,7 +160,7 @@ public class StepFinder {
     {
         return Collector.of(HashMap::new, (map, candidate) ->
         {
-            String candidateWording = candidate.getStartingWord() + " " + candidate.getPatternAsString();
+            String candidateWording = candidate.getName();
             Optional<String> candidateKey = map.keySet().stream()
                     .filter(k -> candidate.matches(k) && map.get(k).stream().allMatch(c -> c.matches(candidateWording)))
                     .findFirst();
