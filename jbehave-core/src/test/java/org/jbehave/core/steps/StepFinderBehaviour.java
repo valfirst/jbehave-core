@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 
+import org.jbehave.core.annotations.Alias;
 import org.jbehave.core.annotations.Conditional;
 import org.jbehave.core.annotations.Given;
 import org.jbehave.core.annotations.Then;
@@ -136,6 +137,15 @@ public class StepFinderBehaviour {
     }
 
     @Test
+    public void shouldPreserveStepsOrderAccrodingToDefinitionOrderForAliases() {
+        ClassLevelAliasSteps steps = new ClassLevelAliasSteps();
+        assertOrderedCandidates(finder.collectCandidates(Arrays.asList(steps)), Arrays.asList(
+                entry(StepCandidate.class, StepType.THEN, "a second '$value"),
+                entry(StepCandidate.class, StepType.THEN, "a second $value")
+                ));
+    }
+
+    @Test
     public void shouldFailIfSimilarAnnotatedAndNotAnnotatedStepsWereFound() {
         expectedException.expect(DuplicateCandidateFound.class);
         expectedException.expectMessage("Given a given");
@@ -212,6 +222,11 @@ public class StepFinderBehaviour {
 
     private void assertCandidates(List<StepCandidate> candidates, List<AssertCandidateEntry> asserts) {
         Collections.sort(candidates, Comparator.comparing(StepCandidate::getPatternAsString));
+        assertOrderedCandidates(candidates, asserts);
+    }
+
+    private void assertOrderedCandidates(List<StepCandidate> candidates, List<AssertCandidateEntry> asserts)
+    {
         assertThat(candidates.size(), equalTo(asserts.size()));
         IntStream.range(0, candidates.size()).forEach(index ->
         {
@@ -318,6 +333,13 @@ public class StepFinderBehaviour {
 
         @Then("a then")
         public void then() {
+        }
+    }
+
+    static class ClassLevelAliasSteps extends Steps {
+        @Then("a second '$value")
+        @Alias("a second $value")
+        public void stepWithAlias() {
         }
     }
 
