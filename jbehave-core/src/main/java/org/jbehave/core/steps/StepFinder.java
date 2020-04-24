@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -128,7 +129,9 @@ public class StepFinder {
         return candidateSteps.stream()
                              .map(CandidateSteps::listCandidates)
                              .flatMap(List::stream)
-                             .collect(Collectors.groupingBy(s -> StringUtils.substringBefore(s.getName(), parameterPrefix)))
+                             .collect(Collectors.groupingBy(s -> StringUtils.substringBefore(s.getName(),
+                                     parameterPrefix),
+                                     LinkedHashMap::new, Collectors.toList()))
                              .entrySet()
                              .stream()
                              .flatMap(e -> {
