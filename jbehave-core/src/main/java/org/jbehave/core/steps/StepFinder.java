@@ -161,7 +161,7 @@ public class StepFinder {
     private static Collector<StepCandidate, Map<String, List<StepCandidate>>, Map<String, List<StepCandidate>>>
             stepCandidateCollector()
     {
-        return Collector.of(HashMap::new, (map, candidate) ->
+        return Collector.of(LinkedHashMap::new, (map, candidate) ->
         {
             String candidateWording = candidate.getName();
             Optional<String> candidateKey = map.keySet().stream()

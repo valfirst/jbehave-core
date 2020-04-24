@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 import static org.jbehave.core.steps.StepType.GIVEN;
 import static org.jbehave.core.steps.StepType.THEN;
 import static org.jbehave.core.steps.StepType.WHEN;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -139,10 +141,23 @@ public class StepFinderBehaviour {
     @Test
     public void shouldPreserveStepsOrderAccrodingToDefinitionOrderForAliases() {
         ClassLevelAliasSteps steps = new ClassLevelAliasSteps();
-        assertOrderedCandidates(finder.collectCandidates(Arrays.asList(steps)), Arrays.asList(
-                entry(StepCandidate.class, StepType.THEN, "a second '$value"),
-                entry(StepCandidate.class, StepType.THEN, "a second $value")
-                ));
+        List<StepCandidate> collectedCandidates = finder.collectCandidates(Arrays.asList(steps));
+        assertEquals(4, collectedCandidates.size());
+        int stepIndex = 0;
+        int aliasIndex = 0;
+        for (int i = 0; i < collectedCandidates.size(); i++)
+        {
+            String candidateName = collectedCandidates.get(i).getName();
+            if (candidateName.equals("Then a value $rule '$first'"))
+            {
+                stepIndex = i;
+            }
+            if (candidateName.equals("Then a value $rule $first"))
+            {
+                aliasIndex = i;
+            }
+        }
+        assertTrue("Candidate from step declaration should be before alias declartion", stepIndex < aliasIndex);
     }
 
     @Test
@@ -337,9 +352,17 @@ public class StepFinderBehaviour {
     }
 
     static class ClassLevelAliasSteps extends Steps {
-        @Then("a second '$value")
-        @Alias("a second $value")
+        @Then("a value $rule '$first' not exist")
+        public void stepWithTheSampePrefix() {
+        }
+
+        @Then("a value $rule '$first'")
+        @Alias("a value $rule $first")
         public void stepWithAlias() {
+        }
+
+        @Then("a value $rule '$first' exists")
+        public void stepWithTheSampePrefix2() {
         }
     }
 
