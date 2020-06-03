@@ -46,7 +46,7 @@ public class StoryManager {
 	private final Map<MetaFilter, List<Story>> excludedStories = new HashMap<>();
 	private RunContext context;
 	private StoryTimeouts timeouts;
-	
+
 	public StoryManager(Configuration configuration,
 			InjectableStepsFactory stepsFactory,
 			EmbedderControls embedderControls, EmbedderMonitor embedderMonitor,
@@ -60,6 +60,10 @@ public class StoryManager {
 		this.timeouts = new StoryTimeouts(embedderControls, embedderMonitor);
 		this.timeouts.withParsers(parsers);
 	}
+
+	public RunContext getContext() {
+        return context;
+    }
 
 	public Story storyOfPath(String storyPath) {
 		return performableTree.storyOfPath(configuration, storyPath);
@@ -435,7 +439,7 @@ public class StoryManager {
 			}
 			return false;
 		}
-		
+
 		public boolean isStarted(){
 			return enqueuedStory.getStartedAtMillis() != 0;
 		}
