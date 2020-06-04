@@ -156,11 +156,13 @@ public class Story {
     }
 
     public Story cloneWithScenarios(List<Scenario> scenarios) {
-        return new Story(path, description, meta, narrative, givenStories, lifecycle, scenarios);
+        return cloneWithMetaAndScenarios(meta, scenarios);
     }
 
     public Story cloneWithMetaAndScenarios(Meta meta, List<Scenario> scenarios) {
-        return new Story(path, description, meta, narrative, givenStories, lifecycle, scenarios);
+        Story story = new Story(path, description, meta, narrative, givenStories, lifecycle, scenarios);
+        story.namedAs(name);
+        return story;
     }
 
     @Override
