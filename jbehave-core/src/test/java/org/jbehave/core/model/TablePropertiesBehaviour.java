@@ -143,4 +143,10 @@ public class TablePropertiesBehaviour {
         assertThat(properties.getProperties().getProperty("key2"), equalTo("tolower"));
     }
 
+    @Test
+    public void canSetTablesPropertiesWithCommasInValues() {
+        String tables = "|value1 |value2|\n|1,1 |2,2 |\n;\n|value1 |value2|\n|3,3 |4,4 |";
+        TableProperties properties = new TableProperties("transformer=myTransformer, tables=" + tables);
+        assertThat(properties.getProperties().getProperty("tables"), equalTo(tables));
+    }
 }

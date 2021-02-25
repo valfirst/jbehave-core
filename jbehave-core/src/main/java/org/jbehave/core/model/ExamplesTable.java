@@ -542,9 +542,22 @@ public class ExamplesTable {
             this.propertiesAsString = propertiesAsString;
         }
 
+        private String escapeCommasInTablesProperty(String propertiesAsString) {
+            String line = propertiesAsString;
+            String regex = "(tables=(.|\\n)*)(?<!\\\\)(,)(.*)";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(line);
+            while (matcher.find()) {
+                line = line.replaceAll(regex, "$1\\\\,$4");
+                matcher = pattern.matcher(line);
+            }
+            return line;
+        }
+
         private Map<String, String> parseProperties(String propertiesAsString, ParameterConverters parameterConverters) {
             Map<String, String> result = new LinkedHashMap<>();
             if (!StringUtils.isEmpty(propertiesAsString)) {
+                propertiesAsString = escapeCommasInTablesProperty(propertiesAsString);
                 for (String propertyAsString : propertiesAsString.split("(?<!\\\\),")) {
                     String[] property = StringUtils.split(propertyAsString, EQUAL, 2);
                     String propertyName = property[0];
